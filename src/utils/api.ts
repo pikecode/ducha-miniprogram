@@ -21,6 +21,7 @@ interface LoginParams {
   username: string    // 用户名
   password: string    // 密码
   captcha: string     // 验证码
+  captchaKey?: string // 验证码key（时间戳）
 }
 
 // 登录响应数据

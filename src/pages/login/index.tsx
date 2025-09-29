@@ -65,6 +65,9 @@ export default class Login extends Component<{}, LoginState> {
 
     // 检查是否已登录
     this.checkLoginStatus()
+
+    // 加载验证码
+    this.loadCaptcha()
   }
 
   // 检查登录状态
@@ -429,18 +432,17 @@ export default class Login extends Component<{}, LoginState> {
   }
 
   // 获取验证码
-  loadCaptcha = async () => {
-    try {
-      const response = await apiClient.getCaptcha()
-      if (response.success) {
-        this.setState({
-          captchaImage: response.data.image,
-          captchaKey: response.data.key
-        })
-      }
-    } catch (error) {
-      console.error('获取验证码失败:', error)
-    }
+  loadCaptcha = () => {
+    // 直接使用验证码图片URL，添加时间戳防止缓存
+    const timestamp = new Date().getTime()
+    const captchaUrl = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CAPTCHA}?t=${timestamp}`
+
+    this.setState({
+      captchaImage: captchaUrl,
+      captchaKey: timestamp.toString() // 使用时间戳作为key
+    })
+
+    console.log('加载验证码:', captchaUrl)
   }
 
   // 用户名输入处理
@@ -486,7 +488,8 @@ export default class Login extends Component<{}, LoginState> {
       const loginParams = {
         username,
         password,
-        captcha: captchaCode
+        captcha: captchaCode,
+        captchaKey // 添加验证码key
       }
 
       console.log('密码登录参数:', loginParams)
