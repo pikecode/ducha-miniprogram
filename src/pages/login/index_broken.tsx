@@ -137,7 +137,6 @@ export default class Login extends Component<{}, LoginState> {
       // 调用登录接口
       const loginParams = {
         username: this.state.inputPhoneNumber, // 用户输入的手机号
-        captcha: wxLoginCode,
         code: wxLoginCode, // 登录凭证
         channel: API_CONFIG.CHANNEL
       }
