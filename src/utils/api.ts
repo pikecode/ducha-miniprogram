@@ -12,8 +12,8 @@ interface ApiResponse<T = any> {
 // 手机号授权登录请求参数
 interface OAuthLoginParams {
   username: string    // 手机号
-  captcha: string     // 小程序登录的code
-  code: string        // 手机号加密数据
+  captcha: string     // 小程序登录凭证
+  code: string        // 登录凭证
   channel: string     // 渠道标识：miniprogram
 }
 
