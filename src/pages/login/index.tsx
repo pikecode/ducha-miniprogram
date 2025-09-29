@@ -536,8 +536,81 @@ export default class Login extends Component<{}, LoginState> {
                 </View>
               )}
 
-          {/* 用户名密码登录模式 */}
-          {loginMode === 'password' && currentStep === 1 && (
+            {/* 步骤2：输入手机号 */}
+            {currentStep === 2 && (
+              <View className='auth-section'>
+                <View className='user-info'>
+                  <Image
+                    className='avatar'
+                    src={userInfo.avatarUrl}
+                    mode='aspectFill'
+                  />
+                  <Text className='nickname'>{userInfo.nickName}</Text>
+                </View>
+
+                <View className='auth-info'>
+                  <Text className='auth-title'>输入手机号</Text>
+                  <Text className='auth-desc'>
+                    请输入您的手机号，用于账号验证和安全登录
+                  </Text>
+                </View>
+
+                <View className='phone-input-section'>
+                  <Input
+                    className='phone-input'
+                    type='number'
+                    placeholder='请输入手机号'
+                    maxlength={11}
+                    value={inputPhoneNumber}
+                    onInput={this.handlePhoneInput}
+                  />
+                  <Button
+                    className='auth-btn confirm-btn'
+                    onClick={this.handlePhoneConfirm}
+                    disabled={!inputPhoneNumber}
+                  >
+                    下一步
+                  </Button>
+                </View>
+              </View>
+            )}
+
+            {/* 步骤3：手机号验证 */}
+            {currentStep === 3 && (
+              <View className='auth-section'>
+                <View className='user-info'>
+                  <Image
+                    className='avatar'
+                    src={userInfo.avatarUrl}
+                    mode='aspectFill'
+                  />
+                  <Text className='nickname'>{userInfo.nickName}</Text>
+                  <Text className='phone-display'>手机号：{inputPhoneNumber}</Text>
+                </View>
+
+                <View className='auth-info'>
+                  <Text className='auth-title'>手机号验证</Text>
+                  <Text className='auth-desc'>
+                    需要验证您的手机号以确保账号安全
+                  </Text>
+                </View>
+
+                <Button
+                  className='auth-btn phone-btn'
+                  openType='getPhoneNumber'
+                  onGetPhoneNumber={this.getPhoneNumber}
+                  disabled={isLogging}
+                >
+                  <Text className='btn-icon'>📱</Text>
+                  {isLogging ? '正在登录...' : '验证手机号'}
+                </Button>
+              </View>
+            )}
+          </>
+        )}
+
+        {/* 用户名密码登录模式 */}
+        {loginMode === 'password' && currentStep === 1 && (
             <View className='password-login'>
               <View className='auth-info'>
                 <Text className='auth-title'>账号登录</Text>
@@ -589,116 +662,7 @@ export default class Login extends Component<{}, LoginState> {
             </View>
           )}
 
-          {/* 微信授权登录：步骤2-4 */}
-          {loginMode === 'oauth' && currentStep === 2 && (
-            <View className='auth-section'>
-              <View className='auth-info'>
-                <Text className='auth-title'>微信登录</Text>
-                <Text className='auth-desc'>
-                  获取登录凭证，开始登录流程
-                </Text>
-              </View>
-              <Button
-                className='auth-btn wechat-btn'
-                onClick={this.handleWechatLogin}
-              >
-                <Text className='btn-icon'>🔑</Text>
-                获取登录凭证
-              </Button>
-            </View>
-          )}
-
-          {/* 步骤1.5：用户信息授权 */}
-          {currentStep === 1.5 && (
-            <View className='auth-section'>
-              <View className='auth-info'>
-                <Text className='auth-title'>授权用户信息</Text>
-                <Text className='auth-desc'>
-                  获取您的微信头像、昵称等基本信息，用于个性化服务
-                </Text>
-              </View>
-              <Button
-                className='auth-btn wechat-btn'
-                onClick={this.handleGetUserProfile}
-              >
-                <Text className='btn-icon'>👤</Text>
-                授权用户信息
-              </Button>
-            </View>
-          )}
-
-          {/* 步骤2：输入手机号 */}
-          {currentStep === 2 && (
-                <View className='auth-section'>
-                  <View className='user-info'>
-                    <Image
-                      className='avatar'
-                      src={userInfo.avatarUrl}
-                      mode='aspectFill'
-                    />
-                    <Text className='nickname'>{userInfo.nickName}</Text>
-                  </View>
-
-                  <View className='auth-info'>
-                    <Text className='auth-title'>输入手机号</Text>
-                    <Text className='auth-desc'>
-                      请输入您的手机号，用于账号验证和安全登录
-                    </Text>
-                  </View>
-
-                  <View className='phone-input-section'>
-                    <Input
-                      className='phone-input'
-                      type='number'
-                      placeholder='请输入手机号'
-                      maxlength={11}
-                      value={inputPhoneNumber}
-                      onInput={this.handlePhoneInput}
-                    />
-                    <Button
-                      className='auth-btn confirm-btn'
-                      onClick={this.handlePhoneConfirm}
-                      disabled={!inputPhoneNumber}
-                    >
-                      下一步
-                    </Button>
-                  </View>
-                </View>
-              )}
-
-          {/* 步骤3：手机号验证 */}
-          {currentStep === 3 && (
-                <View className='auth-section'>
-                  <View className='user-info'>
-                    <Image
-                      className='avatar'
-                      src={userInfo.avatarUrl}
-                      mode='aspectFill'
-                    />
-                    <Text className='nickname'>{userInfo.nickName}</Text>
-                    <Text className='phone-display'>手机号：{inputPhoneNumber}</Text>
-                  </View>
-
-                  <View className='auth-info'>
-                    <Text className='auth-title'>手机号验证</Text>
-                    <Text className='auth-desc'>
-                      需要验证您的手机号以确保账号安全
-                    </Text>
-                  </View>
-
-                  <Button
-                    className='auth-btn phone-btn'
-                    openType='getPhoneNumber'
-                    onGetPhoneNumber={this.getPhoneNumber}
-                    disabled={isLogging}
-                  >
-                    <Text className='btn-icon'>📱</Text>
-                    {isLogging ? '正在登录...' : '验证手机号'}
-                  </Button>
-                </View>
-              )}
-
-          {/* 登录完成（通用） */}
+        {/* 登录完成（通用） */}
           {currentStep === 4 && (
             <View className='success-section'>
               <View className='user-info'>
