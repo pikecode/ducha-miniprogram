@@ -16,7 +16,6 @@ interface LoginState {
   phoneNumber: string
   hasPhoneNumber: boolean
   phoneEncryptedData: any    // 手机号加密数据
-  inputPhoneNumber: string   // 用户输入的手机号
 
   // 用户名密码登录相关
   username: string           // 用户名
@@ -45,7 +44,6 @@ export default class Login extends Component<{}, LoginState> {
       phoneNumber: '',
       hasPhoneNumber: false,
       phoneEncryptedData: null,
-      inputPhoneNumber: '',
 
       // 用户名密码登录相关
       username: '',
@@ -83,33 +81,96 @@ export default class Login extends Component<{}, LoginState> {
   }
 
 
-  // 获取手机号
-  getPhoneNumber = (e) => {
+  // 获取手机号并立即登录
+  getPhoneNumber = async (e) => {
     console.log('获取手机号回调', e)
 
-    if (e.detail.code) {
-      // 保存手机号加密数据
-      this.setState({
-        phoneEncryptedData: {
-          code: e.detail.code,
-          encryptedData: e.detail.encryptedData,
-          iv: e.detail.iv
-        }
-      })
-
-      Taro.showToast({
-        title: '手机号授权成功',
-        icon: 'success'
-      })
-
-      // 开始登录流程
-      this.performLogin()
-
-    } else {
+    if (!e.detail.code) {
       Taro.showToast({
         title: '手机号授权失败',
         icon: 'none'
       })
+      return
+    }
+
+    this.setState({ isLogging: true })
+
+    try {
+      Taro.showLoading({
+        title: '正在登录...'
+      })
+
+      // 获取fresh的微信登录凭证
+      const loginRes = await new Promise<Taro.login.SuccessCallbackResult>((resolve, reject) => {
+        Taro.login({
+          success: resolve,
+          fail: reject
+        })
+      })
+
+      if (!loginRes.code) {
+        throw new Error('获取登录凭证失败')
+      }
+
+      console.log('获取到新的登录凭证：', loginRes.code)
+      console.log('手机号授权数据：', e.detail)
+
+      // 调用登录接口
+      const loginParams = {
+        username: e.detail.code, // 使用手机号授权的code作为username
+        code: loginRes.code, // 微信登录凭证
+        channel: API_CONFIG.CHANNEL
+      }
+
+      console.log('登录参数:', loginParams)
+
+      const response = await apiClient.oauthLogin(loginParams)
+
+      console.log('登录响应:', response)
+
+      if (response.success && response.data) {
+        const { token, userInfo } = response.data
+
+        // 保存token和用户信息
+        await Taro.setStorageSync('token', token)
+        await Taro.setStorageSync('userInfo', userInfo)
+
+        console.log('登录成功，保存用户信息：', userInfo)
+
+        this.setState({
+          currentStep: 4,
+          userInfo: {
+            avatarUrl: userInfo.avatar || this.state.userInfo.avatarUrl,
+            nickName: userInfo.nickname || userInfo.username
+          },
+          phoneNumber: userInfo.phone
+        })
+
+        Taro.showToast({
+          title: '登录成功',
+          icon: 'success'
+        })
+
+        // 延迟跳转到首页
+        setTimeout(() => {
+          Taro.switchTab({
+            url: '/pages/index/index'
+          })
+        }, 2000)
+
+      } else {
+        throw new Error(response.message || '登录失败')
+      }
+
+    } catch (error) {
+      console.error('登录失败:', error)
+      Taro.showToast({
+        title: error.message || '登录失败',
+        icon: 'none'
+      })
+    } finally {
+      Taro.hideLoading()
+      this.setState({ isLogging: false })
     }
   }
 
@@ -336,7 +397,6 @@ export default class Login extends Component<{}, LoginState> {
       username: '',
       password: '',
       captchaCode: '',
-      inputPhoneNumber: '',
       phoneEncryptedData: null,
       userInfo: {},
       hasUserInfo: false
@@ -469,7 +529,6 @@ export default class Login extends Component<{}, LoginState> {
       loginMode,
       userInfo,
       currentStep,
-      inputPhoneNumber,
       isLogging,
       username,
       password,
@@ -501,118 +560,25 @@ export default class Login extends Component<{}, LoginState> {
           )}
 
           {/* 微信授权登录模式 */}
-          {loginMode === 'oauth' && (
-            <>
-              {/* 步骤1：获取登录凭证 */}
-              {currentStep === 1 && (
-                <View className='auth-section'>
-                  <View className='auth-info'>
-                    <Text className='auth-title'>微信登录</Text>
-                    <Text className='auth-desc'>
-                      获取登录凭证，开始登录流程
-                    </Text>
-                  </View>
-                  <Button
-                    className='auth-btn wechat-btn'
-                    onClick={this.handleWechatLogin}
-                  >
-                    <Text className='btn-icon'>🔑</Text>
-                    获取登录凭证
-                  </Button>
-                </View>
-              )}
-
-              {/* 步骤1.5：用户信息授权 */}
-              {currentStep === 1.5 && (
-                <View className='auth-section'>
-                  <View className='auth-info'>
-                    <Text className='auth-title'>授权用户信息</Text>
-                    <Text className='auth-desc'>
-                      获取您的微信头像、昵称等基本信息，用于个性化服务
-                    </Text>
-                  </View>
-                  <Button
-                    className='auth-btn wechat-btn'
-                    onClick={this.handleGetUserProfile}
-                  >
-                    <Text className='btn-icon'>👤</Text>
-                    授权用户信息
-                  </Button>
-                </View>
-              )}
-
-            {/* 步骤2：输入手机号 */}
-            {currentStep === 2 && (
-              <View className='auth-section'>
-                <View className='user-info'>
-                  <Image
-                    className='avatar'
-                    src={userInfo.avatarUrl}
-                    mode='aspectFill'
-                  />
-                  <Text className='nickname'>{userInfo.nickName}</Text>
-                </View>
-
-                <View className='auth-info'>
-                  <Text className='auth-title'>输入手机号</Text>
-                  <Text className='auth-desc'>
-                    请输入您的手机号，用于账号验证和安全登录
-                  </Text>
-                </View>
-
-                <View className='phone-input-section'>
-                  <Input
-                    className='phone-input'
-                    type='number'
-                    placeholder='请输入手机号'
-                    maxlength={11}
-                    value={inputPhoneNumber}
-                    onInput={this.handlePhoneInput}
-                  />
-                  <Button
-                    className='auth-btn confirm-btn'
-                    onClick={this.handlePhoneConfirm}
-                    disabled={!inputPhoneNumber}
-                  >
-                    下一步
-                  </Button>
-                </View>
+          {loginMode === 'oauth' && currentStep === 1 && (
+            <View className='auth-section'>
+              <View className='auth-info'>
+                <Text className='auth-title'>微信手机号登录</Text>
+                <Text className='auth-desc'>
+                  点击下方按钮授权获取手机号，完成快速登录
+                </Text>
               </View>
-            )}
-
-            {/* 步骤3：手机号验证 */}
-            {currentStep === 3 && (
-              <View className='auth-section'>
-                <View className='user-info'>
-                  <Image
-                    className='avatar'
-                    src={userInfo.avatarUrl}
-                    mode='aspectFill'
-                  />
-                  <Text className='nickname'>{userInfo.nickName}</Text>
-                  <Text className='phone-display'>手机号：{inputPhoneNumber}</Text>
-                </View>
-
-                <View className='auth-info'>
-                  <Text className='auth-title'>手机号验证</Text>
-                  <Text className='auth-desc'>
-                    需要验证您的手机号以确保账号安全
-                  </Text>
-                </View>
-
-                <Button
-                  className='auth-btn phone-btn'
-                  openType='getPhoneNumber'
-                  onGetPhoneNumber={this.getPhoneNumber}
-                  disabled={isLogging}
-                >
-                  <Text className='btn-icon'>📱</Text>
-                  {isLogging ? '正在登录...' : '验证手机号'}
-                </Button>
-              </View>
-            )}
-          </>
-        )}
+              <Button
+                className='auth-btn phone-btn'
+                openType='getPhoneNumber'
+                onGetPhoneNumber={this.getPhoneNumber}
+                disabled={isLogging}
+              >
+                <Text className='btn-icon'>📱</Text>
+                {isLogging ? '正在登录...' : '手机号快速登录'}
+              </Button>
+            </View>
+          )}
 
         {/* 用户名密码登录模式 */}
         {loginMode === 'password' && currentStep === 1 && (
