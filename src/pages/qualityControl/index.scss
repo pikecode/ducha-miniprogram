@@ -1,0 +1,202 @@
+.quality-control {
+  min-height: 100vh;
+  background-color: #f5f7fa;
+  padding: 30px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.title {
+  display: block;
+  font-size: 36px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.subtitle {
+  display: block;
+  font-size: 28px;
+  color: #666;
+}
+
+.content {
+
+}
+
+.section {
+  margin-bottom: 50px;
+}
+
+.section-title {
+  display: block;
+  font-size: 32px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 30px;
+  padding-left: 20px;
+  border-left: 6px solid #007aff;
+}
+
+/* 督查工具列表 */
+.tool-list {
+
+}
+
+.tool-item {
+  background: #fff;
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+}
+
+.tool-icon {
+  width: 80px;
+  height: 80px;
+  margin-right: 24px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+}
+
+.check-icon {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.check-icon::after {
+  content: '✅';
+}
+
+.report-icon {
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+}
+
+.report-icon::after {
+  content: '📋';
+}
+
+.record-icon {
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+}
+
+.record-icon::after {
+  content: '📝';
+}
+
+.tool-content {
+  flex: 1;
+}
+
+.tool-title {
+  display: block;
+  font-size: 30px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.tool-desc {
+  display: block;
+  font-size: 26px;
+  color: #666;
+}
+
+.tool-btn {
+  background-color: #007aff;
+  color: white;
+  border: none;
+  font-size: 24px;
+}
+
+/* 督查进度 */
+.progress-area {
+  background: #fff;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.progress-item {
+  margin-bottom: 30px;
+}
+
+.progress-item:last-child {
+  margin-bottom: 0;
+}
+
+.progress-title {
+  display: block;
+  font-size: 28px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 12px;
+  background-color: #f0f0f0;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #007aff 0%, #4facfe 100%);
+  border-radius: 6px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  display: block;
+  font-size: 24px;
+  color: #666;
+  text-align: right;
+}
+
+/* 督查记录 */
+.record-list {
+
+}
+
+.record-item {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px 30px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.record-date {
+  font-size: 24px;
+  color: #999;
+  min-width: 140px;
+}
+
+.record-title {
+  flex: 1;
+  font-size: 28px;
+  color: #333;
+  font-weight: 500;
+  margin: 0 20px;
+}
+
+.record-status {
+  font-size: 24px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background-color: #f0f9ff;
+  color: #007aff;
+}

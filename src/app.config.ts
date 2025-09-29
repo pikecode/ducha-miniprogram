@@ -1,0 +1,39 @@
+export default {
+  pages: [
+    'pages/login/index',
+    'pages/index/index',
+    'pages/dataReport/index',
+    'pages/qualityControl/index',
+    'pages/oralAI/index'
+  ],
+  window: {
+    backgroundTextStyle: 'light',
+    navigationBarBackgroundColor: '#fff',
+    navigationBarTitleText: '督查',
+    navigationBarTextStyle: 'black'
+  },
+  tabBar: {
+    color: '#999999',
+    selectedColor: '#007aff',
+    backgroundColor: '#ffffff',
+    borderStyle: 'black',
+    list: [
+      {
+        pagePath: 'pages/index/index',
+        text: '首页'
+      },
+      {
+        pagePath: 'pages/dataReport/index',
+        text: '数据上报'
+      },
+      {
+        pagePath: 'pages/qualityControl/index',
+        text: '督查'
+      },
+      {
+        pagePath: 'pages/oralAI/index',
+        text: '口腔AI'
+      }
+    ]
+  }
+}

@@ -1,0 +1,166 @@
+/*!**********************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[0].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[0].use[2]!./node_modules/resolve-url-loader/index.js!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[0].use[4]!./src/pages/qualityControl/index.scss ***!
+  \**********************************************************************************************************************************************************************************************************************************************************************************************************************************/
+@charset "UTF-8";
+.quality-control {
+  min-height: 100vh;
+  background-color: #f5f7fa;
+  padding: 30rpx;
+}
+.header {
+  text-align: center;
+  margin-bottom: 40rpx;
+}
+.title {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16rpx;
+}
+.subtitle {
+  display: block;
+  font-size: 28rpx;
+  color: #666;
+}
+.section {
+  margin-bottom: 50rpx;
+}
+.section-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 30rpx;
+  padding-left: 20rpx;
+  border-left: 6rpx solid #007aff;
+}
+/* 督查工具列表 */
+.tool-item {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+}
+.tool-icon {
+  width: 80rpx;
+  height: 80rpx;
+  margin-right: 24rpx;
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+}
+.check-icon {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+.check-icon::after {
+  content: "✅";
+}
+.report-icon {
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+}
+.report-icon::after {
+  content: "📋";
+}
+.record-icon {
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+}
+.record-icon::after {
+  content: "📝";
+}
+.tool-content {
+  flex: 1;
+}
+.tool-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+.tool-desc {
+  display: block;
+  font-size: 26rpx;
+  color: #666;
+}
+.tool-btn {
+  background-color: #007aff;
+  color: white;
+  border: none;
+  font-size: 24rpx;
+}
+/* 督查进度 */
+.progress-area {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+.progress-item {
+  margin-bottom: 30rpx;
+}
+.progress-item:last-child {
+  margin-bottom: 0;
+}
+.progress-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16rpx;
+}
+.progress-bar {
+  width: 100%;
+  height: 12rpx;
+  background-color: #f0f0f0;
+  border-radius: 6rpx;
+  overflow: hidden;
+  margin-bottom: 12rpx;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #007aff 0%, #4facfe 100%);
+  border-radius: 6rpx;
+  transition: width 0.3s ease;
+}
+.progress-text {
+  display: block;
+  font-size: 24rpx;
+  color: #666;
+  text-align: right;
+}
+/* 督查记录 */
+.record-item {
+  background: #fff;
+  border-radius: 12rpx;
+  padding: 24rpx 30rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.record-date {
+  font-size: 24rpx;
+  color: #999;
+  min-width: 140rpx;
+}
+.record-title {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+  margin: 0 20rpx;
+}
+.record-status {
+  font-size: 24rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+  background-color: #f0f9ff;
+  color: #007aff;
+}
