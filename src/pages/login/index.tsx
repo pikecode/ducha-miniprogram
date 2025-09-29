@@ -15,7 +15,6 @@ interface LoginState {
   canIUseGetUserProfile: boolean
   phoneNumber: string
   hasPhoneNumber: boolean
-  wxLoginCode: string        // 微信登录code
   phoneEncryptedData: any    // 手机号加密数据
   inputPhoneNumber: string   // 用户输入的手机号
 
@@ -45,7 +44,6 @@ export default class Login extends Component<{}, LoginState> {
       canIUseGetUserProfile: Boolean(Taro.getUserProfile),
       phoneNumber: '',
       hasPhoneNumber: false,
-      wxLoginCode: '',
       phoneEncryptedData: null,
       inputPhoneNumber: '',
 
@@ -117,11 +115,11 @@ export default class Login extends Component<{}, LoginState> {
 
   // 执行登录
   performLogin = async () => {
-    const { wxLoginCode, phoneEncryptedData, userInfo } = this.state
+    const { phoneEncryptedData, userInfo } = this.state
 
-    if (!wxLoginCode || !phoneEncryptedData) {
+    if (!phoneEncryptedData) {
       Taro.showToast({
-        title: '登录信息不完整',
+        title: '请先完成手机号验证',
         icon: 'none'
       })
       return
@@ -134,10 +132,24 @@ export default class Login extends Component<{}, LoginState> {
         title: '正在登录...'
       })
 
+      // 重新获取fresh的登录凭证
+      const loginRes = await new Promise<Taro.login.SuccessCallbackResult>((resolve, reject) => {
+        Taro.login({
+          success: resolve,
+          fail: reject
+        })
+      })
+
+      if (!loginRes.code) {
+        throw new Error('获取登录凭证失败')
+      }
+
+      console.log('获取到新的登录凭证：', loginRes.code)
+
       // 调用登录接口
       const loginParams = {
         username: this.state.inputPhoneNumber, // 用户输入的手机号
-        code: wxLoginCode, // 登录凭证
+        code: loginRes.code, // 新的登录凭证
         channel: API_CONFIG.CHANNEL
       }
 
@@ -242,12 +254,7 @@ export default class Login extends Component<{}, LoginState> {
       success: (loginRes) => {
         console.log('微信登录成功', loginRes)
         if (loginRes.code) {
-          // 保存微信登录code
-          this.setState({
-            wxLoginCode: loginRes.code
-          })
-
-          console.log('获取到登录凭证：', loginRes.code)
+          console.log('微信登录成功，获取到登录凭证')
 
           Taro.showToast({
             title: '获取登录凭证成功',
@@ -330,7 +337,6 @@ export default class Login extends Component<{}, LoginState> {
       password: '',
       captchaCode: '',
       inputPhoneNumber: '',
-      wxLoginCode: '',
       phoneEncryptedData: null,
       userInfo: {},
       hasUserInfo: false
