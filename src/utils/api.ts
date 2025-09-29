@@ -35,6 +35,18 @@ interface LoginResponseData {
   }
 }
 
+// 解密手机号请求参数
+interface DecryptPhoneParams {
+  code: string           // 微信登录凭证
+  encryptedData: string  // 加密数据
+  iv: string            // 解密向量
+}
+
+// 解密手机号响应数据
+interface DecryptPhoneResponseData {
+  phoneNumber: string    // 解密后的手机号
+}
+
 // 封装请求方法
 class ApiClient {
 
@@ -129,6 +141,15 @@ class ApiClient {
     )
   }
 
+  // 解密手机号接口
+  async decryptPhone(params: DecryptPhoneParams): Promise<ApiResponse<DecryptPhoneResponseData>> {
+    return this.request<DecryptPhoneResponseData>(
+      API_CONFIG.ENDPOINTS.DECRYPT_PHONE,
+      'POST',
+      params
+    )
+  }
+
   // 设置请求头（用于设置token等）
   setAuthToken(token: string) {
     // 可以在这里设置全局token
@@ -140,4 +161,4 @@ class ApiClient {
 export const apiClient = new ApiClient()
 
 // 导出类型
-export type { OAuthLoginParams, LoginParams, LoginResponseData, ApiResponse }
+export type { OAuthLoginParams, LoginParams, LoginResponseData, DecryptPhoneParams, DecryptPhoneResponseData, ApiResponse }

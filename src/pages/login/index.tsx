@@ -115,9 +115,29 @@ export default class Login extends Component<{}, LoginState> {
       console.log('获取到新的登录凭证：', loginRes.code)
       console.log('手机号授权数据：', e.detail)
 
+      // 先解密手机号
+      const decryptParams = {
+        code: loginRes.code,
+        encryptedData: e.detail.encryptedData,
+        iv: e.detail.iv
+      }
+
+      console.log('解密参数:', decryptParams)
+
+      const decryptResponse = await apiClient.decryptPhone(decryptParams)
+
+      console.log('解密响应:', decryptResponse)
+
+      if (!decryptResponse.success || !decryptResponse.data?.phoneNumber) {
+        throw new Error('获取手机号失败')
+      }
+
+      const phoneNumber = decryptResponse.data.phoneNumber
+      console.log('解密后的手机号:', phoneNumber)
+
       // 调用登录接口
       const loginParams = {
-        username: e.detail.code, // 使用手机号授权的code作为username
+        username: phoneNumber, // 真实手机号
         code: loginRes.code, // 微信登录凭证
         channel: API_CONFIG.CHANNEL
       }

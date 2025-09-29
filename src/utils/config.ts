@@ -10,7 +10,9 @@ export const API_CONFIG = {
     // 用户名密码登录接口
     LOGIN: '/api/v1/users/login',
     // 验证码接口
-    CAPTCHA: '/api/v1/users/captcha'
+    CAPTCHA: '/api/v1/users/captcha',
+    // 解密手机号接口
+    DECRYPT_PHONE: '/api/v1/users/decryptphone'
   },
 
   // 渠道标识
