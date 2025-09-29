@@ -5,8 +5,12 @@ export const API_CONFIG = {
 
   // 接口路径
   ENDPOINTS: {
-    // 登录接口
-    OAUTH_LOGIN: '/api/v1/users/oauthlogin'
+    // 手机号授权登录接口
+    OAUTH_LOGIN: '/api/v1/users/oauthlogin',
+    // 用户名密码登录接口
+    LOGIN: '/api/v1/users/login',
+    // 验证码接口
+    CAPTCHA: '/api/v1/users/captcha'
   },
 
   // 渠道标识

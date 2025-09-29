@@ -9,12 +9,19 @@ interface ApiResponse<T = any> {
   success: boolean
 }
 
-// 登录请求参数
-interface LoginParams {
+// 手机号授权登录请求参数
+interface OAuthLoginParams {
   username: string    // 手机号
   captcha: string     // 小程序登录的code
   cryptoCode: string  // 手机号加密数据
   channel: string     // 渠道标识：miniprogram
+}
+
+// 用户名密码登录请求参数
+interface LoginParams {
+  username: string    // 用户名
+  password: string    // 密码
+  captcha: string     // 验证码
 }
 
 // 登录响应数据
@@ -97,12 +104,29 @@ class ApiClient {
     }
   }
 
-  // 登录接口
-  async login(params: LoginParams): Promise<ApiResponse<LoginResponseData>> {
+  // 手机号授权登录接口
+  async oauthLogin(params: OAuthLoginParams): Promise<ApiResponse<LoginResponseData>> {
     return this.request<LoginResponseData>(
       API_CONFIG.ENDPOINTS.OAUTH_LOGIN,
       'POST',
       params
+    )
+  }
+
+  // 用户名密码登录接口
+  async login(params: LoginParams): Promise<ApiResponse<LoginResponseData>> {
+    return this.request<LoginResponseData>(
+      API_CONFIG.ENDPOINTS.LOGIN,
+      'POST',
+      params
+    )
+  }
+
+  // 获取验证码接口
+  async getCaptcha(): Promise<ApiResponse<{ image: string, key: string }>> {
+    return this.request<{ image: string, key: string }>(
+      API_CONFIG.ENDPOINTS.CAPTCHA,
+      'GET'
     )
   }
 
@@ -117,4 +141,4 @@ class ApiClient {
 export const apiClient = new ApiClient()
 
 // 导出类型
-export type { LoginParams, LoginResponseData, ApiResponse }
+export type { OAuthLoginParams, LoginParams, LoginResponseData, ApiResponse }
