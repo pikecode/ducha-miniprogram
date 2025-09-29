@@ -13,7 +13,7 @@ interface ApiResponse<T = any> {
 interface OAuthLoginParams {
   username: string    // 手机号
   captcha: string     // 小程序登录的code
-  cryptoCode: string  // 手机号加密数据
+  code: string        // 手机号加密数据
   channel: string     // 渠道标识：miniprogram
 }
 

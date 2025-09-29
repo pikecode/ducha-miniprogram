@@ -138,7 +138,7 @@ export default class Login extends Component<{}, LoginState> {
       const loginParams = {
         username: this.state.inputPhoneNumber, // 用户输入的手机号
         captcha: wxLoginCode,
-        cryptoCode: JSON.stringify(phoneEncryptedData),
+        code: JSON.stringify(phoneEncryptedData),
         channel: API_CONFIG.CHANNEL
       }
 
