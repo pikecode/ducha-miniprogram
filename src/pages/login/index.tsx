@@ -432,17 +432,42 @@ export default class Login extends Component<{}, LoginState> {
   }
 
   // 获取验证码
-  loadCaptcha = () => {
-    // 直接使用验证码图片URL，添加时间戳防止缓存
-    const timestamp = new Date().getTime()
-    const captchaUrl = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CAPTCHA}?t=${timestamp}`
+  loadCaptcha = async () => {
+    try {
+      // 先调用API获取验证码key
+      const response = await apiClient.getCaptcha()
 
-    this.setState({
-      captchaImage: captchaUrl,
-      captchaKey: timestamp.toString() // 使用时间戳作为key
-    })
+      if (response.success && response.data) {
+        // 如果API返回了image和key，使用API返回的数据
+        this.setState({
+          captchaImage: response.data.image,
+          captchaKey: response.data.key
+        })
+        console.log('获取验证码成功:', response.data)
+      } else {
+        // 如果API不返回JSON，直接使用图片URL
+        const timestamp = new Date().getTime()
+        const captchaUrl = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CAPTCHA}?t=${timestamp}`
 
-    console.log('加载验证码:', captchaUrl)
+        this.setState({
+          captchaImage: captchaUrl,
+          captchaKey: timestamp.toString()
+        })
+        console.log('使用图片URL:', captchaUrl)
+      }
+    } catch (error) {
+      console.error('获取验证码失败:', error)
+
+      // 出错时使用图片URL作为fallback
+      const timestamp = new Date().getTime()
+      const captchaUrl = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CAPTCHA}?t=${timestamp}`
+
+      this.setState({
+        captchaImage: captchaUrl,
+        captchaKey: timestamp.toString()
+      })
+      console.log('错误回退，使用图片URL:', captchaUrl)
+    }
   }
 
   // 用户名输入处理
@@ -488,8 +513,8 @@ export default class Login extends Component<{}, LoginState> {
       const loginParams = {
         username,
         password,
-        captcha: captchaCode,
-        captchaKey // 添加验证码key
+        captcha: captchaCode
+        // 先不传captchaKey，看看后端是否需要
       }
 
       console.log('密码登录参数:', loginParams)

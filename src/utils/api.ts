@@ -136,10 +136,41 @@ class ApiClient {
 
   // 获取验证码接口
   async getCaptcha(): Promise<ApiResponse<{ image: string, key: string }>> {
-    return this.request<{ image: string, key: string }>(
-      API_CONFIG.ENDPOINTS.CAPTCHA,
-      'GET'
-    )
+    const fullUrl = `${this.baseURL}${API_CONFIG.ENDPOINTS.CAPTCHA}`
+
+    try {
+      console.log('获取验证码:', fullUrl)
+
+      const response = await Taro.request({
+        url: fullUrl,
+        method: 'GET',
+        timeout: REQUEST_TIMEOUT
+      })
+
+      console.log('验证码响应:', response)
+
+      // 检查HTTP状态码
+      if (response.statusCode !== 200) {
+        throw new Error(`HTTP错误: ${response.statusCode}`)
+      }
+
+      // 如果返回的是JSON格式
+      if (response.data && typeof response.data === 'object' && response.data.image) {
+        return {
+          success: true,
+          code: 200,
+          message: '获取验证码成功',
+          data: response.data
+        }
+      }
+
+      // 如果返回的是图片，抛出错误让调用方使用fallback
+      throw new Error('返回格式不是JSON，使用图片URL')
+
+    } catch (error) {
+      console.error('获取验证码失败:', error)
+      throw error
+    }
   }
 
   // 解密手机号接口
