@@ -656,166 +656,25 @@ export default class Login extends Component<{}, LoginState> {
   }
 
   render() {
-    const {
-      loginMode,
-      userInfo,
-      currentStep,
-      isLogging,
-      username,
-      password,
-      captchaCode,
-      captchaImage
-    } = this.state
+    const { isLogging, username } = this.state
 
     return (
       <View className='login'>
-        <View className='login-header'>
-          <View className='logo'>
-            <Text className='logo-icon'>🦷</Text>
-          </View>
-          <Text className='app-name'>督查小程序</Text>
-          <Text className='app-desc'>口腔质控专业平台</Text>
-        </View>
-
         <View className='login-content'>
-          {/* 登录模式切换按钮 */}
-          {currentStep === 1 && (
-            <View className='mode-switch'>
-              <Button
-                className='switch-btn'
-                onClick={this.switchLoginMode}
-              >
-                {loginMode === 'username' ? '改用微信登录' :
-                 loginMode === 'oauth' ? '改用密码登录' : '改用用户名登录'}
-              </Button>
-            </View>
-          )}
+          <Input
+            className='username-input'
+            placeholder='请输入用户名'
+            value={username}
+            onInput={this.handleUsernameInput}
+          />
 
-          {/* 微信授权登录模式 */}
-          {loginMode === 'oauth' && currentStep === 1 && (
-            <View className='auth-section'>
-              <View className='auth-info'>
-                <Text className='auth-title'>微信手机号登录</Text>
-                <Text className='auth-desc'>
-                  点击下方按钮授权获取手机号，完成快速登录
-                </Text>
-              </View>
-              <Button
-                className='auth-btn phone-btn'
-                openType='getPhoneNumber'
-                onGetPhoneNumber={this.getPhoneNumber}
-                disabled={isLogging}
-              >
-                <Text className='btn-icon'>📱</Text>
-                {isLogging ? '正在登录...' : '手机号快速登录'}
-              </Button>
-            </View>
-          )}
-
-        {/* 用户名登录模式 */}
-        {loginMode === 'username' && currentStep === 1 && (
-          <View className='username-login'>
-            <View className='auth-info'>
-              <Text className='auth-title'>用户名登录</Text>
-              <Text className='auth-desc'>
-                输入用户名即可快速登录
-              </Text>
-            </View>
-
-            <View className='form-section'>
-              <Input
-                className='form-input'
-                placeholder='请输入用户名'
-                value={username}
-                onInput={this.handleUsernameInput}
-              />
-
-              <Button
-                className='auth-btn login-btn'
-                onClick={this.performUsernameLogin}
-                disabled={isLogging || !username}
-              >
-                {isLogging ? '正在登录...' : '登录'}
-              </Button>
-            </View>
-          </View>
-        )}
-
-        {/* 用户名密码登录模式 */}
-        {loginMode === 'password' && currentStep === 1 && (
-            <View className='password-login'>
-              <View className='auth-info'>
-                <Text className='auth-title'>账号登录</Text>
-                <Text className='auth-desc'>
-                  使用用户名和密码登录系统
-                </Text>
-              </View>
-
-              <View className='form-section'>
-                <Input
-                  className='form-input'
-                  placeholder='请输入用户名'
-                  value={username}
-                  onInput={this.handleUsernameInput}
-                />
-
-                <Input
-                  className='form-input'
-                  type='password'
-                  placeholder='请输入密码'
-                  value={password}
-                  onInput={this.handlePasswordInput}
-                />
-
-                <View className='captcha-section'>
-                  <Input
-                    className='captcha-input'
-                    placeholder='请输入验证码'
-                    value={captchaCode}
-                    maxlength={4}
-                    onInput={this.handleCaptchaInput}
-                  />
-                  <Image
-                    className='captcha-image'
-                    src={captchaImage}
-                    mode='aspectFit'
-                    onClick={this.loadCaptcha}
-                  />
-                </View>
-
-                <Button
-                  className='auth-btn login-btn'
-                  onClick={this.performPasswordLogin}
-                  disabled={isLogging || !username || !password || !captchaCode}
-                >
-                  {isLogging ? '正在登录...' : '登录'}
-                </Button>
-              </View>
-            </View>
-          )}
-
-        {/* 登录完成（通用） */}
-          {currentStep === 4 && (
-            <View className='success-section'>
-              <View className='user-info'>
-                <Image
-                  className='avatar'
-                  src={userInfo.avatarUrl}
-                  mode='aspectFill'
-                />
-                <Text className='nickname'>{userInfo.nickName}</Text>
-                <Text className='phone-display'>手机号：{this.state.phoneNumber}</Text>
-              </View>
-              <View className='success-icon'>✅</View>
-              <Text className='success-text'>登录成功，正在进入应用...</Text>
-            </View>
-          )}
-        </View>
-
-        <View className='login-footer'>
-          <Text className='privacy-text'>
-            登录即表示同意《用户协议》和《隐私政策》
-          </Text>
+          <Button
+            className='login-btn'
+            onClick={this.performUsernameLogin}
+            disabled={isLogging || !username}
+          >
+            {isLogging ? '正在登录...' : '登录'}
+          </Button>
         </View>
       </View>
     )
