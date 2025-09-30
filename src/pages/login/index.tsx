@@ -618,6 +618,24 @@ export default class Login extends Component<{}, LoginState> {
 
         console.log('登录成功，保存用户信息：', userInfo)
 
+        // 调用任务列表接口
+        try {
+          console.log('正在获取任务列表...')
+          const taskResponse = await apiClient.getTaskLiveList()
+          console.log('任务列表响应:', taskResponse)
+
+          if (taskResponse.success && taskResponse.data) {
+            console.log('任务列表获取成功:', taskResponse.data)
+            // 可以将任务列表保存到存储中
+            await Taro.setStorageSync('taskList', taskResponse.data)
+          } else {
+            console.warn('任务列表获取失败:', taskResponse.message)
+          }
+        } catch (taskError) {
+          console.error('获取任务列表失败:', taskError)
+          // 不阻断登录流程，只记录错误
+        }
+
         this.setState({
           currentStep: 4,
           userInfo: {

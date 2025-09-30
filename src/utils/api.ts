@@ -53,6 +53,12 @@ interface DecryptPhoneResponseData {
   phoneNumber: string    // 解密后的手机号
 }
 
+// 任务列表响应数据
+interface TaskLiveListResponseData {
+  list: any[]    // 任务列表
+  total?: number // 总数
+}
+
 // 封装请求方法
 class ApiClient {
 
@@ -72,12 +78,16 @@ class ApiClient {
 
     const fullUrl = `${this.baseURL}${url}`
 
+    // 获取token
+    const token = Taro.getStorageSync('token')
+
     try {
       console.log('发起请求:', {
         url: fullUrl,
         method,
         data,
-        headers
+        headers,
+        token: token ? '***' : 'null'
       })
 
       const response = await Taro.request({
@@ -86,6 +96,7 @@ class ApiClient {
         data,
         header: {
           'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
           ...headers
         },
         timeout: REQUEST_TIMEOUT
@@ -196,6 +207,14 @@ class ApiClient {
     )
   }
 
+  // 获取任务列表接口
+  async getTaskLiveList(): Promise<ApiResponse<TaskLiveListResponseData>> {
+    return this.request<TaskLiveListResponseData>(
+      API_CONFIG.ENDPOINTS.TASK_LIVE_LIST,
+      'GET'
+    )
+  }
+
   // 设置请求头（用于设置token等）
   setAuthToken(token: string) {
     // 可以在这里设置全局token
@@ -207,4 +226,4 @@ class ApiClient {
 export const apiClient = new ApiClient()
 
 // 导出类型
-export type { OAuthLoginParams, LoginParams, LoginXParams, LoginResponseData, DecryptPhoneParams, DecryptPhoneResponseData, ApiResponse }
+export type { OAuthLoginParams, LoginParams, LoginXParams, LoginResponseData, DecryptPhoneParams, DecryptPhoneResponseData, TaskLiveListResponseData, ApiResponse }

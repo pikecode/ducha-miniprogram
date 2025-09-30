@@ -14,7 +14,9 @@ export const API_CONFIG = {
     // 验证码接口
     CAPTCHA: '/api/v1/users/captcha',
     // 解密手机号接口
-    DECRYPT_PHONE: '/api/v1/users/decryptphone'
+    DECRYPT_PHONE: '/api/v1/users/decryptphone',
+    // 任务列表接口
+    TASK_LIVE_LIST: '/inspect/plan/task/livelist'
   },
 
   // 渠道标识
