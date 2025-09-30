@@ -66,8 +66,8 @@ export default class Login extends Component<{}, LoginState> {
     // 检查是否已登录
     this.checkLoginStatus()
 
-    // 加载验证码
-    this.loadCaptcha()
+    // 暂时不加载验证码
+    // this.loadCaptcha()
   }
 
   // 检查登录状态
