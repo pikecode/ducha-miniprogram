@@ -3,6 +3,7 @@ import { View, Text, Button, Image, Input } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { apiClient } from '../../utils/api'
 import { API_CONFIG } from '../../utils/config'
+import { authManager } from '../../utils/auth'
 import './index.scss'
 
 interface LoginState {
@@ -609,32 +610,22 @@ export default class Login extends Component<{}, LoginState> {
 
       console.log('登录响应:', response)
 
-      if (response.success && response.data) {
-        const { token, userInfo } = response.data
+      if (response.success) {
+        // 从响应头中获取token
+        const authorization = response.authorization || response.data?.token
+        const userInfo = response.data?.userInfo || response.data
 
-        // 保存token和用户信息
-        await Taro.setStorageSync('token', token)
+        if (!authorization) {
+          throw new Error('未获取到登录token')
+        }
+
+        console.log('获取到authorization:', authorization)
+
+        // 使用authManager管理token
+        authManager.setToken(authorization)
         await Taro.setStorageSync('userInfo', userInfo)
 
         console.log('登录成功，保存用户信息：', userInfo)
-
-        // 调用任务列表接口
-        try {
-          console.log('正在获取任务列表...')
-          const taskResponse = await apiClient.getTaskLiveList()
-          console.log('任务列表响应:', taskResponse)
-
-          if (taskResponse.success && taskResponse.data) {
-            console.log('任务列表获取成功:', taskResponse.data)
-            // 可以将任务列表保存到存储中
-            await Taro.setStorageSync('taskList', taskResponse.data)
-          } else {
-            console.warn('任务列表获取失败:', taskResponse.message)
-          }
-        } catch (taskError) {
-          console.error('获取任务列表失败:', taskError)
-          // 不阻断登录流程，只记录错误
-        }
 
         this.setState({
           currentStep: 4,

@@ -1,12 +1,119 @@
 import Taro from '@tarojs/taro'
 
+// Token管理类
+class AuthManager {
+  private static instance: AuthManager
+  private token: string | null = null
+
+  private constructor() {
+    // 初始化时从存储中读取token
+    this.loadTokenFromStorage()
+  }
+
+  // 单例模式
+  static getInstance(): AuthManager {
+    if (!AuthManager.instance) {
+      AuthManager.instance = new AuthManager()
+    }
+    return AuthManager.instance
+  }
+
+  // 从存储中加载token
+  private loadTokenFromStorage(): void {
+    try {
+      this.token = Taro.getStorageSync('token') || null
+    } catch (error) {
+      console.error('读取token失败:', error)
+      this.token = null
+    }
+  }
+
+  // 设置token
+  setToken(authorization: string): void {
+    try {
+      // 如果authorization包含Bearer前缀，则提取纯token
+      let cleanToken = authorization
+      if (authorization && authorization.startsWith('Bearer ')) {
+        cleanToken = authorization.substring(7)
+      }
+
+      this.token = cleanToken
+
+      // 保存到本地存储
+      Taro.setStorageSync('token', cleanToken)
+
+      console.log('Token已保存:', cleanToken ? '***' : 'null')
+    } catch (error) {
+      console.error('保存token失败:', error)
+      throw new Error('Token保存失败')
+    }
+  }
+
+  // 获取token
+  getToken(): string | null {
+    return this.token
+  }
+
+  // 获取完整的Authorization头
+  getAuthorizationHeader(): string | null {
+    return this.token ? `Bearer ${this.token}` : null
+  }
+
+  // 检查是否已登录
+  isAuthenticated(): boolean {
+    return !!this.token
+  }
+
+  // 清除token
+  clearToken(): void {
+    try {
+      this.token = null
+      Taro.removeStorageSync('token')
+      console.log('Token已清除')
+    } catch (error) {
+      console.error('清除token失败:', error)
+    }
+  }
+
+  // 登出
+  logout(): void {
+    this.clearToken()
+    // 清除其他用户信息
+    try {
+      Taro.removeStorageSync('userInfo')
+      Taro.removeStorageSync('phoneNumber')
+      Taro.removeStorageSync('taskList')
+      console.log('用户已登出')
+    } catch (error) {
+      console.error('登出失败:', error)
+    }
+  }
+
+  // 验证token格式
+  private isValidTokenFormat(token: string): boolean {
+    // JWT token基本格式验证（三部分，用.分隔）
+    return token && token.split('.').length === 3
+  }
+
+  // 检查token是否有效
+  validateToken(): boolean {
+    if (!this.token) {
+      return false
+    }
+
+    return this.isValidTokenFormat(this.token)
+  }
+}
+
+// 导出单例实例
+export const authManager = AuthManager.getInstance()
+
 // 检查用户是否已登录
 export const checkLoginStatus = (): boolean => {
   const userInfo = Taro.getStorageSync('userInfo')
-  const phoneNumber = Taro.getStorageSync('phoneNumber')
-  const token = Taro.getStorageSync('token')
+  const token = authManager.getToken()
 
-  return !!(userInfo && phoneNumber && token)
+  return !!(userInfo && token && authManager.validateToken())
 }
 
 // 获取用户信息
@@ -21,14 +128,12 @@ export const getPhoneNumber = (): string => {
 
 // 获取登录token
 export const getToken = (): string => {
-  return Taro.getStorageSync('token')
+  return authManager.getToken() || ''
 }
 
 // 清除登录信息
 export const clearLoginInfo = () => {
-  Taro.removeStorageSync('userInfo')
-  Taro.removeStorageSync('phoneNumber')
-  Taro.removeStorageSync('token')
+  authManager.logout()
 }
 
 // 跳转到登录页

@@ -15,8 +15,10 @@ export const API_CONFIG = {
     CAPTCHA: '/api/v1/users/captcha',
     // 解密手机号接口
     DECRYPT_PHONE: '/api/v1/users/decryptphone',
-    // 任务列表接口
-    TASK_LIVE_LIST: '/inspect/plan/task/livelist'
+    // 督查列表接口
+    TASK_LIVE_LIST: '/api/v1/inspect/plan/task/livelist',
+    // 部门列表接口
+    DEPARTMENT_LIST: '/api/v1/departmentinfo/listDepartmentInfos'
   },
 
   // 渠道标识

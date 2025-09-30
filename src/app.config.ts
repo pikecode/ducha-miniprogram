@@ -5,6 +5,7 @@ export default {
     'pages/dataReportDetail/index',
     'pages/qualityControl/index',
     'pages/qualityDetail/index',
+    'pages/departmentList/index',
     'pages/patientAdd/index',
     'pages/patientDetail/index',
     'pages/index/index',
