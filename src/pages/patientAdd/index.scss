@@ -1,0 +1,79 @@
+.patient-add {
+  min-height: 100vh;
+  background-color: #f7f8fa;
+}
+
+.form-content {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px;
+  margin: 24px 30px;
+}
+
+.form-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 32px;
+  position: relative;
+}
+
+.form-item:last-child {
+  margin-bottom: 0;
+}
+
+.form-item.required .form-label::before {
+  content: '*';
+  color: #ff4d4f;
+  margin-right: 4px;
+}
+
+.form-label {
+  font-size: 28px;
+  color: #333;
+  width: 160px;
+  flex-shrink: 0;
+}
+
+.form-input {
+  flex: 1;
+  height: 64px;
+  padding: 0 20px;
+  background-color: #f7f8fa;
+  border-radius: 8px;
+  font-size: 28px;
+}
+
+.form-picker {
+  flex: 1;
+  height: 64px;
+  padding: 0 20px;
+  background-color: #f7f8fa;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.form-picker::after {
+  content: '';
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #999;
+}
+
+.picker-text {
+  font-size: 28px;
+  color: #333;
+}
+
+.picker-placeholder {
+  font-size: 28px;
+  color: #999;
+}

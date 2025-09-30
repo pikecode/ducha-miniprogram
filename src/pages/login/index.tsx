@@ -6,8 +6,8 @@ import { API_CONFIG } from '../../utils/config'
 import './index.scss'
 
 interface LoginState {
-  // 登录模式：'oauth' | 'password'
-  loginMode: 'oauth' | 'password'
+  // 登录模式：'oauth' | 'password' | 'username'
+  loginMode: 'oauth' | 'password' | 'username'
 
   // 微信授权相关
   userInfo: any
@@ -34,8 +34,8 @@ export default class Login extends Component<{}, LoginState> {
   constructor(props) {
     super(props)
     this.state = {
-      // 默认使用微信授权登录
-      loginMode: 'oauth',
+      // 默认使用用户名登录
+      loginMode: 'username',
 
       // 微信授权相关
       userInfo: {},
@@ -412,7 +412,15 @@ export default class Login extends Component<{}, LoginState> {
 
   // 切换登录模式
   switchLoginMode = () => {
-    const newMode = this.state.loginMode === 'oauth' ? 'password' : 'oauth'
+    let newMode: 'oauth' | 'password' | 'username'
+    if (this.state.loginMode === 'username') {
+      newMode = 'oauth'
+    } else if (this.state.loginMode === 'oauth') {
+      newMode = 'password'
+    } else {
+      newMode = 'username'
+    }
+
     this.setState({
       loginMode: newMode,
       currentStep: 1,
@@ -572,6 +580,81 @@ export default class Login extends Component<{}, LoginState> {
     }
   }
 
+  // 用户名登录
+  performUsernameLogin = async () => {
+    const { username } = this.state
+
+    if (!username) {
+      Taro.showToast({
+        title: '请输入用户名',
+        icon: 'none'
+      })
+      return
+    }
+
+    this.setState({ isLogging: true })
+
+    try {
+      Taro.showLoading({
+        title: '正在登录...'
+      })
+
+      const loginParams = {
+        username
+      }
+
+      console.log('用户名登录参数:', loginParams)
+
+      const response = await apiClient.loginX(loginParams)
+
+      console.log('登录响应:', response)
+
+      if (response.success && response.data) {
+        const { token, userInfo } = response.data
+
+        // 保存token和用户信息
+        await Taro.setStorageSync('token', token)
+        await Taro.setStorageSync('userInfo', userInfo)
+
+        console.log('登录成功，保存用户信息：', userInfo)
+
+        this.setState({
+          currentStep: 4,
+          userInfo: {
+            avatarUrl: userInfo.avatar || '',
+            nickName: userInfo.nickname || userInfo.username
+          },
+          phoneNumber: userInfo.phone || ''
+        })
+
+        Taro.showToast({
+          title: '登录成功',
+          icon: 'success'
+        })
+
+        // 延迟跳转到首页
+        setTimeout(() => {
+          Taro.switchTab({
+            url: '/pages/index/index'
+          })
+        }, 1500)
+
+      } else {
+        throw new Error(response.message || '登录失败')
+      }
+
+    } catch (error) {
+      console.error('用户名登录失败:', error)
+      Taro.showToast({
+        title: error.message || '登录失败',
+        icon: 'none'
+      })
+    } finally {
+      Taro.hideLoading()
+      this.setState({ isLogging: false })
+    }
+  }
+
   render() {
     const {
       loginMode,
@@ -602,7 +685,8 @@ export default class Login extends Component<{}, LoginState> {
                 className='switch-btn'
                 onClick={this.switchLoginMode}
               >
-                {loginMode === 'oauth' ? '改用账号登录' : '改用微信登录'}
+                {loginMode === 'username' ? '改用微信登录' :
+                 loginMode === 'oauth' ? '改用密码登录' : '改用用户名登录'}
               </Button>
             </View>
           )}
@@ -627,6 +711,35 @@ export default class Login extends Component<{}, LoginState> {
               </Button>
             </View>
           )}
+
+        {/* 用户名登录模式 */}
+        {loginMode === 'username' && currentStep === 1 && (
+          <View className='username-login'>
+            <View className='auth-info'>
+              <Text className='auth-title'>用户名登录</Text>
+              <Text className='auth-desc'>
+                输入用户名即可快速登录
+              </Text>
+            </View>
+
+            <View className='form-section'>
+              <Input
+                className='form-input'
+                placeholder='请输入用户名'
+                value={username}
+                onInput={this.handleUsernameInput}
+              />
+
+              <Button
+                className='auth-btn login-btn'
+                onClick={this.performUsernameLogin}
+                disabled={isLogging || !username}
+              >
+                {isLogging ? '正在登录...' : '登录'}
+              </Button>
+            </View>
+          </View>
+        )}
 
         {/* 用户名密码登录模式 */}
         {loginMode === 'password' && currentStep === 1 && (

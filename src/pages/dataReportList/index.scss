@@ -1,4 +1,4 @@
-.quality-control {
+.data-report-list {
   min-height: 100vh;
   background-color: #f7f8fa;
   padding: 24px 30px;
@@ -21,22 +21,14 @@
   margin-bottom: 16px;
 }
 
-.report-desc {
+.report-date {
   display: block;
   font-size: 26px;
   color: #999;
   line-height: 1.6;
-  margin-bottom: 16px;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
-}
-
-.report-time {
-  display: block;
-  font-size: 24px;
-  color: #999;
-  line-height: 1.5;
 }

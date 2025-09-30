@@ -9,6 +9,8 @@ export const API_CONFIG = {
     OAUTH_LOGIN: '/api/v1/users/oauthlogin',
     // 用户名密码登录接口
     LOGIN: '/api/v1/users/login',
+    // 用户名登录接口
+    LOGIN_X: '/api/v1/users/loginx',
     // 验证码接口
     CAPTCHA: '/api/v1/users/captcha',
     // 解密手机号接口

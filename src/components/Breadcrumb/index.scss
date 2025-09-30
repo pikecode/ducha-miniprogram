@@ -1,0 +1,28 @@
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  padding: 20px 30px;
+  background-color: #fff;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+}
+
+.breadcrumb-link {
+  font-size: 26px;
+  color: #1890ff;
+}
+
+.breadcrumb-text {
+  font-size: 26px;
+  color: #333;
+}
+
+.breadcrumb-separator {
+  font-size: 26px;
+  color: #999;
+  margin: 0 12px;
+}

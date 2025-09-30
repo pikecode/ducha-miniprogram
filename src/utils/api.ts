@@ -24,6 +24,11 @@ interface LoginParams {
   captchaKey?: string // 验证码key（时间戳）
 }
 
+// 用户名登录请求参数
+interface LoginXParams {
+  username: string    // 用户名
+}
+
 // 登录响应数据
 interface LoginResponseData {
   token: string
@@ -134,6 +139,15 @@ class ApiClient {
     )
   }
 
+  // 用户名登录接口
+  async loginX(params: LoginXParams): Promise<ApiResponse<LoginResponseData>> {
+    return this.request<LoginResponseData>(
+      API_CONFIG.ENDPOINTS.LOGIN_X,
+      'POST',
+      params
+    )
+  }
+
   // 获取验证码接口
   async getCaptcha(): Promise<ApiResponse<{ image: string, key: string }>> {
     const fullUrl = `${this.baseURL}${API_CONFIG.ENDPOINTS.CAPTCHA}`
@@ -193,4 +207,4 @@ class ApiClient {
 export const apiClient = new ApiClient()
 
 // 导出类型
-export type { OAuthLoginParams, LoginParams, LoginResponseData, DecryptPhoneParams, DecryptPhoneResponseData, ApiResponse }
+export type { OAuthLoginParams, LoginParams, LoginXParams, LoginResponseData, DecryptPhoneParams, DecryptPhoneResponseData, ApiResponse }

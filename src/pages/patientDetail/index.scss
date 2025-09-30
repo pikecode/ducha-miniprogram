@@ -1,0 +1,152 @@
+.patient-detail {
+  min-height: 100vh;
+  background-color: #f7f8fa;
+  padding-bottom: 120px;
+}
+
+/* 患者信息卡片 */
+.patient-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  margin: 20px 30px;
+  border-left: 6px solid #19be6b;
+}
+
+.patient-row {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.patient-row:last-child {
+  margin-bottom: 0;
+}
+
+.patient-label {
+  font-size: 26px;
+  color: #333;
+  flex-shrink: 0;
+}
+
+.patient-value {
+  font-size: 26px;
+  color: #333;
+  margin-right: 32px;
+}
+
+.patient-value.diagnosis {
+  flex: 1;
+  margin-right: 0;
+}
+
+/* 问题列表 */
+.question-list {
+  padding: 0 30px;
+}
+
+.question-item {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.question-title {
+  font-size: 28px;
+  color: #333;
+  font-weight: 500;
+  flex: 1;
+}
+
+.upload-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.upload-link {
+  font-size: 26px;
+  color: #1890ff;
+}
+
+.photo-text {
+  font-size: 26px;
+  color: #333;
+}
+
+/* 单选按钮列表 */
+.radio-list {
+  margin-bottom: 20px;
+}
+
+.radio-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.radio-item:last-child {
+  margin-bottom: 0;
+}
+
+.radio-label {
+  font-size: 28px;
+  color: #333;
+  margin-left: 12px;
+}
+
+/* 输入区域 */
+.input-section {
+  margin-top: 20px;
+}
+
+.input-label {
+  display: block;
+  font-size: 26px;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.question-input {
+  width: 100%;
+  height: 64px;
+  padding: 0 20px;
+  background-color: #f7f8fa;
+  border-radius: 8px;
+  font-size: 28px;
+}
+
+/* 底部操作 */
+.footer-actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px 30px;
+  background-color: #fff;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.save-btn {
+  width: 100%;
+  height: 88px;
+  background-color: #1890ff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 32px;
+  line-height: 88px;
+}
+
+.save-btn::after {
+  border: none;
+}

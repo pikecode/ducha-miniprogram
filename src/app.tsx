@@ -5,7 +5,7 @@ import './app.scss'
 class App extends Component<PropsWithChildren> {
 
   componentDidMount () {
-    this.checkLoginStatus()
+    // this.checkLoginStatus()
   }
 
   componentDidShow () {}

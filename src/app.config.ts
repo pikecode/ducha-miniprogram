@@ -1,9 +1,14 @@
 export default {
   pages: [
     'pages/login/index',
+    'pages/dataReportList/index',
+    'pages/dataReportDetail/index',
+    'pages/qualityControl/index',
+    'pages/qualityDetail/index',
+    'pages/patientAdd/index',
+    'pages/patientDetail/index',
     'pages/index/index',
     'pages/dataReport/index',
-    'pages/qualityControl/index',
     'pages/oralAI/index'
   ],
   window: {
@@ -23,7 +28,7 @@ export default {
         text: '首页'
       },
       {
-        pagePath: 'pages/dataReport/index',
+        pagePath: 'pages/dataReportList/index',
         text: '数据上报'
       },
       {
