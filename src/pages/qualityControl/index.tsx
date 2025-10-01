@@ -106,7 +106,7 @@ export default class QualityControl extends Component<{}, QualityControlState> {
       console.log('跳转到病历列表页面')
       // planType="1"：现场督查（病历督查），跳转到病历列表页面
       Taro.navigateTo({
-        url: `/pages/patientList/index?taskId=${task.id}&title=${encodeURIComponent(task.planName)}`
+        url: `/pages/patientList/index?taskId=${task.id}&title=${encodeURIComponent(task.planName)}&scoreDict=${encodeURIComponent(task.scoreDict || '')}`
       })
     } else if (task.planType === '1') {
       console.log('跳转到部门列表页面')

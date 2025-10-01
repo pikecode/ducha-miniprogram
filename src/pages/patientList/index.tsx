@@ -8,6 +8,7 @@ import './index.scss'
 interface PatientListState {
   taskTitle: string
   taskId: string
+  scoreDict: string
   keyword: string
   selectedBatch: string
   batchList: Array<{
@@ -26,6 +27,7 @@ export default class PatientList extends Component<{}, PatientListState> {
     this.state = {
       taskTitle: '',
       taskId: '',
+      scoreDict: '',
       keyword: '',
       selectedBatch: '',
       batchList: [],
@@ -43,12 +45,14 @@ export default class PatientList extends Component<{}, PatientListState> {
     if (params) {
       const taskTitle = decodeURIComponent(params.title || '')
       const taskId = params.taskId || ''
+      const scoreDict = decodeURIComponent(params.scoreDict || '')
 
-      console.log('设置taskId:', taskId, 'taskTitle:', taskTitle)
+      console.log('设置taskId:', taskId, 'taskTitle:', taskTitle, 'scoreDict:', scoreDict)
 
       this.setState({
         taskTitle,
-        taskId
+        taskId,
+        scoreDict
       }, () => {
         // 在setState回调中加载批次列表，批次列表加载完成后会自动加载病例列表
         this.loadBatchList()
@@ -202,9 +206,12 @@ export default class PatientList extends Component<{}, PatientListState> {
 
   // 点击病例
   handlePatientClick = (patient: any) => {
-    console.log('点击病例:', patient)
+    const { scoreDict, taskId, taskTitle } = this.state
+    console.log('点击病例:', patient, 'scoreDict:', scoreDict)
+
+    // 跳转到统一的病历详情页面，根据scoreDict参数决定显示评级还是打分模式
     Taro.navigateTo({
-      url: `/pages/patientDetail/index?id=${patient.id}&name=${encodeURIComponent(patient.patientName)}`
+      url: `/pages/patientDetail/index?id=${patient.id}&name=${encodeURIComponent(patient.patientName)}&scoreDict=${encodeURIComponent(scoreDict || '')}&taskId=${taskId}&taskTitle=${encodeURIComponent(taskTitle)}`
     })
   }
 
