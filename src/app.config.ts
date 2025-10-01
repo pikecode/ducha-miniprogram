@@ -12,7 +12,7 @@ export default {
     'pages/patientDetail/index',
     'pages/index/index',
     'pages/dataReport/index',
-    'pages/oralAI/index'
+    'pages/oralAI/index',
   ],
   window: {
     backgroundTextStyle: 'light',
@@ -21,6 +21,7 @@ export default {
     navigationBarTextStyle: 'black'
   },
   tabBar: {
+    custom: true,
     color: '#999999',
     selectedColor: '#007aff',
     backgroundColor: '#ffffff',
@@ -41,6 +42,14 @@ export default {
       {
         pagePath: 'pages/oralAI/index',
         text: '口腔AI'
+      },
+      {
+        pagePath: 'pages/departmentList/index',
+        text: '部门管理'
+      },
+      {
+        pagePath: 'pages/patientList/index',
+        text: '患者管理'
       }
     ]
   }

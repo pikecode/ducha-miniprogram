@@ -67,6 +67,17 @@ export default class Index extends Component<{}, IndexState> {
     }, 1000)
   }
 
+  componentDidShow() {
+    // 更新自定义TabBar
+    this.updateCustomTabBar()
+  }
+
+  updateCustomTabBar = () => {
+    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+      this.getTabBar().updateTabBar()
+    }
+  }
+
   componentWillUnmount() {
     if (this.timer) {
       clearInterval(this.timer)

@@ -1,0 +1,86 @@
+.custom-tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+
+  .tab-bar-border {
+    height: 1px;
+    background: #e5e5e5;
+    width: 100%;
+  }
+
+  .tab-bar-container {
+    flex: 1;
+    display: flex;
+    background: #fff;
+
+    .tab-bar-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 4px 0;
+
+      &__icon-wrapper {
+        height: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 4px;
+      }
+
+      &__icon {
+        font-size: 22px;
+        color: #999999;
+        transition: color 0.2s;
+
+        &--active {
+          color: #007aff;
+        }
+      }
+
+      &__text {
+        font-size: 12px;
+        color: #999999;
+        line-height: 1;
+        transition: color 0.2s;
+
+        &--active {
+          color: #007aff;
+        }
+      }
+
+      &--active {
+        .tab-bar-item__icon {
+          color: #007aff;
+        }
+
+        .tab-bar-item__text {
+          color: #007aff;
+        }
+      }
+
+      // 添加点击效果
+      &:active {
+        background-color: rgba(0, 0, 0, 0.05);
+      }
+    }
+  }
+
+  // 适配安全区域
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+// 为了给自定义TabBar留出空间，需要给页面添加底部padding
+.page-with-custom-tabbar {
+  padding-bottom: calc(50px + env(safe-area-inset-bottom));
+}

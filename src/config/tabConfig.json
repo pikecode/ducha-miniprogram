@@ -1,0 +1,69 @@
+{
+  "version": "1.0.0",
+  "description": "底部Tab栏配置文件",
+  "lastUpdated": "2024-10-01",
+  "config": {
+    "style": {
+      "color": "#999999",
+      "selectedColor": "#007aff",
+      "backgroundColor": "#ffffff",
+      "borderStyle": "black"
+    },
+    "tabs": [
+      {
+        "id": "home",
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "icon": "🏠",
+        "selectedIcon": "🏠",
+        "enabled": true,
+        "order": 1
+      },
+      {
+        "id": "dataReport",
+        "pagePath": "pages/dataReportList/index",
+        "text": "数据上报",
+        "icon": "📊",
+        "selectedIcon": "📊",
+        "enabled": true,
+        "order": 2
+      },
+      {
+        "id": "qualityControl",
+        "pagePath": "pages/qualityControl/index",
+        "text": "督查",
+        "icon": "🔍",
+        "selectedIcon": "🔍",
+        "enabled": true,
+        "order": 3
+      },
+      {
+        "id": "oralAI",
+        "pagePath": "pages/oralAI/index",
+        "text": "口腔AI",
+        "icon": "🦷",
+        "selectedIcon": "🦷",
+        "enabled": true,
+        "order": 4
+      },
+      {
+        "id": "department",
+        "pagePath": "pages/departmentList/index",
+        "text": "部门管理",
+        "icon": "🏢",
+        "selectedIcon": "🏢",
+        "enabled": false,
+        "order": 5
+      },
+      {
+        "id": "patient",
+        "pagePath": "pages/patientList/index",
+        "text": "患者管理",
+        "icon": "👥",
+        "selectedIcon": "👥",
+        "enabled": false,
+        "order": 6
+      }
+    ]
+  }
+}
