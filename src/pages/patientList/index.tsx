@@ -3,6 +3,7 @@ import { View, Text, Input, Button, Picker } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { apiClient, BatchInfo, PatientInfo } from '../../utils/api'
 import Breadcrumb from '../../components/Breadcrumb'
+import PatientCard from '../../components/PatientCard'
 import './index.scss'
 
 interface PatientListState {
@@ -272,49 +273,12 @@ export default class PatientList extends Component<{}, PatientListState> {
             </View>
           ) : (
             patientList.map(patient => (
-              <View
+              <PatientCard
                 key={patient.id}
-                className={`patient-item status-${patient.status}`}
+                patient={patient}
+                className={`list-item status-${patient.status}`}
                 onClick={() => this.handlePatientClick(patient)}
-              >
-                <View className='patient-indicator'></View>
-                <View className='patient-content'>
-                  <View className='patient-row'>
-                    <View className='patient-field'>
-                      <Text className='patient-label'>病例号：</Text>
-                      <Text className='patient-value'>{patient.emrNo}</Text>
-                    </View>
-                    <View className='patient-field'>
-                      <Text className='patient-label'>姓名：</Text>
-                      <Text className='patient-value'>{patient.patientName}</Text>
-                    </View>
-                  </View>
-                  <View className='patient-row'>
-                    <View className='patient-field'>
-                      <Text className='patient-label'>年龄：</Text>
-                      <Text className='patient-value'>{patient.patientAge || '-'}</Text>
-                    </View>
-                    <View className='patient-field'>
-                      <Text className='patient-label'>性别：</Text>
-                      <Text className='patient-value'>{patient.patientSexName || '-'}</Text>
-                    </View>
-                  </View>
-                  <View className='patient-row'>
-                    <View className='patient-field'>
-                      <Text className='patient-label'>科室：</Text>
-                      <Text className='patient-value'>{patient.departmentName}</Text>
-                    </View>
-                    <View className='patient-field'>
-                      <Text className='patient-label'>医生：</Text>
-                      <Text className='patient-value'>{patient.doctorName}</Text>
-                    </View>
-                  </View>
-                  <View className='patient-field diagnosis-field'>
-                    <Text className='patient-label'>诊断：</Text>
-                    <Text className='patient-value diagnosis'>{patient.diagnose}</Text>
-                  </View>
-                </View>
-              </View>
+              />
             ))
           )}
         </View>

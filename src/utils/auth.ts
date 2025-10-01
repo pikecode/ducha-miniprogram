@@ -59,6 +59,16 @@ class AuthManager {
     return this.token ? `Bearer ${this.token}` : null
   }
 
+  // 获取请求头对象
+  getAuthHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {}
+    const authHeader = this.getAuthorizationHeader()
+    if (authHeader) {
+      headers.Authorization = authHeader
+    }
+    return headers
+  }
+
   // 检查是否已登录
   isAuthenticated(): boolean {
     return !!this.token
