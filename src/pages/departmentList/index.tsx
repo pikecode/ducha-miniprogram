@@ -1,15 +1,15 @@
 import { Component } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { apiClient, DepartmentInfo } from '../../utils/api'
+import { apiClient } from '../../utils/api'
 import Breadcrumb from '../../components/Breadcrumb'
 import './index.scss'
 
 interface DepartmentListState {
   taskTitle: string
   taskId: string
-  departments: DepartmentInfo[]
-  loading: boolean
+  planDetail: any
+  planLoading: boolean
 }
 
 export default class DepartmentList extends Component<{}, DepartmentListState> {
@@ -19,8 +19,8 @@ export default class DepartmentList extends Component<{}, DepartmentListState> {
     this.state = {
       taskTitle: '',
       taskId: '',
-      departments: [],
-      loading: false
+      planDetail: null,
+      planLoading: false
     }
   }
 
@@ -28,89 +28,85 @@ export default class DepartmentList extends Component<{}, DepartmentListState> {
     // 获取路由参数
     const params = Taro.getCurrentInstance().router?.params
     if (params) {
+      const taskId = params.taskId || ''
       this.setState({
         taskTitle: decodeURIComponent(params.title || ''),
-        taskId: params.taskId || ''
+        taskId: taskId
+      }, () => {
+        // 在设置taskId后再调用接口
+        if (taskId) {
+          this.loadPlanDetail(taskId)
+        }
       })
     }
 
     Taro.setNavigationBarTitle({
       title: '部门列表'
     })
-
-    // 加载部门列表
-    this.loadDepartmentList()
-  }
-
-  // 加载部门列表
-  loadDepartmentList = async () => {
-    this.setState({ loading: true })
-
-    try {
-      console.log('正在获取部门列表...')
-      const response = await apiClient.getDepartmentList({
-        isfolder: false
-      })
-
-      console.log('部门列表响应:', response)
-
-      if (response.success && response.data && response.data.data) {
-        this.setState({
-          departments: response.data.data,
-          loading: false
-        })
-        console.log('部门列表获取成功:', response.data.data)
-      } else {
-        console.warn('部门列表获取失败:', response.message)
-        Taro.showToast({
-          title: response.message || '获取部门列表失败',
-          icon: 'none'
-        })
-        this.setState({ loading: false })
-      }
-    } catch (error) {
-      console.error('获取部门列表失败:', error)
-      Taro.showToast({
-        title: '网络错误，请重试',
-        icon: 'none'
-      })
-      this.setState({ loading: false })
-    }
-  }
-
-  // 获取状态文本和样式（基于部门status字段）
-  getStatusInfo = (status: number) => {
-    switch (status) {
-      case 1:
-        return { text: '启用', className: 'completed' }
-      case 0:
-        return { text: '禁用', className: 'pending' }
-      default:
-        return { text: '未知', className: 'pending' }
-    }
   }
 
   // 点击部门
-  handleDepartmentClick = (department: DepartmentInfo) => {
-    console.log('点击部门:', department)
-    // 跳转到部门信息录入页面
+  handleDepartmentClick = (departmentId: string, departmentName: string) => {
+    const { taskId, taskTitle, planDetail } = this.state
+
+    console.log('点击部门:', { departmentId, departmentName, taskId, scoreDict: planDetail?.scoreDict })
+
+    if (!taskId) {
+      Taro.showToast({
+        title: '缺少任务ID',
+        icon: 'none'
+      })
+      return
+    }
+
+    // 根据scoreDict判断跳转类型，逻辑与病例处理相同
+    const scoreDict = planDetail?.scoreDict || ''
+    const isEvaluationMode = scoreDict && scoreDict.trim() !== ''
+
+    // 跳转到部门督查详情页面（统一的评级/打分页面）
+    const targetPage = '/pages/departmentDetail/index'
+    const url = `${targetPage}?id=${departmentId}&name=${encodeURIComponent(departmentName)}&taskId=${taskId}&taskTitle=${encodeURIComponent(taskTitle)}&scoreDict=${encodeURIComponent(scoreDict)}`
+
+    console.log('跳转参数:', {
+      isEvaluationMode,
+      targetPage,
+      departmentName,
+      url
+    })
+
     Taro.navigateTo({
-      url: `/pages/departmentForm/index?title=${encodeURIComponent(this.state.taskTitle)}&department=${encodeURIComponent(department.departmentName)}&departmentId=${department.departmentId}`
+      url: url
     })
   }
 
-  render() {
-    const { taskTitle, departments, loading } = this.state
+  // 加载督查计划详情
+  loadPlanDetail = async (planId: string) => {
+    this.setState({ planLoading: true })
 
-    if (loading) {
-      return (
-        <View className='department-list'>
-          <View className='loading'>
-            <Text>正在加载部门列表...</Text>
-          </View>
-        </View>
-      )
+    try {
+      console.log('正在获取督查计划详情...', { planId })
+      const response = await apiClient.getInspectPlanDetail(planId)
+
+      console.log('督查计划详情响应:', response)
+
+      if (response.success && response.data) {
+        this.setState({
+          planDetail: response.data,
+          planLoading: false
+        })
+        console.log('督查计划详情获取成功:', response.data)
+      } else {
+        console.warn('督查计划详情获取失败:', response.message)
+        this.setState({ planLoading: false })
+      }
+    } catch (error) {
+      console.error('获取督查计划详情失败:', error)
+      this.setState({ planLoading: false })
     }
+  }
+
+  render() {
+    const { taskTitle, planDetail, planLoading } = this.state
 
     return (
       <View className='department-list'>
@@ -122,56 +118,34 @@ export default class DepartmentList extends Component<{}, DepartmentListState> {
           ]}
         />
 
-        {/* 标题 */}
-        <View className='page-header'>
-          <Text className='page-title'>{taskTitle}</Text>
-          <Text className='page-subtitle'>被督查部门列表</Text>
-        </View>
 
-        {/* 部门列表 */}
-        {departments.length === 0 ? (
-          <View className='empty'>
-            <Text>暂无部门数据</Text>
+        {/* 被督查部门列表 */}
+        {planLoading ? (
+          <View className='loading'>
+            <Text>加载中...</Text>
           </View>
-        ) : (
-          <View className='departments'>
-            {departments.map(department => {
-              const statusInfo = this.getStatusInfo(department.status)
+        ) : planDetail && planDetail.execDepartmentName && planDetail.execDepartmentName.length > 0 ? (
+          <View className='department-list-content'>
+            {planDetail.execDepartmentName.map((departmentName: string, index: number) => {
+              const departmentId = planDetail.execDepartmentId[index]
               return (
                 <View
-                  key={department.id}
+                  key={departmentId || index}
                   className='department-item'
-                  onClick={() => this.handleDepartmentClick(department)}
+                  onClick={() => this.handleDepartmentClick(departmentId, departmentName)}
                 >
-                  <View className='department-content'>
-                    <View className='department-info'>
-                      <Text className='department-name'>{department.departmentName}</Text>
-                      <Text className='department-desc'>
-                        {department.fullName || '被督查部门'}
-                      </Text>
-                      {department.departmentCode && (
-                        <Text className='department-code'>编码：{department.departmentCode}</Text>
-                      )}
-                    </View>
-                    <View className={`department-status ${statusInfo.className}`}>
-                      <Text className='status-text'>{statusInfo.text}</Text>
-                    </View>
-                  </View>
                   <View className='department-indicator'></View>
+                  <View className='department-content'>
+                    <Text className='department-label'>被督查部门：</Text>
+                    <Text className='department-name'>{departmentName}</Text>
+                  </View>
                 </View>
               )
             })}
           </View>
-        )}
-
-        {/* 统计信息 */}
-        {departments.length > 0 && (
-          <View className='summary'>
-            <Text className='summary-text'>
-              共 {departments.length} 个部门，
-              启用 {departments.filter(d => d.status === 1).length} 个，
-              禁用 {departments.filter(d => d.status === 0).length} 个
-            </Text>
+        ) : (
+          <View className='empty'>
+            <Text>暂无被督查部门数据</Text>
           </View>
         )}
       </View>

@@ -6,6 +6,7 @@ export default {
     'pages/qualityControl/index',
     'pages/qualityDetail/index',
     'pages/departmentList/index',
+    'pages/departmentDetail/index',
     'pages/departmentForm/index',
     'pages/patientList/index',
     'pages/patientAdd/index',

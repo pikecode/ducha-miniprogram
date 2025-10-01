@@ -1,111 +1,50 @@
 .department-list {
   min-height: 100vh;
   background-color: #f7f8fa;
-  padding: 24px 30px;
+  padding-bottom: 20px;
 }
 
+/* 页面头部 */
 .page-header {
-  margin-bottom: 32px;
-  text-align: left;
+  padding: 40px 30px 30px;
+  background: #fff;
+  margin-bottom: 20px;
 }
 
 .page-title {
-  display: block;
   font-size: 36px;
-  font-weight: 600;
   color: #333;
-  line-height: 1.4;
+  font-weight: 600;
   margin-bottom: 8px;
+  display: block;
 }
 
 .page-subtitle {
-  display: block;
-  font-size: 26px;
+  font-size: 24px;
   color: #666;
-  line-height: 1.5;
+  display: block;
 }
 
-.departments {
-  margin-bottom: 32px;
+/* 被督查部门列表 */
+.department-list-content {
+  padding: 0 30px;
+  margin-top: 20px;
 }
 
 .department-item {
   background: #fff;
-  border-radius: 16px;
+  border-radius: 12px;
   margin-bottom: 16px;
-  padding: 0;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
   position: relative;
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  cursor: pointer;
 }
 
-.department-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 32px;
-}
-
-.department-info {
-  flex: 1;
-}
-
-.department-name {
-  display: block;
-  font-size: 32px;
-  font-weight: 500;
-  color: #333;
-  line-height: 1.5;
-  margin-bottom: 8px;
-}
-
-.department-desc {
-  display: block;
-  font-size: 24px;
-  color: #999;
-  line-height: 1.5;
-  margin-bottom: 4px;
-}
-
-.department-code {
-  display: block;
-  font-size: 22px;
-  color: #ccc;
-  line-height: 1.5;
-}
-
-.department-status {
-  padding: 12px 24px;
-  border-radius: 20px;
-
-  &.completed {
-    background-color: #e8f5e8;
-
-    .status-text {
-      color: #52c41a;
-    }
-  }
-
-  &.in-progress {
-    background-color: #fff7e6;
-
-    .status-text {
-      color: #fa8c16;
-    }
-  }
-
-  &.pending {
-    background-color: #f0f0f0;
-
-    .status-text {
-      color: #666;
-    }
-  }
-}
-
-.status-text {
-  font-size: 22px;
-  font-weight: 500;
+.department-item:active {
+  transform: scale(0.98);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .department-indicator {
@@ -114,33 +53,37 @@
   top: 0;
   bottom: 0;
   width: 8px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #52c41a;
 }
 
-.summary {
-  background: #fff;
-  border-radius: 16px;
-  padding: 32px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+.department-content {
+  padding: 24px 24px 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.summary-text {
-  font-size: 26px;
+.department-label {
+  font-size: 24px;
   color: #666;
-  line-height: 1.6;
-  text-align: center;
+  font-weight: 400;
 }
 
-.loading {
-  text-align: center;
-  padding: 80px 0;
-  font-size: 28px;
-  color: #999;
+.department-name {
+  font-size: 32px;
+  color: #333;
+  font-weight: 500;
+  line-height: 1.4;
 }
 
+/* 加载和空状态 */
+.loading,
 .empty {
   text-align: center;
-  padding: 120px 0;
-  font-size: 28px;
+  padding: 100px 20px;
   color: #999;
+  font-size: 28px;
+  background: #fff;
+  margin: 20px 30px;
+  border-radius: 12px;
 }

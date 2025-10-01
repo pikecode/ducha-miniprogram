@@ -502,7 +502,15 @@ class ApiClient {
     )
   }
 
-  // 获取督查项目列表接口
+  // 获取督查计划详情接口
+  async getInspectPlanDetail(planId: string): Promise<ApiResponse<any>> {
+    return this.request<any>(
+      `/api/v1/inspect/plan/get/${planId}`,
+      'GET'
+    )
+  }
+
+  // 获取督查项目列表接口（病例）
   async getInspectItemList(planId: string): Promise<ApiResponse<InspectItemListResponseData>> {
     return this.request<InspectItemListResponseData>(
       `/api/v1/inspect/item/list/live/${planId}`,
@@ -510,9 +518,17 @@ class ApiClient {
     )
   }
 
-  // 保存督查结果接口
+  // 获取部门督查项目列表接口
+  async getDepartmentInspectItemList(planId: string, departmentId: string): Promise<ApiResponse<InspectItemListResponseData>> {
+    return this.request<InspectItemListResponseData>(
+      `/api/v1/inspect/item/score/list/${planId}/${departmentId}`,
+      'GET'
+    )
+  }
+
+  // 保存督查结果接口（病例）
   async saveInspectResults(params: InspectResultSaveParams): Promise<ApiResponse<InspectResultSaveResponseData>> {
-    console.log('保存督查结果API请求:', '/api/v1/inspect/emr/result/updateList')
+    console.log('保存病例督查结果API请求:', '/api/v1/inspect/emr/result/updateList')
     console.log('请求参数:', JSON.stringify(params, null, 2))
 
     const response = await this.request<InspectResultSaveResponseData>(
@@ -521,7 +537,22 @@ class ApiClient {
       params
     )
 
-    console.log('保存督查结果API响应:', response)
+    console.log('保存病例督查结果API响应:', response)
+    return response
+  }
+
+  // 保存部门督查结果接口
+  async saveDepartmentInspectResults(params: DepartmentInspectResultItem[]): Promise<ApiResponse<InspectResultSaveResponseData>> {
+    console.log('保存部门督查结果API请求:', '/api/v1/inspect/item/score/updateMulti')
+    console.log('请求参数:', JSON.stringify(params, null, 2))
+
+    const response = await this.request<InspectResultSaveResponseData>(
+      '/api/v1/inspect/item/score/updateMulti',
+      'POST',
+      params
+    )
+
+    console.log('保存部门督查结果API响应:', response)
     return response
   }
 
@@ -774,6 +805,21 @@ interface InspectResultItem {
   status?: number
   updateBy?: string
   updateTime?: string
+}
+
+// 部门督查结果保存项目数据
+interface DepartmentInspectResultItem {
+  batchId: string
+  comment?: string
+  itemId: string
+  itemScore?: number
+  itemuserId?: string
+  level?: string
+  levelName?: string
+  needImproved?: string
+  problem?: string
+  score?: number
+  suggestion?: string
 }
 
 // 督查结果保存请求参数

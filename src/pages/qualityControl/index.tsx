@@ -133,13 +133,13 @@ export default class QualityControl extends Component<{}, QualityControlState> {
   // 判断督查类型
   getTaskType = (task: TaskLiveListItem): { type: 'medical' | 'department', label: string, color: string } => {
     // 优先根据planType字段判断类型
-    if (task.planType === '1') {
+    if (task.planType === '0') {
       return {
         type: 'medical',
         label: '现场督查(病历)',
         color: '#ff6b6b'
       }
-    } else if (task.planType === '0') {
+    } else if (task.planType === '1') {
       return {
         type: 'department',
         label: '线上督查(部门)',
