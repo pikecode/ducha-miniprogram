@@ -69,9 +69,19 @@ export default class QualityControl extends Component<{}, QualityControlState> {
 
   handleTaskClick = (task: TaskLiveListItem) => {
     console.log('点击督查任务:', task)
-    Taro.navigateTo({
-      url: `/pages/qualityDetail/index?id=${task.id}&title=${encodeURIComponent(task.planName)}&description=${encodeURIComponent(task.remarks || '')}&timeRange=${encodeURIComponent(`时间：${task.startTime.split(' ')[0]}~${task.endTime.split(' ')[0]}`)}`
-    })
+    const taskType = this.getTaskType(task)
+
+    // 如果是病例督查，跳转到病例列表页面
+    if (taskType.type === 'medical') {
+      Taro.navigateTo({
+        url: `/pages/patientList/index?taskId=${task.id}&title=${encodeURIComponent(task.planName)}`
+      })
+    } else {
+      // 如果是部门督查，跳转到督查详情页面
+      Taro.navigateTo({
+        url: `/pages/qualityDetail/index?id=${task.id}&title=${encodeURIComponent(task.planName)}&description=${encodeURIComponent(task.remarks || '')}&timeRange=${encodeURIComponent(`时间：${task.startTime.split(' ')[0]}~${task.endTime.split(' ')[0]}`)}`
+      })
+    }
   }
 
   // 格式化时间范围

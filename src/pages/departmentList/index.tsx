@@ -93,9 +93,9 @@ export default class DepartmentList extends Component<{}, DepartmentListState> {
   // 点击部门
   handleDepartmentClick = (department: DepartmentInfo) => {
     console.log('点击部门:', department)
-    // 可以跳转到具体的部门督查详情页面
+    // 跳转到部门信息录入页面
     Taro.navigateTo({
-      url: `/pages/qualityDetail/index?title=${encodeURIComponent(this.state.taskTitle)}&department=${encodeURIComponent(department.departmentName)}&departmentId=${department.departmentId}`
+      url: `/pages/departmentForm/index?title=${encodeURIComponent(this.state.taskTitle)}&department=${encodeURIComponent(department.departmentName)}&departmentId=${department.departmentId}`
     })
   }
 

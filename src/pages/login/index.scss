@@ -4,44 +4,108 @@
   flex-direction: column;
   justify-content: center;
   padding: 60px 40px;
+  background: #e6e9f0;
 }
 
 .login-content {
   display: flex;
   flex-direction: column;
-  gap: 40px;
-  max-width: 600px;
+  align-items: center;
+  gap: 24px;
+  max-width: 480px;
   margin: 0 auto;
   width: 100%;
+  background: #ffffff;
+  padding: 48px 40px;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .username-input {
-  width: 100%;
-  height: 88px;
-  border: 2px solid #e5e5e5;
+  width: 320px;
+  height: 60px;
+  border: 1px solid #d1d5db;
   border-radius: 8px;
-  padding: 0 24px;
-  font-size: 32px;
-  color: #333;
-  background: #fff;
+  padding: 0 20px;
+  font-size: 26px;
+  color: #374151;
+  background: #ffffff;
+  transition: all 0.2s ease;
+  outline: none;
+  text-align: center;
+}
+
+.username-input:focus {
+  border-color: #6b7280;
+  box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.1);
 }
 
 .username-input::placeholder {
-  color: #999;
+  color: #9ca3af;
+  font-weight: 400;
 }
 
 .login-btn {
-  width: 100%;
-  height: 88px;
-  background: #007aff;
+  width: 320px;
+  height: 60px;
+  background: #9ca3af;
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 32px;
-  font-weight: 600;
+  font-size: 26px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-btn:not([disabled]):active {
+  transform: scale(0.98);
+  background: #6b7280;
+}
+
+.login-btn.loading {
+  background: #9ca3af;
+  cursor: not-allowed;
 }
 
 .login-btn[disabled] {
-  background: #ccc;
-  color: #999;
+  background: #d1d5db;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.btn-text {
+  font-size: 26px;
+  font-weight: 500;
+  color: inherit;
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid #fff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 登录成功动画 */
+@keyframes success-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.login-btn.success {
+  animation: success-pulse 0.3s ease-out;
 }

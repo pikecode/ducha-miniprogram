@@ -627,18 +627,24 @@ export default class Login extends Component<{}, LoginState> {
 
         console.log('登录成功，保存用户信息：', userInfo)
 
+        // 设置登录成功状态
         this.setState({
           currentStep: 4,
           userInfo: {
             avatarUrl: userInfo.avatar || '',
             nickName: userInfo.nickname || userInfo.username
           },
-          phoneNumber: userInfo.phone || ''
+          phoneNumber: userInfo.phone || '',
+          isLogging: false
         })
+
+        // 隐藏loading
+        Taro.hideLoading()
 
         Taro.showToast({
           title: '登录成功',
-          icon: 'success'
+          icon: 'success',
+          duration: 1500
         })
 
         // 延迟跳转到首页
@@ -678,11 +684,12 @@ export default class Login extends Component<{}, LoginState> {
           />
 
           <Button
-            className='login-btn'
+            className={`login-btn ${isLogging ? 'loading' : ''}`}
             onClick={this.performUsernameLogin}
             disabled={isLogging || !username}
           >
-            {isLogging ? '正在登录...' : '登录'}
+            {isLogging && <View className='loading-spinner'></View>}
+            <Text className='btn-text'>{isLogging ? '正在登录...' : '登录'}</Text>
           </Button>
         </View>
       </View>
