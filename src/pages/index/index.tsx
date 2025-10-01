@@ -162,29 +162,6 @@ export default class Index extends Component<{}, IndexState> {
           </View>
         </View>
 
-        {/* 功能状态卡片 */}
-        <View className='status-cards'>
-          <Text className='section-title'>系统状态</Text>
-          <View className='cards-container'>
-            <View className='status-card'>
-              <View className='card-header'>
-                <Text className='card-title'>认证状态</Text>
-                <View className={`status-dot ${authManager.isAuthenticated() ? 'online' : 'offline'}`}></View>
-              </View>
-              <Text className='card-value'>
-                {authManager.isAuthenticated() ? '已登录' : '未登录'}
-              </Text>
-            </View>
-
-            <View className='status-card'>
-              <View className='card-header'>
-                <Text className='card-title'>网络状态</Text>
-                <View className='status-dot online'></View>
-              </View>
-              <Text className='card-value'>正常</Text>
-            </View>
-          </View>
-        </View>
       </View>
     )
   }

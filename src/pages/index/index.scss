@@ -1,17 +1,16 @@
 .index {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #f8f9fa;
   padding: 0 0 120px 0; // 底部留出tab bar空间
 }
 
 /* 用户信息卡片 */
 .user-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: #ffffff;
   margin: 32px 30px;
   padding: 32px;
-  border-radius: 24px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -86,7 +85,7 @@
 .section-title {
   font-size: 32px;
   font-weight: 600;
-  color: white;
+  color: #333;
   margin-bottom: 24px;
   padding-left: 16px;
 }
@@ -99,15 +98,14 @@
 
 .action-item {
   flex: 1;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 20px;
+  background: #ffffff;
+  border-radius: 16px;
   padding: 32px 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
 }
 
@@ -137,59 +135,6 @@
   text-align: center;
 }
 
-/* 状态卡片 */
-.status-cards {
-  margin: 0 30px;
-}
-
-.cards-container {
-  display: flex;
-  gap: 20px;
-}
-
-.status-card {
-  flex: 1;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 20px;
-  padding: 24px;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.card-title {
-  font-size: 24px;
-  color: #666;
-  font-weight: 500;
-}
-
-.status-dot {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-}
-
-.status-dot.online {
-  background: #52c41a;
-  box-shadow: 0 0 8px rgba(82, 196, 26, 0.4);
-}
-
-.status-dot.offline {
-  background: #ff4d4f;
-  box-shadow: 0 0 8px rgba(255, 77, 79, 0.4);
-}
-
-.card-value {
-  font-size: 28px;
-  color: #333;
-  font-weight: 600;
-}
 
 /* 响应式优化 */
 @media (max-width: 750px) {
