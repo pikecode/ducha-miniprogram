@@ -45,24 +45,6 @@
         "selectedIcon": "🦷",
         "enabled": true,
         "order": 4
-      },
-      {
-        "id": "department",
-        "pagePath": "pages/departmentList/index",
-        "text": "部门管理",
-        "icon": "🏢",
-        "selectedIcon": "🏢",
-        "enabled": false,
-        "order": 5
-      },
-      {
-        "id": "patient",
-        "pagePath": "pages/patientList/index",
-        "text": "患者管理",
-        "icon": "👥",
-        "selectedIcon": "👥",
-        "enabled": false,
-        "order": 6
       }
     ]
   }

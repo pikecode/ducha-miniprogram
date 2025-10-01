@@ -1,6 +1,7 @@
 import { Component } from 'react'
-import { View, Text, Input, Button } from '@tarojs/components'
+import { View, Text, Input, Button, Picker } from '@tarojs/components'
 import Taro from '@tarojs/taro'
+import { apiClient, BatchInfo, PatientInfo } from '../../utils/api'
 import Breadcrumb from '../../components/Breadcrumb'
 import './index.scss'
 
@@ -8,28 +9,14 @@ interface PatientListState {
   taskTitle: string
   taskId: string
   keyword: string
-  patientList: Array<{
+  selectedBatch: string
+  batchList: Array<{
     id: string
-    patientNo: string
     name: string
-    age: number
-    gender: string
-    department: string
-    doctor: string
-    diagnosis: string
-    status: 'added' | 'normal'
   }>
-  filteredPatients: Array<{
-    id: string
-    patientNo: string
-    name: string
-    age: number
-    gender: string
-    department: string
-    doctor: string
-    diagnosis: string
-    status: 'added' | 'normal'
-  }>
+  batchLoading: boolean
+  patientLoading: boolean
+  patientList: PatientInfo[]
 }
 
 export default class PatientList extends Component<{}, PatientListState> {
@@ -40,99 +27,154 @@ export default class PatientList extends Component<{}, PatientListState> {
       taskTitle: '',
       taskId: '',
       keyword: '',
-      patientList: [
-        {
-          id: '1',
-          patientNo: '3235576',
-          name: '张三',
-          age: 36,
-          gender: '男',
-          department: '呼吸内科',
-          doctor: '李医生',
-          diagnosis: 'xxxxxxxxxxxxxxxxxxxxxxxxx',
-          status: 'added'
-        },
-        {
-          id: '2',
-          patientNo: '3235576',
-          name: '张三',
-          age: 36,
-          gender: '男',
-          department: '呼吸内科',
-          doctor: '李医生',
-          diagnosis: 'xxxxxxxxxxxxxxxxxxxxxxxxx',
-          status: 'added'
-        },
-        {
-          id: '3',
-          patientNo: '3235576',
-          name: '张三',
-          age: 36,
-          gender: '男',
-          department: '呼吸内科',
-          doctor: '李医生',
-          diagnosis: 'xxxxxxxxxxxxxxxxxxxxxxxxx',
-          status: 'normal'
-        },
-        {
-          id: '4',
-          patientNo: '3235576',
-          name: '张三',
-          age: 36,
-          gender: '男',
-          department: '呼吸内科',
-          doctor: '李医生',
-          diagnosis: 'xxxxxxxxxxxxxxxxxxxxxxxxx',
-          status: 'normal'
-        }
-      ],
-      filteredPatients: []
+      selectedBatch: '',
+      batchList: [],
+      batchLoading: false,
+      patientLoading: false,
+      patientList: []
     }
   }
 
   componentDidMount() {
     // 获取路由参数
     const params = Taro.getCurrentInstance().router?.params
+    console.log('病例列表页面参数:', params)
+
     if (params) {
+      const taskTitle = decodeURIComponent(params.title || '')
+      const taskId = params.taskId || ''
+
+      console.log('设置taskId:', taskId, 'taskTitle:', taskTitle)
+
       this.setState({
-        taskTitle: decodeURIComponent(params.title || ''),
-        taskId: params.taskId || ''
+        taskTitle,
+        taskId
+      }, () => {
+        // 在setState回调中加载批次列表，批次列表加载完成后会自动加载病例列表
+        this.loadBatchList()
       })
     }
 
     Taro.setNavigationBarTitle({
       title: '病例列表'
     })
+  }
 
-    // 初始化过滤列表
-    this.setState({ filteredPatients: this.state.patientList })
+  // 加载批次列表
+  loadBatchList = async () => {
+    const { taskId } = this.state
+    if (!taskId) {
+      console.warn('缺少任务ID，无法加载批次列表')
+      return
+    }
+
+    this.setState({ batchLoading: true })
+
+    try {
+      console.log('正在获取批次列表...', { planId: taskId })
+      const response = await apiClient.getBatchList({
+        planId: taskId
+      })
+
+      console.log('批次列表响应:', response)
+
+      if (response.success && response.data) {
+        const batchList = response.data.map(batch => ({
+          id: batch.id,
+          name: batch.batchName
+        }))
+
+        // 默认选中第一个批次
+        const selectedBatch = batchList.length > 0 ? batchList[0].id : ''
+
+        this.setState({
+          batchList,
+          selectedBatch,
+          batchLoading: false
+        }, () => {
+          // 批次选择后加载病例列表
+          if (selectedBatch) {
+            this.loadPatientList()
+          }
+        })
+        console.log('批次列表获取成功:', batchList)
+      } else {
+        console.warn('批次列表获取失败:', response.message)
+        this.setState({ batchLoading: false })
+      }
+    } catch (error) {
+      console.error('获取批次列表失败:', error)
+      this.setState({ batchLoading: false })
+    }
+  }
+
+  // 加载病例列表
+  loadPatientList = async () => {
+    const { taskId, selectedBatch, keyword } = this.state
+    if (!taskId || !selectedBatch) {
+      console.warn('缺少任务ID或批次ID，无法加载病例列表')
+      return
+    }
+
+    this.setState({ patientLoading: true })
+
+    try {
+      const params = {
+        planId: taskId,
+        batchId: selectedBatch,
+        key: keyword || ''
+      }
+
+      console.log('正在获取病例列表...', params)
+      const response = await apiClient.getPatientList(params)
+
+      console.log('病例列表响应:', response)
+
+      if (response.success && response.data) {
+        this.setState({
+          patientList: response.data,
+          patientLoading: false
+        })
+        console.log('病例列表获取成功:', response.data)
+      } else {
+        console.warn('病例列表获取失败:', response.message)
+        Taro.showToast({
+          title: response.message || '获取病例列表失败',
+          icon: 'none'
+        })
+        this.setState({ patientLoading: false })
+      }
+    } catch (error) {
+      console.error('获取病例列表失败:', error)
+      Taro.showToast({
+        title: '网络错误，请重试',
+        icon: 'none'
+      })
+      this.setState({ patientLoading: false })
+    }
   }
 
   // 搜索功能
   handleSearch = (e) => {
     const keyword = e.detail.value
-    this.setState({ keyword })
+    this.setState({ keyword }, () => {
+      this.loadPatientList()
+    })
+  }
 
-    const { patientList } = this.state
-    if (!keyword) {
-      this.setState({ filteredPatients: patientList })
-      return
-    }
-
-    const filtered = patientList.filter(patient =>
-      patient.name.includes(keyword) ||
-      patient.patientNo.includes(keyword) ||
-      patient.department.includes(keyword) ||
-      patient.doctor.includes(keyword)
-    )
-
-    this.setState({ filteredPatients: filtered })
+  // 批次选择
+  handleBatchChange = (e) => {
+    const selectedBatch = this.state.batchList[e.detail.value].id
+    this.setState({ selectedBatch }, () => {
+      this.loadPatientList()
+    })
   }
 
   // 添加病历
   handleAddPatient = () => {
+    const { taskId, taskTitle, selectedBatch } = this.state
     Taro.navigateTo({
-      url: '/pages/patientAdd/index'
+      url: `/pages/patientAdd/index?taskId=${taskId}&title=${encodeURIComponent(taskTitle)}&batchId=${selectedBatch}`
     })
   }
 
@@ -148,51 +190,67 @@ export default class PatientList extends Component<{}, PatientListState> {
   handlePatientClick = (patient: any) => {
     console.log('点击病例:', patient)
     Taro.navigateTo({
-      url: `/pages/patientDetail/index?id=${patient.id}&name=${encodeURIComponent(patient.name)}`
+      url: `/pages/patientDetail/index?id=${patient.id}&name=${encodeURIComponent(patient.patientName)}`
     })
   }
 
   render() {
-    const { taskTitle, keyword, filteredPatients } = this.state
+    const { taskTitle, keyword, patientList, selectedBatch, batchList, batchLoading } = this.state
 
     return (
       <View className='patient-list'>
         {/* 面包屑导航 */}
         <Breadcrumb
           items={[
-            { name: '首页', path: '/pages/index/index' },
-            { name: '质控督查', path: '/pages/qualityControl/index' },
-            { name: taskTitle },
-            { name: '病例列表' }
+            { name: '督查', path: '/pages/qualityControl/index' },
+            { name: taskTitle }
           ]}
         />
 
         {/* 顶部操作栏 */}
         <View className='header-actions'>
-          <Button className='add-btn' onClick={this.handleAddPatient}>
-            添加病历
-          </Button>
-          <Button className='batch-btn' onClick={this.handleBatchAction}>
-            批次
-          </Button>
-          <View className='search-box'>
-            <Input
-              className='search-input'
-              placeholder='请输入搜索关键字'
-              value={keyword}
-              onInput={this.handleSearch}
-            />
+          <View className='action-row'>
+            {/* 批次选择器 */}
+            <Picker
+              mode='selector'
+              range={batchList}
+              rangeKey='name'
+              value={batchList.findIndex(batch => batch.id === selectedBatch)}
+              onChange={this.handleBatchChange}
+              disabled={batchLoading}
+            >
+              <View className='batch-selector'>
+                <Text className='batch-text'>
+                  {batchLoading ? '加载中...' : batchList.find(batch => batch.id === selectedBatch)?.name}
+                </Text>
+                <Text className='batch-arrow'>▼</Text>
+              </View>
+            </Picker>
+
+            {/* 搜索框 */}
+            <View className='search-box'>
+              <Input
+                className='search-input'
+                placeholder='请输入搜索关键字'
+                value={keyword}
+                onInput={this.handleSearch}
+              />
+            </View>
+
+            <Button className='add-btn' onClick={this.handleAddPatient}>
+              添加病历
+            </Button>
           </View>
         </View>
 
         {/* 病例列表 */}
         <View className='patients'>
-          {filteredPatients.length === 0 ? (
+          {patientList.length === 0 ? (
             <View className='empty'>
               <Text>暂无病例数据</Text>
             </View>
           ) : (
-            filteredPatients.map(patient => (
+            patientList.map(patient => (
               <View
                 key={patient.id}
                 className={`patient-item ${patient.status}`}
@@ -201,26 +259,38 @@ export default class PatientList extends Component<{}, PatientListState> {
                 <View className='patient-indicator'></View>
                 <View className='patient-content'>
                   <View className='patient-row'>
-                    <Text className='patient-label'>病例号：</Text>
-                    <Text className='patient-value'>{patient.patientNo}</Text>
-                    <Text className='patient-label'>姓名：</Text>
-                    <Text className='patient-value'>{patient.name}</Text>
+                    <View className='patient-field'>
+                      <Text className='patient-label'>病例号：</Text>
+                      <Text className='patient-value'>{patient.emrNo}</Text>
+                    </View>
+                    <View className='patient-field'>
+                      <Text className='patient-label'>姓名：</Text>
+                      <Text className='patient-value'>{patient.patientName}</Text>
+                    </View>
                   </View>
                   <View className='patient-row'>
-                    <Text className='patient-label'>年龄：</Text>
-                    <Text className='patient-value'>{patient.age}</Text>
-                    <Text className='patient-label'>性别：</Text>
-                    <Text className='patient-value'>{patient.gender}</Text>
+                    <View className='patient-field'>
+                      <Text className='patient-label'>年龄：</Text>
+                      <Text className='patient-value'>{patient.patientAge || '-'}</Text>
+                    </View>
+                    <View className='patient-field'>
+                      <Text className='patient-label'>性别：</Text>
+                      <Text className='patient-value'>{patient.patientSexName || '-'}</Text>
+                    </View>
                   </View>
                   <View className='patient-row'>
-                    <Text className='patient-label'>科室：</Text>
-                    <Text className='patient-value'>{patient.department}</Text>
-                    <Text className='patient-label'>医生：</Text>
-                    <Text className='patient-value'>{patient.doctor}</Text>
+                    <View className='patient-field'>
+                      <Text className='patient-label'>科室：</Text>
+                      <Text className='patient-value'>{patient.departmentName}</Text>
+                    </View>
+                    <View className='patient-field'>
+                      <Text className='patient-label'>医生：</Text>
+                      <Text className='patient-value'>{patient.doctorName}</Text>
+                    </View>
                   </View>
-                  <View className='patient-row diagnosis-row'>
+                  <View className='patient-field diagnosis-field'>
                     <Text className='patient-label'>诊断：</Text>
-                    <Text className='patient-value diagnosis'>{patient.diagnosis}</Text>
+                    <Text className='patient-value diagnosis'>{patient.diagnose}</Text>
                   </View>
                 </View>
               </View>
@@ -228,16 +298,6 @@ export default class PatientList extends Component<{}, PatientListState> {
           )}
         </View>
 
-        {/* 统计信息 */}
-        {filteredPatients.length > 0 && (
-          <View className='summary'>
-            <Text className='summary-text'>
-              共 {filteredPatients.length} 例病例，
-              已添加 {filteredPatients.filter(p => p.status === 'added').length} 例，
-              普通 {filteredPatients.filter(p => p.status === 'normal').length} 例
-            </Text>
-          </View>
-        )}
       </View>
     )
   }

@@ -117,10 +117,8 @@ export default class DepartmentList extends Component<{}, DepartmentListState> {
         {/* 面包屑导航 */}
         <Breadcrumb
           items={[
-            { name: '首页', path: '/pages/index/index' },
-            { name: '质控督查', path: '/pages/qualityControl/index' },
-            { name: taskTitle },
-            { name: '部门列表' }
+            { name: '督查', path: '/pages/qualityControl/index' },
+            { name: taskTitle }
           ]}
         />
 

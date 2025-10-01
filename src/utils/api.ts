@@ -126,6 +126,81 @@ interface TaskLiveListResponseData {
   warnings: any
 }
 
+// 批次信息数据
+interface BatchInfo {
+  id: string
+  batchName: string
+  planId: string
+  createTime: string
+  status: number
+}
+
+// 批次列表请求参数
+interface BatchListParams {
+  planId: string
+}
+
+// 批次列表响应数据
+interface BatchListResponseData {
+  data: BatchInfo[]
+  errCode: number
+  exception: any
+  message: string | null
+  pageInfo: any
+  success: boolean
+  warnings: any
+}
+
+// 病例信息数据
+interface PatientInfo {
+  id: string
+  emrNo: string
+  patientName: string
+  patientAge: number | null
+  patientSex: string | null
+  patientSexName: string | null
+  departmentId: string
+  departmentName: string
+  doctorName: string
+  diagnose: string
+  status: string
+  batchId: string
+  batchName: string | null
+  medicalRecordNo: string
+  createBy: string
+  createTime: string | null
+  updateBy: string | null
+  updateTime: string | null
+  inspectPlanId: string
+  inspectEMRResults: any[]
+  inspectItems: any
+  evidenceNum: any
+  evidences: any
+  insufficient: any
+  itemLevel: any
+  recommend: any
+  scope: any
+  dataIndex: any
+}
+
+// 病例列表请求参数
+interface PatientListParams {
+  batchId: string
+  key?: string
+  planId: string
+}
+
+// 病例列表响应数据
+interface PatientListResponseData {
+  data: PatientInfo[]
+  errCode: number
+  exception: any
+  message: string | null
+  pageInfo: any
+  success: boolean
+  warnings: any
+}
+
 // 部门信息数据
 interface DepartmentInfo {
   createBy: string
@@ -366,6 +441,51 @@ class ApiClient {
     )
   }
 
+  // 获取批次列表接口
+  async getBatchList(params: BatchListParams): Promise<ApiResponse<BatchListResponseData>> {
+    const url = `${API_CONFIG.ENDPOINTS.BATCH_LIST}/${params.planId}`
+
+    return this.request<BatchListResponseData>(
+      url,
+      'GET'
+    )
+  }
+
+  // 获取病例列表接口
+  async getPatientList(params: PatientListParams): Promise<ApiResponse<PatientListResponseData>> {
+    // 构建查询参数，所有参数都是必填
+    const queryParams = new URLSearchParams()
+    queryParams.append('planId', params.planId)
+    queryParams.append('batchId', params.batchId!)
+    queryParams.append('key', params.key || '')
+
+    const url = `${API_CONFIG.ENDPOINTS.PATIENT_LIST}?${queryParams.toString()}`
+
+    return this.request<PatientListResponseData>(
+      url,
+      'GET'
+    )
+  }
+
+  // 获取字典详情接口
+  async getDictDetail(key: string): Promise<ApiResponse<DictDetailResponseData>> {
+    const url = `${API_CONFIG.ENDPOINTS.DICT_DETAIL}?key=${key}`
+
+    return this.request<DictDetailResponseData>(
+      url,
+      'GET'
+    )
+  }
+
+  // 添加病例接口
+  async addPatient(params: PatientAddParams): Promise<ApiResponse<PatientAddResponseData>> {
+    return this.request<PatientAddResponseData>(
+      API_CONFIG.ENDPOINTS.PATIENT_ADD,
+      'POST',
+      params
+    )
+  }
+
   // 设置请求头（用于设置token等）
   setAuthToken(authorization: string) {
     // 使用authManager管理token
@@ -377,5 +497,69 @@ class ApiClient {
 // 导出API客户端实例
 export const apiClient = new ApiClient()
 
+// 字典项数据
+interface DictItem {
+  createBy: string
+  createTime: string
+  dataIndex: number
+  deleteFlag: number
+  dictKey: string
+  enableFlag: number
+  id: string
+  listId: string
+  permission: number
+  status: number
+  updateBy: string
+  updateTime: string
+  valueCode: string
+  valueDesc: string
+  valueNameCn: string
+  valueNameEn: string
+  version: number
+}
+
+// 字典详情响应数据
+interface DictDetailResponseData {
+  data: DictItem[]
+  errCode: number
+  message: string
+  pageInfo: PageInfo
+  success: boolean
+  warnings: string[]
+}
+
+// 添加病例请求参数
+interface PatientAddParams {
+  batchId: string
+  batchName?: string
+  createBy?: string
+  createTime?: string
+  dataIndex?: number
+  departmentId: string
+  departmentName: string
+  diagnose: string
+  doctorName: string
+  emrNo: string
+  inspectPlanId: string
+  insufficient?: string
+  itemLevel?: string
+  medicalRecordNo?: string
+  patientAge: number
+  patientName: string
+  patientSex: string
+  patientSexName: string
+  recommend?: string
+  scope?: number
+  status?: string
+  updateBy?: string
+  updateTime?: string
+}
+
+// 添加病例响应数据
+interface PatientAddResponseData {
+  id: string
+  message?: string
+}
+
 // 导出类型
-export type { OAuthLoginParams, LoginParams, LoginXParams, LoginResponseData, DecryptPhoneParams, DecryptPhoneResponseData, TaskLiveListParams, TaskLiveListItem, TaskLiveListResponseData, DepartmentInfo, DepartmentListParams, DepartmentListResponseData, PageInfo, ApiResponse }
+export type { OAuthLoginParams, LoginParams, LoginXParams, LoginResponseData, DecryptPhoneParams, DecryptPhoneResponseData, TaskLiveListParams, TaskLiveListItem, TaskLiveListResponseData, BatchInfo, BatchListParams, BatchListResponseData, PatientInfo, PatientListParams, PatientListResponseData, DepartmentInfo, DepartmentListParams, DepartmentListResponseData, PageInfo, ApiResponse, DictItem, DictDetailResponseData, PatientAddParams, PatientAddResponseData }

@@ -1,19 +1,28 @@
 import { Component } from 'react'
 import { View, Text, Input, Button, Picker } from '@tarojs/components'
 import Taro from '@tarojs/taro'
+import { apiClient, DictItem, DepartmentInfo, PatientAddParams } from '../../utils/api'
 import Breadcrumb from '../../components/Breadcrumb'
 import './index.scss'
 
 interface PatientAddState {
+  taskTitle: string
+  taskId: string
+  batchId: string
   patientNo: string
   patientName: string
   gender: string
+  genderId: string
   age: string
   department: string
+  departmentId: string
   doctor: string
   diagnosis: string
-  genderRange: string[]
-  departmentRange: string[]
+  genderList: DictItem[]
+  departmentList: DepartmentInfo[]
+  genderLoading: boolean
+  departmentLoading: boolean
+  submitting: boolean
 }
 
 export default class PatientAdd extends Component<{}, PatientAddState> {
@@ -21,22 +30,102 @@ export default class PatientAdd extends Component<{}, PatientAddState> {
   constructor(props) {
     super(props)
     this.state = {
+      taskTitle: '',
+      taskId: '',
+      batchId: '',
       patientNo: '',
       patientName: '',
       gender: '',
+      genderId: '',
       age: '',
       department: '',
+      departmentId: '',
       doctor: '',
       diagnosis: '',
-      genderRange: ['男', '女'],
-      departmentRange: ['呼吸内科', '心内科', '消化内科', '神经内科']
+      genderList: [],
+      departmentList: [],
+      genderLoading: false,
+      departmentLoading: false,
+      submitting: false
     }
   }
 
   componentDidMount() {
+    // 获取路由参数
+    const params = Taro.getCurrentInstance().router?.params
+    console.log('添加病例页面参数:', params)
+
+    if (params) {
+      const taskTitle = decodeURIComponent(params.title || '')
+      const taskId = params.taskId || ''
+      const batchId = params.batchId || ''
+
+      this.setState({
+        taskTitle,
+        taskId,
+        batchId
+      })
+    }
+
+    // 加载性别和部门数据
+    this.loadGenderList()
+    this.loadDepartmentList()
+
     Taro.setNavigationBarTitle({
       title: '添加病例'
     })
+  }
+
+  // 加载性别列表
+  loadGenderList = async () => {
+    this.setState({ genderLoading: true })
+
+    try {
+      console.log('正在获取性别字典...')
+      const response = await apiClient.getDictDetail('sex')
+
+      console.log('性别字典响应:', response)
+
+      if (response.success && response.data) {
+        this.setState({
+          genderList: response.data.data,
+          genderLoading: false
+        })
+        console.log('性别字典获取成功:', response.data.data)
+      } else {
+        console.warn('性别字典获取失败:', response.message)
+        this.setState({ genderLoading: false })
+      }
+    } catch (error) {
+      console.error('获取性别字典失败:', error)
+      this.setState({ genderLoading: false })
+    }
+  }
+
+  // 加载部门列表
+  loadDepartmentList = async () => {
+    this.setState({ departmentLoading: true })
+
+    try {
+      console.log('正在获取部门列表...')
+      const response = await apiClient.getDepartmentList({ isfolder: true })
+
+      console.log('部门列表响应:', response)
+
+      if (response.success && response.data) {
+        this.setState({
+          departmentList: response.data,
+          departmentLoading: false
+        })
+        console.log('部门列表获取成功:', response.data)
+      } else {
+        console.warn('部门列表获取失败:', response.message)
+        this.setState({ departmentLoading: false })
+      }
+    } catch (error) {
+      console.error('获取部门列表失败:', error)
+      this.setState({ departmentLoading: false })
+    }
   }
 
   handlePatientNoChange = (e) => {
@@ -48,7 +137,11 @@ export default class PatientAdd extends Component<{}, PatientAddState> {
   }
 
   handleGenderChange = (e) => {
-    this.setState({ gender: this.state.genderRange[e.detail.value] })
+    const selectedGender = this.state.genderList[e.detail.value]
+    this.setState({
+      gender: selectedGender?.valueNameCn || '',
+      genderId: selectedGender?.id || ''
+    })
   }
 
   handleAgeChange = (e) => {
@@ -56,7 +149,11 @@ export default class PatientAdd extends Component<{}, PatientAddState> {
   }
 
   handleDepartmentChange = (e) => {
-    this.setState({ department: this.state.departmentRange[e.detail.value] })
+    const selectedDepartment = this.state.departmentList[e.detail.value]
+    this.setState({
+      department: selectedDepartment?.departmentName || '',
+      departmentId: selectedDepartment?.departmentId || ''
+    })
   }
 
   handleDoctorChange = (e) => {
@@ -67,9 +164,10 @@ export default class PatientAdd extends Component<{}, PatientAddState> {
     this.setState({ diagnosis: e.detail.value })
   }
 
-  handleSubmit = () => {
-    const { patientNo, patientName, gender, age, department, doctor, diagnosis } = this.state
+  handleSubmit = async () => {
+    const { taskId, batchId, patientNo, patientName, gender, genderId, age, department, departmentId, doctor, diagnosis } = this.state
 
+    // 基本验证
     if (!patientNo) {
       Taro.showToast({
         title: '请输入病案号',
@@ -78,18 +176,74 @@ export default class PatientAdd extends Component<{}, PatientAddState> {
       return
     }
 
-    Taro.showToast({
-      title: '保存成功',
-      icon: 'success'
-    })
+    if (!patientName) {
+      Taro.showToast({
+        title: '请输入患者姓名',
+        icon: 'none'
+      })
+      return
+    }
 
-    setTimeout(() => {
-      Taro.navigateBack()
-    }, 1500)
+
+    if (!departmentId) {
+      Taro.showToast({
+        title: '请选择部门',
+        icon: 'none'
+      })
+      return
+    }
+
+    this.setState({ submitting: true })
+
+    try {
+      const params: PatientAddParams = {
+        inspectPlanId: taskId,
+        batchId: batchId,
+        emrNo: patientNo,
+        patientName: patientName,
+        patientAge: parseInt(age) || 0,
+        patientSex: genderId || '',
+        patientSexName: gender || '',
+        departmentId: departmentId,
+        departmentName: department,
+        doctorName: doctor,
+        diagnose: diagnosis,
+        status: '1'
+      }
+
+      console.log('正在添加病例...', params)
+      const response = await apiClient.addPatient(params)
+
+      console.log('添加病例响应:', response)
+
+      if (response.success) {
+        Taro.showToast({
+          title: '保存成功',
+          icon: 'success'
+        })
+
+        setTimeout(() => {
+          Taro.navigateBack()
+        }, 1500)
+      } else {
+        Taro.showToast({
+          title: response.message || '保存失败',
+          icon: 'none'
+        })
+      }
+    } catch (error) {
+      console.error('添加病例失败:', error)
+      Taro.showToast({
+        title: '网络错误，请重试',
+        icon: 'none'
+      })
+    } finally {
+      this.setState({ submitting: false })
+    }
   }
 
   render() {
-    const { patientNo, patientName, gender, age, department, doctor, diagnosis, genderRange, departmentRange } = this.state
+    const { taskTitle, taskId, patientNo, patientName, gender, age, department, doctor, diagnosis, genderList, departmentList, genderLoading, departmentLoading, submitting } = this.state
 
     return (
       <View className='patient-add'>
@@ -97,10 +251,15 @@ export default class PatientAdd extends Component<{}, PatientAddState> {
         <Breadcrumb
           items={[
             { name: '督查', path: '/pages/qualityControl/index' },
-            { name: '督查详情', path: '/pages/qualityDetail/index' },
-            { name: '添加病例' }
+            { name: '病例列表', path: `/pages/patientList/index?taskId=${taskId}&title=${encodeURIComponent(taskTitle)}` },
+            { name: taskTitle }
           ]}
         />
+
+        {/* 页面标题 */}
+        <View className='page-title'>
+          <Text className='title-text'>添加病例</Text>
+        </View>
 
         <View className='form-content'>
           <View className='form-item required'>
@@ -127,12 +286,14 @@ export default class PatientAdd extends Component<{}, PatientAddState> {
             <Text className='form-label'>患者性别：</Text>
             <Picker
               mode='selector'
-              range={genderRange}
+              range={genderList}
+              rangeKey='valueNameCn'
               onChange={this.handleGenderChange}
+              disabled={genderLoading}
             >
               <View className='form-picker'>
                 <Text className={gender ? 'picker-text' : 'picker-placeholder'}>
-                  {gender || '请选择'}
+                  {genderLoading ? '加载中...' : (gender || '请选择')}
                 </Text>
               </View>
             </Picker>
@@ -153,12 +314,14 @@ export default class PatientAdd extends Component<{}, PatientAddState> {
             <Text className='form-label'>部门：</Text>
             <Picker
               mode='selector'
-              range={departmentRange}
+              range={departmentList}
+              rangeKey='departmentName'
               onChange={this.handleDepartmentChange}
+              disabled={departmentLoading}
             >
               <View className='form-picker'>
                 <Text className={department ? 'picker-text' : 'picker-placeholder'}>
-                  {department || '请选择'}
+                  {departmentLoading ? '加载中...' : (department || '请选择')}
                 </Text>
               </View>
             </Picker>
@@ -182,6 +345,17 @@ export default class PatientAdd extends Component<{}, PatientAddState> {
               value={diagnosis}
               onInput={this.handleDiagnosisChange}
             />
+          </View>
+
+          {/* 保存按钮 */}
+          <View className='form-actions'>
+            <Button
+              className='save-btn'
+              onClick={this.handleSubmit}
+              disabled={submitting}
+            >
+              {submitting ? '保存中...' : '保存'}
+            </Button>
           </View>
         </View>
       </View>

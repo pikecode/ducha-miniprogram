@@ -14,9 +14,16 @@ export default class Breadcrumb extends Component<BreadcrumbProps> {
 
   handleNavigate = (path?: string) => {
     if (path) {
-      Taro.navigateTo({
-        url: path
-      })
+      // 督查页面是TabBar页面，使用switchTab
+      if (path === '/pages/qualityControl/index') {
+        Taro.switchTab({
+          url: path
+        })
+      } else {
+        Taro.navigateTo({
+          url: path
+        })
+      }
     }
   }
 
@@ -35,7 +42,9 @@ export default class Breadcrumb extends Component<BreadcrumbProps> {
                 {item.name}
               </Text>
             ) : (
-              <Text className='breadcrumb-text'>{item.name}</Text>
+              <Text className={`breadcrumb-text ${index === items.length - 1 ? 'breadcrumb-last' : ''}`}>
+                {item.name}
+              </Text>
             )}
             {index < items.length - 1 && (
               <Text className='breadcrumb-separator'>/</Text>

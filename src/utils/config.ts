@@ -18,7 +18,15 @@ export const API_CONFIG = {
     // 督查列表接口
     TASK_LIVE_LIST: '/api/v1/inspect/plan/task/livelist',
     // 部门列表接口
-    DEPARTMENT_LIST: '/api/v1/departmentinfo/listDepartmentInfos'
+    DEPARTMENT_LIST: '/api/v1/departmentinfo/listDepartmentInfos',
+    // 批次列表接口
+    BATCH_LIST: '/api/v1/inspect/plan/batch/list',
+    // 病例列表接口
+    PATIENT_LIST: '/api/v1/inspect/emr/searchlistfilldata',
+    // 字典详情接口
+    DICT_DETAIL: '/api/v1/dict/detail/key',
+    // 添加病例接口
+    PATIENT_ADD: '/api/v1/inspect/emr/add'
   },
 
   // 渠道标识

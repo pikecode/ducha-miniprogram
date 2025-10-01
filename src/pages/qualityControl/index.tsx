@@ -25,28 +25,49 @@ export default class QualityControl extends Component<{}, QualityControlState> {
   }
 
   componentDidMount () {
+    console.log('督查页面 componentDidMount 执行')
     Taro.setNavigationBarTitle({
       title: '督查'
     })
+    console.log('准备调用 loadTaskList')
     this.loadTaskList()
+    console.log('loadTaskList 调用完成')
+  }
+
+  componentDidShow() {
+    // 更新自定义TabBar
+    this.updateCustomTabBar()
+  }
+
+  updateCustomTabBar = () => {
+    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+      this.getTabBar().updateTabBar()
+    }
   }
 
   // 加载督查列表
   loadTaskList = async () => {
+    console.log('=== loadTaskList 开始执行 ===')
     this.setState({ loading: true })
 
     try {
+      console.log('1. 获取 orgId...')
       const orgId = apiConfigManager.getTaskListOrgId()
-      console.log('正在获取督查列表...', { orgId })
+      console.log('2. orgId 获取成功:', { orgId })
+      console.log('3. 开始请求API:', new Date().toLocaleTimeString())
 
       // 输出配置调试信息
+      console.log('4. 输出配置调试信息...')
       apiConfigManager.debugInfo()
 
+      console.log('5. 检查 apiClient:', apiClient)
+      console.log('6. 检查 getTaskLiveList 方法:', typeof apiClient.getTaskLiveList)
+      console.log('7. 调用 apiClient.getTaskLiveList...')
       const response = await apiClient.getTaskLiveList({
         orgId
       })
 
-      console.log('督查列表响应:', response)
+      console.log('8. 督查列表响应:', response)
 
       if (response.success && response.data) {
         this.setState({
@@ -64,7 +85,10 @@ export default class QualityControl extends Component<{}, QualityControlState> {
         this.setState({ loading: false })
       }
     } catch (error) {
-      console.error('获取督查列表失败:', error)
+      console.error('=== API请求异常 ===')
+      console.error('错误类型:', typeof error)
+      console.error('错误信息:', error)
+      console.error('错误堆栈:', error?.stack)
       Taro.showToast({
         title: '网络错误，请重试',
         icon: 'none'
@@ -75,15 +99,24 @@ export default class QualityControl extends Component<{}, QualityControlState> {
 
   handleTaskClick = (task: TaskLiveListItem) => {
     console.log('点击督查任务:', task)
-    const taskType = this.getTaskType(task)
+    console.log('planType:', task.planType, '类型:', typeof task.planType)
 
-    // 如果是病例督查，跳转到病例列表页面
-    if (taskType.type === 'medical') {
+    // 根据planType字段判断跳转类型
+    if (task.planType === '0') {
+      console.log('跳转到病历列表页面')
+      // planType="1"：现场督查（病历督查），跳转到病历列表页面
       Taro.navigateTo({
         url: `/pages/patientList/index?taskId=${task.id}&title=${encodeURIComponent(task.planName)}`
       })
+    } else if (task.planType === '1') {
+      console.log('跳转到部门列表页面')
+      // planType="0"：线上督查（部门督查），跳转到部门列表页面
+      Taro.navigateTo({
+        url: `/pages/departmentList/index?taskId=${task.id}&title=${encodeURIComponent(task.planName)}`
+      })
     } else {
-      // 如果是部门督查，跳转到督查详情页面
+      console.log('跳转到督查详情页面，planType未识别:', task.planType)
+      // 其他情况，跳转到督查详情页面
       Taro.navigateTo({
         url: `/pages/qualityDetail/index?id=${task.id}&title=${encodeURIComponent(task.planName)}&description=${encodeURIComponent(task.remarks || '')}&timeRange=${encodeURIComponent(`时间：${task.startTime.split(' ')[0]}~${task.endTime.split(' ')[0]}`)}`
       })
@@ -99,37 +132,36 @@ export default class QualityControl extends Component<{}, QualityControlState> {
 
   // 判断督查类型
   getTaskType = (task: TaskLiveListItem): { type: 'medical' | 'department', label: string, color: string } => {
-    const planName = task.planName.toLowerCase()
-    const batchName = task.batchName.toLowerCase()
-
-    // 根据名称关键词判断类型
-    if (planName.includes('病历') || planName.includes('病案') || planName.includes('医疗') ||
-        batchName.includes('病历') || batchName.includes('病案') || batchName.includes('医疗')) {
+    // 优先根据planType字段判断类型
+    if (task.planType === '1') {
       return {
         type: 'medical',
-        label: '病例督查',
+        label: '现场督查(病历)',
         color: '#ff6b6b'
       }
-    } else if (planName.includes('会议') || planName.includes('科室') || planName.includes('部门') ||
-               batchName.includes('会议') || batchName.includes('科室') || batchName.includes('部门')) {
+    } else if (task.planType === '0') {
       return {
         type: 'department',
-        label: '部门督查',
+        label: '线上督查(部门)',
         color: '#4ecdc4'
       }
     }
 
-    // 默认根据planType判断
-    if (task.planType === '1') {
+    // 如果planType不明确，则根据名称关键词判断类型
+    const planName = task.planName.toLowerCase()
+    const batchName = task.batchName.toLowerCase()
+
+    if (planName.includes('病历') || planName.includes('病案') || planName.includes('医疗') ||
+        batchName.includes('病历') || batchName.includes('病案') || batchName.includes('医疗')) {
       return {
         type: 'medical',
-        label: '病例督查',
+        label: '现场督查',
         color: '#ff6b6b'
       }
     } else {
       return {
         type: 'department',
-        label: '部门督查',
+        label: '线上督查',
         color: '#4ecdc4'
       }
     }
@@ -179,13 +211,13 @@ export default class QualityControl extends Component<{}, QualityControlState> {
             className={`filter-tab ${currentFilter === 'medical' ? 'active' : ''}`}
             onClick={() => this.filterTasks('medical')}
           >
-            <Text>病例督查</Text>
+            <Text>现场督查</Text>
           </View>
           <View
             className={`filter-tab ${currentFilter === 'department' ? 'active' : ''}`}
             onClick={() => this.filterTasks('department')}
           >
-            <Text>部门督查</Text>
+            <Text>线上督查</Text>
           </View>
         </View>
 

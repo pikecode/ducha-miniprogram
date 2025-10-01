@@ -21,6 +21,13 @@
   color: #333;
 }
 
+.breadcrumb-last {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .breadcrumb-separator {
   font-size: 26px;
   color: #999;

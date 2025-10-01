@@ -42,14 +42,6 @@ export default {
       {
         pagePath: 'pages/oralAI/index',
         text: '口腔AI'
-      },
-      {
-        pagePath: 'pages/departmentList/index',
-        text: '部门管理'
-      },
-      {
-        pagePath: 'pages/patientList/index',
-        text: '患者管理'
       }
     ]
   }

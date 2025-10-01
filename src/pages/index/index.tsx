@@ -53,7 +53,7 @@ export default class Index extends Component<{}, IndexState> {
 
   componentDidMount() {
     Taro.setNavigationBarTitle({
-      title: '督查'
+      title: '首页'
     })
 
     // 获取用户信息
