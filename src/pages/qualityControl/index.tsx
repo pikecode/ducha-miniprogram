@@ -2,6 +2,7 @@ import { Component } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { apiClient, TaskLiveListItem } from '../../utils/api'
+import { apiConfigManager } from '../../utils/apiConfigManager'
 import './index.scss'
 
 interface QualityControlState {
@@ -35,9 +36,14 @@ export default class QualityControl extends Component<{}, QualityControlState> {
     this.setState({ loading: true })
 
     try {
-      console.log('正在获取督查列表...')
+      const orgId = apiConfigManager.getTaskListOrgId()
+      console.log('正在获取督查列表...', { orgId })
+
+      // 输出配置调试信息
+      apiConfigManager.debugInfo()
+
       const response = await apiClient.getTaskLiveList({
-        orgId: "b3140ef6c8344abb9544b3f836b27332"
+        orgId
       })
 
       console.log('督查列表响应:', response)
