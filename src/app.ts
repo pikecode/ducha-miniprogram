@@ -36,13 +36,8 @@ class App extends Component {
         console.warn('Tab配置验证失败:', validation.errors)
       }
 
-      // 设置TabBar样式
-      Taro.setTabBarStyle({
-        color: tabStyle.color,
-        selectedColor: tabStyle.selectedColor,
-        backgroundColor: tabStyle.backgroundColor,
-        borderStyle: tabStyle.borderStyle
-      })
+      // 自定义TabBar不需要调用setTabBarStyle API
+      // TabBar样式已通过CSS自定义实现
 
       console.log('TabBar初始化完成，使用自定义TabBar')
 
