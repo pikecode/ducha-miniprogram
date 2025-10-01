@@ -3,7 +3,7 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 50px;
+  height: 80px;
   background: white;
   display: flex;
   flex-direction: column;
@@ -28,18 +28,18 @@
       align-items: center;
       justify-content: center;
       position: relative;
-      padding: 4px 0;
+      padding: 8px 0;
 
       &__icon-wrapper {
-        height: 26px;
+        height: 32px;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
       }
 
       &__icon {
-        font-size: 22px;
+        font-size: 28px;
         color: #999999;
         transition: color 0.2s;
 
@@ -49,13 +49,15 @@
       }
 
       &__text {
-        font-size: 12px;
+        font-size: 14px;
         color: #999999;
         line-height: 1;
         transition: color 0.2s;
+        font-weight: 500;
 
         &--active {
           color: #007aff;
+          font-weight: 600;
         }
       }
 
@@ -82,5 +84,5 @@
 
 // 为了给自定义TabBar留出空间，需要给页面添加底部padding
 .page-with-custom-tabbar {
-  padding-bottom: calc(50px + env(safe-area-inset-bottom));
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
 }
