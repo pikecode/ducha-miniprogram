@@ -4,66 +4,15 @@
   padding-bottom: 120px;
 }
 
-/* 患者信息卡片 */
-.patient-info {
-  background: #fff;
-  border-radius: 12px;
-  margin: 24px 30px 16px;
-  padding: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  position: relative;
-  overflow: hidden;
-}
+/* 患者信息卡片样式已移动到PatientCard组件 */
 
-.patient-indicator {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 6px;
-  background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
-}
-
-.patient-content {
-  padding: 20px 20px 20px 26px;
-}
-
-.patient-row {
-  display: flex;
-  margin-bottom: 8px;
-  gap: 16px;
-}
-
-.patient-row:last-child {
-  margin-bottom: 0;
-}
-
-.diagnosis-row {
-  align-items: flex-start;
-  margin-top: 6px;
-}
-
-.patient-label {
-  font-size: 24px;
-  color: #666;
-  font-weight: 400;
-  min-width: 80px;
-  flex-shrink: 0;
-}
-
-.patient-value {
-  font-size: 24px;
-  color: #333;
-  font-weight: 400;
-  margin-right: 24px;
-}
-
-.patient-value.diagnosis {
-  color: #666;
-  line-height: 1.4;
-  word-break: break-all;
-  margin-right: 0;
-  width: 100%;
+/* 加载和空状态 */
+.loading-text,
+.empty-text {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+  font-size: 28px;
 }
 
 /* 评级项目列表 */
@@ -187,11 +136,45 @@
   background: #f7f8fa;
 }
 
+.remark-display {
+  flex: 1;
+  font-size: 24px;
+  color: #666;
+  line-height: 48px;
+}
+
 /* 评级页面的备注输入框样式 */
 .evaluation-options .remark-input {
   width: 100%;
   height: 64px;
   margin-top: 8px;
+}
+
+/* 整体存在不足输入区域 */
+.overall-insufficient-section {
+  margin: 24px 30px;
+  padding: 24px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.overall-insufficient-label {
+  font-size: 28px;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.overall-insufficient-input {
+  min-height: 120px;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 8rpx;
+  font-size: 24px;
+  background: #f7f8fa;
+  line-height: 1.5;
 }
 
 /* 保存按钮 */

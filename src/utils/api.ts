@@ -162,18 +162,18 @@ interface PatientInfo {
   departmentId: string
   departmentName: string
   doctorName: string
-  diagnose: string
+  diagnose: string | null
   status: string
   batchId: string
   batchName: string | null
-  medicalRecordNo: string
+  medicalRecordNo: string | null
   createBy: string
   createTime: string | null
   updateBy: string | null
   updateTime: string | null
   inspectPlanId: string
   inspectEMRResults: any[]
-  inspectItems: any
+  inspectItems: InspectItem[]
   evidenceNum: any
   evidences: any
   insufficient: any
@@ -486,6 +486,121 @@ class ApiClient {
     )
   }
 
+  // 获取病例详情接口
+  async getPatientDetail(emrId: string): Promise<ApiResponse<PatientDetailResponseData>> {
+    return this.request<PatientDetailResponseData>(
+      `/api/v1/inspect/emr/get?emrId=${emrId}`,
+      'GET'
+    )
+  }
+
+  // 删除图片证据接口
+  async archiveEvidence(id: string): Promise<ApiResponse<any>> {
+    return this.request<any>(
+      `/api/v1/inspect/item/evidence/archive/${id}`,
+      'POST'
+    )
+  }
+
+  // 获取督查项目列表接口
+  async getInspectItemList(planId: string): Promise<ApiResponse<InspectItemListResponseData>> {
+    return this.request<InspectItemListResponseData>(
+      `/api/v1/inspect/item/list/live/${planId}`,
+      'GET'
+    )
+  }
+
+  // 保存督查结果接口
+  async saveInspectResults(params: InspectResultSaveParams): Promise<ApiResponse<InspectResultSaveResponseData>> {
+    console.log('保存督查结果API请求:', '/api/v1/inspect/emr/result/updateList')
+    console.log('请求参数:', JSON.stringify(params, null, 2))
+
+    const response = await this.request<InspectResultSaveResponseData>(
+      '/api/v1/inspect/emr/result/updateList',
+      'POST',
+      params
+    )
+
+    console.log('保存督查结果API响应:', response)
+    return response
+  }
+
+  // 更新病例整体存在不足接口
+  async updateEmrInsufficient(params: { batchId: string, insufficient: string, emr_info: string }): Promise<ApiResponse<any>> {
+    console.log('更新病例存在不足API请求:', '/api/v1/inspect/emr/result/updateEmrInsufficient')
+    console.log('请求参数:', JSON.stringify(params, null, 2))
+
+    const response = await this.request<any>(
+      '/api/v1/inspect/emr/result/updateEmrInsufficient',
+      'POST',
+      params
+    )
+
+    console.log('更新病例存在不足API响应:', response)
+    return response
+  }
+
+  // 文件上传接口
+  async uploadFile(filePath: string): Promise<UploadFileResponseData> {
+    const fullUrl = `${this.baseURL}/api/v1/upload/v2/upload`
+
+    try {
+      console.log('文件上传API请求:', fullUrl)
+      console.log('上传文件路径:', filePath)
+
+      const response = await Taro.uploadFile({
+        url: fullUrl,
+        filePath: filePath,
+        name: 'file',
+        formData: {
+          categoryId: 'inspect'
+        },
+        header: authManager.getAuthHeaders(),
+        timeout: 60000 // 60秒超时
+      })
+
+      console.log('文件上传API响应:', response)
+
+      if (response.statusCode !== 200) {
+        throw new Error(`HTTP错误: ${response.statusCode}`)
+      }
+
+      const result = JSON.parse(response.data) as UploadFileResponseData
+      return result
+    } catch (error) {
+      console.error('文件上传失败:', error)
+      throw error
+    }
+  }
+
+  // 创建证据接口
+  async createEvidence(params: CreateEvidenceParams): Promise<ApiResponse<CreateEvidenceResponseData>> {
+    console.log('创建证据API请求:', '/api/v1/inspect/item/evidence/create')
+    console.log('请求参数:', JSON.stringify(params, null, 2))
+
+    const response = await this.request<CreateEvidenceResponseData>(
+      '/api/v1/inspect/item/evidence/create',
+      'POST',
+      params
+    )
+
+    console.log('创建证据API响应:', response)
+    return response
+  }
+
+  // 获取证据列表接口
+  async getEvidenceList(itemId: string, emrId: string): Promise<ApiResponse<EvidenceListResponseData>> {
+    console.log('获取证据列表API请求:', `/api/v1/inspect/item/evidence/list/Emr/${itemId}/${emrId}`)
+
+    const response = await this.request<EvidenceListResponseData>(
+      `/api/v1/inspect/item/evidence/list/Emr/${itemId}/${emrId}`,
+      'GET'
+    )
+
+    console.log('获取证据列表API响应:', response)
+    return response
+  }
+
   // 设置请求头（用于设置token等）
   setAuthToken(authorization: string) {
     // 使用authManager管理token
@@ -561,5 +676,213 @@ interface PatientAddResponseData {
   message?: string
 }
 
+// 病例详情请求参数
+interface PatientDetailParams {
+  emrId: string
+}
+
+// 督查结果数据
+interface InspectEMRResult {
+  createBy: string
+  createTime: string
+  expertUserId: string
+  expertUserName: string
+  id: string
+  inspectEMRInfoId: string
+  inspectItemCode: string | null
+  inspectItemId: string
+  inspectItemName: string
+  inspectPlanId: string
+  insufficient: string
+  itemLevel: string
+  itemLevelName: string
+  itemLevelValue: any
+  permission: any
+  recommend: string | null
+  scope: number
+  status: string
+  updateBy: string
+  updateTime: string
+}
+
+// 病例详情响应数据
+interface PatientDetailResponseData {
+  data: PatientInfo & {
+    inspectEMRResults: InspectEMRResult[]
+  }
+  errCode: number
+  exception: any
+  message: string | null
+  pageInfo: any
+  success: boolean
+  warnings: any
+}
+
+// 督查项目信息数据
+interface InspectItem {
+  id: string
+  itemName: string
+  itemCode: string
+  itemScore: number
+  score: number
+  remarks: string | null
+  status: string
+  planId: string
+  createTime: string
+  updateTime: string | null
+  checkMode: string
+  dataIndex: number
+  flowCode: string
+  flowStatus: string
+  isFolder: string
+  fileCount: number
+  passCount: number
+  rejectCount: number
+  evidences: any[]
+}
+
+// 督查项目列表请求参数
+interface InspectItemListParams {
+  planId: string
+}
+
+// 督查项目列表响应数据
+interface InspectItemListResponseData {
+  data: InspectItem[]
+  errCode: number
+  exception: any
+  message: string | null
+  pageInfo: any
+  success: boolean
+  warnings: any
+}
+
+// 督查结果保存项目数据
+interface InspectResultItem {
+  createBy?: string
+  createTime?: string
+  expertUserId?: string
+  expertUserName?: string
+  id?: string
+  inspectEmrInfoId: string     // 病案ID
+  inspectItemId: string        // 督查要点ID
+  inspectPlanId: string        // 督查计划ID
+  insufficient?: string        // 存在的不足
+  itemLevel?: string
+  recommend?: string
+  scope?: number               // 评分
+  status?: number
+  updateBy?: string
+  updateTime?: string
+}
+
+// 督查结果保存请求参数
+interface InspectResultSaveParams extends Array<InspectResultItem> {}
+
+// 督查结果保存响应数据
+interface InspectResultSaveResponseData {
+  data: any
+  errCode: number
+  exception: any
+  message: string | null
+  pageInfo: any
+  success: boolean
+  warnings: any
+}
+
+// 文件上传响应数据
+interface UploadFileResponseData {
+  data: {
+    autoCheckStatus: string
+    categoryId: string
+    createBy: string
+    createTime: string
+    currentHistoryId: string
+    dataStatus: string
+    datasetBatchId: string
+    datasetDocumentId: string
+    deleteFlag: number
+    enableFlag: number
+    fileName: string
+    fileSize: number
+    fileUrl: string
+    fullFileName: string
+    id: string
+    needModifyStatus: string
+    orgId: string
+    permission: number
+    status: number
+    syncStatus: string
+    updateBy: string
+    updateTime: string
+    version: number
+  }
+  errCode: number
+  message: string
+  pageInfo: {
+    countTotal: boolean
+    pageNo: number
+    pageSize: number
+    total: number
+  }
+  success: boolean
+  warnings: string[]
+}
+
+// 创建证据请求参数
+interface CreateEvidenceParams {
+  batchId: string
+  departmentId: string
+  emrId: string
+  fileId: string
+  improveId?: string
+  itemId: string
+  orgId: string
+  planId: string
+}
+
+// 创建证据响应数据
+interface CreateEvidenceResponseData {
+  data: any
+  errCode: number
+  message: string
+  pageInfo: any
+  success: boolean
+  warnings: any
+}
+
+// 证据列表项数据
+interface EvidenceItem {
+  batchId: string
+  createBy: string
+  createTime: string
+  departmentId: string
+  departmentName: string
+  emrId: string
+  fileId: string
+  fileName: string
+  fileUrl: string
+  flowStatus: string
+  id: string
+  improveId: string
+  itemId: string
+  permission: number
+  status: string
+  updateBy: string
+  updateTime: string
+  userName: string
+}
+
+// 证据列表响应数据
+interface EvidenceListResponseData {
+  data: EvidenceItem[]
+  errCode: number
+  exception: any
+  message: string | null
+  pageInfo: any
+  success: boolean
+  warnings: any
+}
+
 // 导出类型
-export type { OAuthLoginParams, LoginParams, LoginXParams, LoginResponseData, DecryptPhoneParams, DecryptPhoneResponseData, TaskLiveListParams, TaskLiveListItem, TaskLiveListResponseData, BatchInfo, BatchListParams, BatchListResponseData, PatientInfo, PatientListParams, PatientListResponseData, DepartmentInfo, DepartmentListParams, DepartmentListResponseData, PageInfo, ApiResponse, DictItem, DictDetailResponseData, PatientAddParams, PatientAddResponseData }
+export type { OAuthLoginParams, LoginParams, LoginXParams, LoginResponseData, DecryptPhoneParams, DecryptPhoneResponseData, TaskLiveListParams, TaskLiveListItem, TaskLiveListResponseData, BatchInfo, BatchListParams, BatchListResponseData, PatientInfo, PatientListParams, PatientListResponseData, DepartmentInfo, DepartmentListParams, DepartmentListResponseData, PageInfo, ApiResponse, DictItem, DictDetailResponseData, PatientAddParams, PatientAddResponseData, PatientDetailParams, PatientDetailResponseData, InspectItem, InspectItemListParams, InspectItemListResponseData, InspectResultItem, InspectResultSaveParams, InspectResultSaveResponseData, InspectEMRResult, UploadFileResponseData, CreateEvidenceParams, CreateEvidenceResponseData, EvidenceItem, EvidenceListResponseData }

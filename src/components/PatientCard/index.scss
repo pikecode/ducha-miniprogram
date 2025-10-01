@@ -1,0 +1,110 @@
+/* 患者信息卡片 */
+.patient-card {
+  background: #fff;
+  border-radius: 12px;
+  margin: 24px 30px 16px;
+  padding: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.patient-indicator {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+}
+
+.patient-content {
+  padding: 20px 20px 20px 26px;
+}
+
+.patient-row {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.patient-row:last-child {
+  margin-bottom: 0;
+}
+
+.diagnosis-row {
+  align-items: flex-start;
+  margin-top: 6px;
+}
+
+.patient-label {
+  font-size: 24px;
+  color: #333;
+  font-weight: 400;
+  flex-shrink: 0;
+  width: 100px;
+}
+
+.patient-value {
+  font-size: 24px;
+  color: #333;
+  font-weight: 400;
+  flex: 1;
+  max-width: 160px;
+}
+
+/* 右侧字段组的标签 */
+.patient-row .patient-label:nth-child(3) {
+  width: 80px;
+  margin-left: 120px;
+}
+
+/* 右侧字段组的值 */
+.patient-row .patient-value:nth-child(4) {
+  margin-right: 0;
+  max-width: none;
+}
+
+.patient-value.diagnosis {
+  color: #333;
+  line-height: 1.4;
+  word-break: break-all;
+  margin-right: 0;
+  flex: 1;
+  max-width: none;
+}
+
+.loading-text,
+.error-text {
+  text-align: center;
+  padding: 40px 0;
+  color: #999;
+  font-size: 24px;
+}
+
+/* 病例列表页面的患者卡片样式 */
+.patient-card.list-item {
+  margin: 0 0 16px 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.patient-card.list-item:active {
+  transform: scale(0.98);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* 状态指示器样式 */
+.patient-card.status-1 .patient-indicator {
+  background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+}
+
+.patient-card.status-0 .patient-indicator {
+  background: linear-gradient(135deg, #d9d9d9 0%, #bfbfbf 100%);
+}
+
+/* 详情页面的患者卡片样式 */
+.patient-card.detail-info {
+  margin: 24px 30px 16px;
+}

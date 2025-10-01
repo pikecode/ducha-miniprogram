@@ -1,0 +1,354 @@
+/* 图片查看器遮罩层 */
+.image-viewer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.image-viewer-overlay.preview-mode {
+  background-color: rgba(0, 0, 0, 0.95);
+  padding: 0;
+  flex-direction: column;
+}
+
+/* 图片查看器内容容器 - 无边框版本 */
+.image-viewer-content {
+  background: transparent;
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 关闭按钮 - 在弹窗外部右上角 */
+.image-viewer-close {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  width: 48px;
+  height: 48px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1001;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.image-viewer-close:active {
+  background: rgba(0, 0, 0, 0.8);
+  transform: scale(0.95);
+}
+
+.close-icon {
+  font-size: 24px;
+  color: #fff;
+  line-height: 1;
+}
+
+/* 图片查看器主体 - 透明背景 */
+.image-viewer-body {
+  flex: 1;
+  padding: 30px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+}
+
+/* 加载状态 */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+  gap: 16px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #1890ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 28px;
+  color: #999;
+}
+
+/* 空状态 */
+.empty-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+  gap: 16px;
+}
+
+.empty-icon {
+  font-size: 80px;
+  opacity: 0.3;
+}
+
+.empty-text {
+  font-size: 28px;
+  color: #999;
+  font-weight: 500;
+}
+
+.empty-desc {
+  font-size: 24px;
+  color: #ccc;
+}
+
+/* 主预览布局 */
+.main-preview-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 16px;
+}
+
+/* 主图预览区域 */
+.main-image-container {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  border-radius: 12px;
+  overflow: hidden;
+  min-height: 300px;
+}
+
+.main-image {
+  max-width: 100%;
+  max-height: 100%;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.main-image:active {
+  transform: scale(0.98);
+}
+
+.main-image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  cursor: pointer;
+}
+
+.main-image-container:hover .main-image-overlay {
+  opacity: 1;
+}
+
+.fullscreen-icon {
+  font-size: 40px;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.fullscreen-text {
+  font-size: 24px;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* 删除按钮 */
+.delete-button {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 0, 0, 0.8);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.delete-button:active {
+  background: rgba(255, 0, 0, 0.9);
+  transform: scale(0.95);
+}
+
+.delete-icon {
+  font-size: 24px;
+  color: #fff;
+}
+
+/* 缩略图区域 */
+.thumbnail-section {
+  flex-shrink: 0;
+}
+
+.thumbnail-title {
+  font-size: 26px;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.thumbnail-scroll {
+  width: 100%;
+  height: 100px;
+}
+
+.thumbnail-list {
+  display: flex;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.thumbnail-item {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  flex-shrink: 0;
+}
+
+.thumbnail-item.active {
+  border-color: #1890ff;
+  transform: scale(1.05);
+}
+
+.thumbnail-item:active {
+  transform: scale(0.95);
+}
+
+.thumbnail-image {
+  width: 100%;
+  height: 100%;
+}
+
+.thumbnail-active-indicator {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 12px;
+  height: 12px;
+  background: #1890ff;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+/* 预览模式样式 */
+.preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 30px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.preview-back,
+.preview-save {
+  font-size: 28px;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.preview-back:active,
+.preview-save:active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.preview-title {
+  font-size: 28px;
+  color: #fff;
+  font-weight: 500;
+}
+
+.preview-swiper {
+  flex: 1;
+  width: 100%;
+}
+
+.preview-item {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 8px;
+}
+
+.preview-info {
+  padding: 20px 30px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.preview-filename {
+  font-size: 28px;
+  color: #fff;
+  font-weight: 500;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.preview-time,
+.preview-uploader {
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.8);
+  display: block;
+  margin-bottom: 4px;
+}
