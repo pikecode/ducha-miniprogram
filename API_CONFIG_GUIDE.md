@@ -2,7 +2,7 @@
 
 ## 🎯 概述
 
-通过配置文件 `src/config/apiConfig.json` 来管理API接口的参数配置，特别是督查接口的 `orgId` 参数，便于不同环境和组织的灵活配置。
+通过配置文件 `src/config/apiConfig.json` 来管理API接口的 `orgId` 参数，简单直接，便于修改。
 
 ## 📁 核心文件
 
@@ -21,27 +21,8 @@ src/pages/qualityControl/index.tsx # 督查页面（已配置化）
   "description": "API接口配置文件",
   "lastUpdated": "2024-10-01",
   "config": {
-    "organizationSettings": {
-      "defaultOrgId": "b3140ef6c8344abb9544b3f836b27332",
-      "description": "默认组织ID，用于督查任务列表等接口"
-    },
-    "endpoints": {
-      "taskLiveList": {
-        "url": "/api/v1/inspect/plan/task/livelist",
-        "orgIdRequired": true,
-        "description": "督查任务列表接口"
-      }
-    },
-    "environments": {
-      "development": {
-        "orgId": "b3140ef6c8344abb9544b3f836b27332",
-        "debug": true
-      },
-      "production": {
-        "orgId": "b3140ef6c8344abb9544b3f836b27332",
-        "debug": false
-      }
-    }
+    "orgId": "b3140ef6c8344abb9544b3f836b27332",
+    "description": "组织ID，用于督查任务列表等接口"
   }
 }
 ```
@@ -50,25 +31,18 @@ src/pages/qualityControl/index.tsx # 督查页面（已配置化）
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| `organizationSettings.defaultOrgId` | string | 默认组织ID |
-| `endpoints.*.orgIdRequired` | boolean | 端点是否需要组织ID |
-| `environments.*.orgId` | string | 环境特定的组织ID |
-| `environments.*.debug` | boolean | 是否开启调试模式 |
+| `config.orgId` | string | 组织ID，32位十六进制字符串 |
+| `config.description` | string | 配置说明 |
 
 ## 🔧 使用方式
 
 ### 1. 修改组织ID
+直接编辑配置文件：
 ```json
 {
-  "environments": {
-    "development": {
-      "orgId": "your_dev_org_id_here",
-      "debug": true
-    },
-    "production": {
-      "orgId": "your_prod_org_id_here",
-      "debug": false
-    }
+  "config": {
+    "orgId": "your_new_org_id_here",
+    "description": "组织ID，用于督查任务列表等接口"
   }
 }
 ```
@@ -77,8 +51,8 @@ src/pages/qualityControl/index.tsx # 督查页面（已配置化）
 ```typescript
 import { apiConfigManager } from '@/utils/apiConfigManager'
 
-// 获取当前环境的组织ID
-const orgId = apiConfigManager.getTaskListOrgId()
+// 获取组织ID
+const orgId = apiConfigManager.getOrgId()
 
 // 获取配置统计
 const stats = apiConfigManager.getConfigStats()
@@ -98,32 +72,26 @@ const response = await apiClient.getTaskLiveList({
 ## 🎛️ API配置管理器功能
 
 ### 基础功能
-- `getOrgId()` - 获取当前环境组织ID
-- `getDefaultOrgId()` - 获取默认组织ID
+- `getOrgId()` - 获取组织ID
 - `getTaskListOrgId()` - 获取督查列表专用组织ID
-- `getCurrentEnvironmentConfig()` - 获取当前环境配置
+- `getConfigStats()` - 获取配置统计信息
 
 ### 配置验证
 - `validateOrgId(orgId)` - 验证组织ID格式
-- `isOrgIdRequired(endpoint)` - 检查端点是否需要组织ID
 
 ### 调试功能
-- `debugInfo()` - 输出调试信息（仅调试模式）
-- `getConfigStats()` - 获取配置统计信息
-
-### 开发辅助
-- `devSetOrgId(orgId)` - 开发环境动态设置组织ID
+- `debugInfo()` - 输出调试信息
 
 ## 🔍 调试和验证
 
 ### 1. 控制台日志
-开发环境下会输出调试信息：
+会输出调试信息：
 ```
-API配置调试信息: {
+API配置信息: {
   version: "1.0.0",
-  currentEnvironment: "development",
-  currentOrgId: "b3140ef6c8344abb9544b3f836b27332",
-  debugMode: true
+  lastUpdated: "2024-10-01",
+  orgId: "b3140ef6c8344abb9544b3f836b27332",
+  description: "组织ID，用于督查任务列表等接口"
 }
 ```
 
@@ -141,9 +109,6 @@ if (!validation.valid) {
 ```javascript
 // 查看当前配置
 console.log(apiConfigManager.getConfigStats())
-
-// 开发环境测试不同组织ID
-apiConfigManager.devSetOrgId('test_org_id_123456789012345678901234')
 ```
 
 ## 📝 配置更新流程
@@ -152,10 +117,8 @@ apiConfigManager.devSetOrgId('test_org_id_123456789012345678901234')
 ```json
 // 编辑 src/config/apiConfig.json
 {
-  "environments": {
-    "production": {
-      "orgId": "new_production_org_id_here"
-    }
+  "config": {
+    "orgId": "your_new_org_id_here"
   }
 }
 ```
@@ -170,34 +133,17 @@ npm run build:weapp
 
 ## 🎯 实际应用场景
 
-### 场景1：多组织部署
+### 场景1：切换组织
 ```json
-// 不同客户使用不同组织ID
+// 更换为新的组织ID
 {
-  "environments": {
-    "production": {
-      "orgId": "customer_a_org_id"  // 客户A的组织ID
-    }
+  "config": {
+    "orgId": "new_customer_org_id_32_chars_here"
   }
 }
 ```
 
-### 场景2：测试环境隔离
-```json
-// 开发和生产使用不同组织
-{
-  "environments": {
-    "development": {
-      "orgId": "test_org_id_for_development"
-    },
-    "production": {
-      "orgId": "real_production_org_id"
-    }
-  }
-}
-```
-
-### 场景3：组织ID格式验证
+### 场景2：格式验证
 ```typescript
 // 自动验证组织ID格式
 const { valid, errors } = apiConfigManager.validateOrgId(newOrgId)
@@ -213,37 +159,17 @@ if (!valid) {
 - 格式：十六进制字符串 (a-f0-9)
 - 示例：`b3140ef6c8344abb9544b3f836b27332`
 
-### 2. 环境配置
-- 开发环境：`NODE_ENV=development`
-- 生产环境：`NODE_ENV=production`
-- 配置会自动根据环境加载
-
-### 3. 配置生效
+### 2. 配置生效
 - 修改配置文件后需要重新编译
-- 开发环境的动态设置仅临时有效
+- 配置简单，只需要改一个字段
 
-## 🚀 扩展建议
+## 🚀 使用总结
 
-### 1. 添加新的端点配置
-```json
-{
-  "endpoints": {
-    "newEndpoint": {
-      "url": "/api/v1/new/endpoint",
-      "orgIdRequired": true,
-      "description": "新端点描述"
-    }
-  }
-}
-```
+现在督查页面的 `orgId` 参数已经完全配置化：
 
-### 2. 支持更多参数
-可以扩展配置支持其他API参数：
-- 超时配置
-- 重试次数
-- 缓存策略
+1. **简单配置**：只需修改 `apiConfig.json` 中的 `orgId` 字段
+2. **立即生效**：重新编译后配置即可生效
+3. **格式验证**：自动验证组织ID格式是否正确
+4. **调试友好**：控制台可查看当前配置信息
 
-### 3. 多租户支持
-可以扩展为支持多租户的组织ID映射。
-
-现在督查页面的 `orgId` 参数已经完全配置化，可以通过修改配置文件轻松切换不同的组织！🎉
+通过修改配置文件就能轻松切换不同的组织！🎉

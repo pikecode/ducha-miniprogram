@@ -3,26 +3,7 @@
   "description": "API接口配置文件",
   "lastUpdated": "2024-10-01",
   "config": {
-    "organizationSettings": {
-      "defaultOrgId": "b3140ef6c8344abb9544b3f836b27332",
-      "description": "默认组织ID，用于督查任务列表等接口"
-    },
-    "endpoints": {
-      "taskLiveList": {
-        "url": "/api/v1/inspect/plan/task/livelist",
-        "orgIdRequired": true,
-        "description": "督查任务列表接口"
-      }
-    },
-    "environments": {
-      "development": {
-        "orgId": "b3140ef6c8344abb9544b3f836b27332",
-        "debug": true
-      },
-      "production": {
-        "orgId": "b3140ef6c8344abb9544b3f836b27332",
-        "debug": false
-      }
-    }
+    "orgId": "b3140ef6c8344abb9544b3f836b27332",
+    "description": "组织ID，用于督查任务列表等接口"
   }
 }
