@@ -82,16 +82,16 @@ export default class PatientAdd extends Component<{}, PatientAddState> {
 
     try {
       console.log('正在获取性别字典...')
-      const response = await apiClient.getDictDetail('sex')
+      const response = await apiClient.getDictDetail('emrSex')
 
       console.log('性别字典响应:', response)
 
       if (response.success && response.data) {
         this.setState({
-          genderList: response.data.data,
+          genderList: response.data,
           genderLoading: false
         })
-        console.log('性别字典获取成功:', response.data.data)
+        console.log('性别字典获取成功:', response.data)
       } else {
         console.warn('性别字典获取失败:', response.message)
         this.setState({ genderLoading: false })
@@ -152,7 +152,7 @@ export default class PatientAdd extends Component<{}, PatientAddState> {
     const selectedDepartment = this.state.departmentList[e.detail.value]
     this.setState({
       department: selectedDepartment?.departmentName || '',
-      departmentId: selectedDepartment?.departmentId || ''
+      departmentId: selectedDepartment?.id || ''
     })
   }
 
@@ -223,7 +223,12 @@ export default class PatientAdd extends Component<{}, PatientAddState> {
         })
 
         setTimeout(() => {
-          Taro.navigateBack()
+          Taro.navigateBack({
+            success: () => {
+              // 通知上一页刷新数据
+              Taro.eventCenter.trigger('refreshPatientList')
+            }
+          })
         }, 1500)
       } else {
         Taro.showToast({

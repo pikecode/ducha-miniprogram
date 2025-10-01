@@ -18,36 +18,41 @@
 }
 
 .add-btn {
-  width: 240px;
+  width: 120px;
   height: 64px;
   background-color: #19be6b;
   color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 22px;
   font-weight: 500;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
 }
 
 .batch-selector {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 240px;
+  width: 180px;
   height: 64px;
-  padding: 0 16px;
+  padding: 0 12px;
   background-color: #fff;
   border: 1px solid #e5e5e5;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
 }
 
 .batch-text {
-  font-size: 24px;
+  font-size: 22px;
   color: #333;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .batch-arrow {
@@ -58,15 +63,16 @@
 
 .search-box {
   width: 240px;
+  flex: 1;
 }
 
 .search-input {
   width: 100%;
   height: 64px;
   border: 1px solid #e5e5e5;
-  border-radius: 8px;
-  padding: 0 20px;
-  font-size: 24px;
+  border-radius: 6px;
+  padding: 0 16px;
+  font-size: 22px;
   background: #fff;
 }
 
@@ -91,11 +97,11 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
-.patient-item.1 .patient-indicator {
+.patient-item.status-1 .patient-indicator {
   background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
 }
 
-.patient-item.0 .patient-indicator {
+.patient-item.status-0 .patient-indicator {
   background: linear-gradient(135deg, #d9d9d9 0%, #bfbfbf 100%);
 }
 

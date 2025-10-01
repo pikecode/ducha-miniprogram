@@ -501,31 +501,31 @@ export const apiClient = new ApiClient()
 interface DictItem {
   createBy: string
   createTime: string
-  dataIndex: number
-  deleteFlag: number
+  dataIndex: any
+  deleteFlag: any
   dictKey: string
-  enableFlag: number
+  enableFlag: any
   id: string
   listId: string
-  permission: number
-  status: number
+  permission: any
+  status: any
   updateBy: string
   updateTime: string
   valueCode: string
-  valueDesc: string
+  valueDesc: any
   valueNameCn: string
   valueNameEn: string
-  version: number
+  version: any
 }
 
 // 字典详情响应数据
 interface DictDetailResponseData {
   data: DictItem[]
   errCode: number
-  message: string
-  pageInfo: PageInfo
+  message: string | null
+  pageInfo: any
   success: boolean
-  warnings: string[]
+  warnings: any
 }
 
 // 添加病例请求参数

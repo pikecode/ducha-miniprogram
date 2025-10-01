@@ -55,9 +55,23 @@ export default class PatientList extends Component<{}, PatientListState> {
       })
     }
 
+    // 监听添加病例成功的事件
+    Taro.eventCenter.on('refreshPatientList', this.handleRefreshPatientList)
+
     Taro.setNavigationBarTitle({
       title: '病例列表'
     })
+  }
+
+  componentWillUnmount() {
+    // 取消事件监听
+    Taro.eventCenter.off('refreshPatientList', this.handleRefreshPatientList)
+  }
+
+  // 刷新病例列表
+  handleRefreshPatientList = () => {
+    console.log('收到刷新病例列表事件')
+    this.loadPatientList()
   }
 
   // 加载批次列表
@@ -253,7 +267,7 @@ export default class PatientList extends Component<{}, PatientListState> {
             patientList.map(patient => (
               <View
                 key={patient.id}
-                className={`patient-item ${patient.status}`}
+                className={`patient-item status-${patient.status}`}
                 onClick={() => this.handlePatientClick(patient)}
               >
                 <View className='patient-indicator'></View>
