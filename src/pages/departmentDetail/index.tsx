@@ -1,7 +1,8 @@
 import { Component } from 'react'
 import { View, Text, Textarea, Button } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { apiClient, InspectItem, InspectResultItem, DictItem, DepartmentInspectResultItem } from '../../utils/api'
+import { apiClient, InspectItem, InspectResultItem, DictItem, DepartmentInspectResultItem, CreateDepartmentEvidenceParams, EvidenceItem } from '../../utils/api'
+import apiConfig from '../../config/apiConfig.json'
 import Breadcrumb from '../../components/Breadcrumb'
 import InspectItemCard from '../../components/InspectItemCard'
 import './index.scss'
@@ -118,6 +119,7 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
           itemsLoading: false
         })
         console.log('部门督查项目获取成功:', response.data)
+        console.log('督查项目详细信息:', JSON.stringify(response.data, null, 2))
       } else {
         console.warn('部门督查项目获取失败:', response.message)
         this.setState({ itemsLoading: false })
@@ -211,6 +213,110 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
     })
   }
 
+  // 处理图片上传
+  handleUploadImage = async (itemId: string) => {
+    const { taskId, departmentId } = this.state
+
+    try {
+      // 选择图片
+      const res = await Taro.chooseMedia({
+        count: 1,
+        mediaType: ['image'],
+        sourceType: ['album', 'camera']
+      })
+
+      if (res.tempFiles && res.tempFiles.length > 0) {
+        const file = res.tempFiles[0]
+
+        // 显示加载提示
+        Taro.showLoading({
+          title: '上传中...'
+        })
+
+        // 上传文件
+        const uploadResponse = await apiClient.uploadFile(file.tempFilePath)
+
+        console.log('文件上传响应:', uploadResponse)
+
+        if (uploadResponse.success && uploadResponse.data) {
+          // 检查fileId字段，可能在data中或直接在响应中
+          const fileId = uploadResponse.data.fileId || uploadResponse.data.id || uploadResponse.fileId
+
+          if (fileId) {
+            // 创建证据记录
+            const evidenceParams: CreateDepartmentEvidenceParams = {
+              batchId: taskId,
+              departmentId: departmentId,
+              emrId: departmentId, // 部门督查中emrId使用departmentId
+              fileId: fileId,
+              itemId: itemId,
+              orgId: apiConfig.config.orgId,
+              planId: taskId
+            }
+
+            const evidenceResponse = await apiClient.createDepartmentEvidence(evidenceParams)
+
+            if (evidenceResponse.success) {
+              Taro.hideLoading()
+              Taro.showToast({
+                title: '上传成功',
+                icon: 'success'
+              })
+            } else {
+              throw new Error(evidenceResponse.message || '创建证据记录失败')
+            }
+          } else {
+            throw new Error('上传响应中缺少文件ID')
+          }
+        } else {
+          throw new Error(uploadResponse.message || '文件上传失败')
+        }
+      }
+    } catch (error) {
+      Taro.hideLoading()
+      console.error('图片上传失败:', error)
+      Taro.showToast({
+        title: error.message || '上传失败',
+        icon: 'none'
+      })
+    }
+  }
+
+  // 处理查看图片
+  handleViewImages = async (itemId: string) => {
+    try {
+      // 获取图片列表
+      const response = await apiClient.getDepartmentEvidenceList(itemId)
+
+      if (response.success && response.data && response.data.data) {
+        const evidences: EvidenceItem[] = response.data.data
+
+        if (evidences.length === 0) {
+          Taro.showToast({
+            title: '暂无图片',
+            icon: 'none'
+          })
+          return
+        }
+
+        // 打开图片查看器
+        // 这里可以使用现有的 ImageViewer 组件
+        console.log('查看图片:', evidences)
+      } else {
+        Taro.showToast({
+          title: '获取图片列表失败',
+          icon: 'none'
+        })
+      }
+    } catch (error) {
+      console.error('获取图片列表失败:', error)
+      Taro.showToast({
+        title: '获取图片失败',
+        icon: 'none'
+      })
+    }
+  }
+
   // 获取评级选择值
   getSelectedValue = (itemId: string): string => {
     const { questions } = this.state
@@ -246,8 +352,10 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
     // 构建保存数据
     const saveData: DepartmentInspectResultItem[] = inspectItems.map(item => {
       const resultItem: DepartmentInspectResultItem = {
+        id: item.id,
         batchId: taskId,
-        itemId: item.id
+        itemId: item.id,
+        itemuserId: item.itemuserId || undefined
       }
 
       if (isEvaluationMode) {
@@ -296,6 +404,7 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
     })
 
     console.log('保存数据筛选结果:', saveData)
+    console.log('保存数据JSON格式:', JSON.stringify(saveData, null, 2))
 
     if (saveData.length === 0) {
       Taro.showToast({
@@ -378,8 +487,8 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
                 onRadioChange={this.handleRadioChange}
                 onInputChange={this.handleInputChange}
                 onScoreChange={this.handleScoreChange}
-                onUploadImage={() => {}} // 部门督查暂不支持图片上传
-                onViewImages={() => {}} // 部门督查暂不支持图片查看
+                onUploadImage={() => this.handleUploadImage(item.id)}
+                onViewImages={() => this.handleViewImages(item.id)}
                 getSelectedValue={this.getSelectedValue}
                 getRemarkValue={this.getRemarkValue}
                 getScoreValue={this.getScoreValue}
@@ -389,7 +498,7 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
         </View>
 
         {/* 整体存在不足输入 */}
-        <View className='overall-insufficient-section'>
+        {/* <View className='overall-insufficient-section'>
           <Text className='overall-insufficient-label'>存在不足</Text>
           <Textarea
             className='overall-insufficient-input'
@@ -398,7 +507,7 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
             onInput={this.handleOverallInsufficientChange}
             autoHeight
           />
-        </View>
+        </View> */}
 
         {/* 保存按钮 */}
         <View className='save-section'>

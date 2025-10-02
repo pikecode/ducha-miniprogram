@@ -604,9 +604,9 @@ class ApiClient {
     }
   }
 
-  // 创建证据接口
+  // 创建证据接口（病例）
   async createEvidence(params: CreateEvidenceParams): Promise<ApiResponse<CreateEvidenceResponseData>> {
-    console.log('创建证据API请求:', '/api/v1/inspect/item/evidence/create')
+    console.log('创建病例证据API请求:', '/api/v1/inspect/item/evidence/create')
     console.log('请求参数:', JSON.stringify(params, null, 2))
 
     const response = await this.request<CreateEvidenceResponseData>(
@@ -615,20 +615,48 @@ class ApiClient {
       params
     )
 
-    console.log('创建证据API响应:', response)
+    console.log('创建病例证据API响应:', response)
     return response
   }
 
-  // 获取证据列表接口
+  // 创建证据接口（部门）
+  async createDepartmentEvidence(params: CreateDepartmentEvidenceParams): Promise<ApiResponse<CreateEvidenceResponseData>> {
+    console.log('创建部门证据API请求:', '/api/v1/inspect/item/evidence/create')
+    console.log('请求参数:', JSON.stringify(params, null, 2))
+
+    const response = await this.request<CreateEvidenceResponseData>(
+      '/api/v1/inspect/item/evidence/create',
+      'POST',
+      params
+    )
+
+    console.log('创建部门证据API响应:', response)
+    return response
+  }
+
+  // 获取证据列表接口（病例）
   async getEvidenceList(itemId: string, emrId: string): Promise<ApiResponse<EvidenceListResponseData>> {
-    console.log('获取证据列表API请求:', `/api/v1/inspect/item/evidence/list/Emr/${itemId}/${emrId}`)
+    console.log('获取病例证据列表API请求:', `/api/v1/inspect/item/evidence/list/Emr/${itemId}/${emrId}`)
 
     const response = await this.request<EvidenceListResponseData>(
       `/api/v1/inspect/item/evidence/list/Emr/${itemId}/${emrId}`,
       'GET'
     )
 
-    console.log('获取证据列表API响应:', response)
+    console.log('获取病例证据列表API响应:', response)
+    return response
+  }
+
+  // 获取证据列表接口（部门）
+  async getDepartmentEvidenceList(itemId: string): Promise<ApiResponse<EvidenceListResponseData>> {
+    console.log('获取部门证据列表API请求:', `/api/v1/inspect/item/evidence/list/${itemId}`)
+
+    const response = await this.request<EvidenceListResponseData>(
+      `/api/v1/inspect/item/evidence/list/${itemId}`,
+      'GET'
+    )
+
+    console.log('获取部门证据列表API响应:', response)
     return response
   }
 
@@ -770,6 +798,7 @@ interface InspectItem {
   passCount: number
   rejectCount: number
   evidences: any[]
+  itemuserId?: string
 }
 
 // 督查项目列表请求参数
@@ -809,6 +838,7 @@ interface InspectResultItem {
 
 // 部门督查结果保存项目数据
 interface DepartmentInspectResultItem {
+  id?: string
   batchId: string
   comment?: string
   itemId: string
@@ -875,13 +905,24 @@ interface UploadFileResponseData {
   warnings: string[]
 }
 
-// 创建证据请求参数
+// 创建证据请求参数（病例）
 interface CreateEvidenceParams {
   batchId: string
   departmentId: string
   emrId: string
   fileId: string
   improveId?: string
+  itemId: string
+  orgId: string
+  planId: string
+}
+
+// 创建证据请求参数（部门）
+interface CreateDepartmentEvidenceParams {
+  batchId: string
+  departmentId: string
+  emrId: string
+  fileId: string
   itemId: string
   orgId: string
   planId: string
@@ -931,4 +972,4 @@ interface EvidenceListResponseData {
 }
 
 // 导出类型
-export type { OAuthLoginParams, LoginParams, LoginXParams, LoginResponseData, DecryptPhoneParams, DecryptPhoneResponseData, TaskLiveListParams, TaskLiveListItem, TaskLiveListResponseData, BatchInfo, BatchListParams, BatchListResponseData, PatientInfo, PatientListParams, PatientListResponseData, DepartmentInfo, DepartmentListParams, DepartmentListResponseData, PageInfo, ApiResponse, DictItem, DictDetailResponseData, PatientAddParams, PatientAddResponseData, PatientDetailParams, PatientDetailResponseData, InspectItem, InspectItemListParams, InspectItemListResponseData, InspectResultItem, InspectResultSaveParams, InspectResultSaveResponseData, InspectEMRResult, UploadFileResponseData, CreateEvidenceParams, CreateEvidenceResponseData, EvidenceItem, EvidenceListResponseData }
+export type { OAuthLoginParams, LoginParams, LoginXParams, LoginResponseData, DecryptPhoneParams, DecryptPhoneResponseData, TaskLiveListParams, TaskLiveListItem, TaskLiveListResponseData, BatchInfo, BatchListParams, BatchListResponseData, PatientInfo, PatientListParams, PatientListResponseData, DepartmentInfo, DepartmentListParams, DepartmentListResponseData, PageInfo, ApiResponse, DictItem, DictDetailResponseData, PatientAddParams, PatientAddResponseData, PatientDetailParams, PatientDetailResponseData, InspectItem, InspectItemListParams, InspectItemListResponseData, InspectResultItem, InspectResultSaveParams, InspectResultSaveResponseData, DepartmentInspectResultItem, InspectEMRResult, UploadFileResponseData, CreateEvidenceParams, CreateDepartmentEvidenceParams, CreateEvidenceResponseData, EvidenceItem, EvidenceListResponseData }
