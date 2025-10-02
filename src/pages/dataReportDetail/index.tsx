@@ -1,18 +1,20 @@
 import { Component } from 'react'
 import { View, Text, Button } from '@tarojs/components'
 import Taro from '@tarojs/taro'
+import { apiClient, TaskInfoItem, DataListItem, DataListResponseData } from '../../utils/api'
 import Breadcrumb from '../../components/Breadcrumb'
 import './index.scss'
 
 interface DataReportDetailState {
+  id: string
+  appkey: string
   title: string
-  description: string
-  timeRange: string
+  pageType: string
   activeTab: 'task' | 'data'
-  dataList: Array<{
-    id: string
-    month: string
-  }>
+  taskList: TaskInfoItem[]
+  dataList: DataListItem[]
+  loading: boolean
+  dataLoading: boolean
 }
 
 export default class DataReportDetail extends Component<{}, DataReportDetailState> {
@@ -20,15 +22,15 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
   constructor(props) {
     super(props)
     this.state = {
+      id: '',
+      appkey: '',
       title: '',
-      description: '',
-      timeRange: '',
+      pageType: '',
       activeTab: 'task',
-      dataList: [
-        { id: '1', month: '2025年8月' },
-        { id: '2', month: '2025年7月' },
-        { id: '3', month: '2025年6月' }
-      ]
+      taskList: [],
+      dataList: [],
+      loading: false,
+      dataLoading: false
     }
   }
 
@@ -37,37 +39,130 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
     const params = Taro.getCurrentInstance().router?.params
     if (params) {
       this.setState({
+        id: params.id || '',
+        appkey: params.appkey || '',
         title: decodeURIComponent(params.title || ''),
-        description: decodeURIComponent(params.description || ''),
-        timeRange: decodeURIComponent(params.timeRange || '')
+        pageType: params.pageType || ''
+      })
+
+      // 使用传递的标题设置导航栏
+      const title = decodeURIComponent(params.title || '填报任务')
+      Taro.setNavigationBarTitle({
+        title: title
+      })
+
+      console.log('详情页接收参数:', {
+        id: params.id,
+        appkey: params.appkey,
+        title: decodeURIComponent(params.title || ''),
+        pageType: params.pageType
+      })
+
+      // 加载填报任务列表
+      if (params.appkey) {
+        this.loadTaskList(params.appkey)
+      }
+    } else {
+      Taro.setNavigationBarTitle({
+        title: '填报任务'
       })
     }
+  }
 
-    Taro.setNavigationBarTitle({
-      title: '填报任务'
-    })
+  // 加载填报任务列表
+  loadTaskList = async (taskType: string) => {
+    this.setState({ loading: true })
+
+    try {
+      console.log('开始获取填报任务列表，taskType:', taskType)
+      const response = await apiClient.getTaskInfoList(taskType)
+
+      if (response.success && response.data) {
+        this.setState({
+          taskList: response.data,
+          loading: false
+        })
+        console.log('填报任务列表获取成功:', response.data)
+      } else {
+        console.warn('填报任务列表获取失败:', response.message)
+        Taro.showToast({
+          title: response.message || '获取任务列表失败',
+          icon: 'none'
+        })
+        this.setState({ loading: false })
+      }
+    } catch (error) {
+      console.error('获取填报任务列表失败:', error)
+      Taro.showToast({
+        title: '网络错误，请重试',
+        icon: 'none'
+      })
+      this.setState({ loading: false })
+    }
+  }
+
+  // 加载数据列表
+  loadDataList = async (appkey: string) => {
+    this.setState({ dataLoading: true })
+
+    try {
+      console.log('开始获取数据列表，appkey:', appkey)
+      const response = await apiClient.getDataList(appkey)
+
+      if (response.success && response.data) {
+        this.setState({
+          dataList: response.data.data || [],
+          dataLoading: false
+        })
+        console.log('数据列表获取成功:', response.data)
+      } else {
+        console.warn('数据列表获取失败:', response.message)
+        Taro.showToast({
+          title: response.message || '获取数据列表失败',
+          icon: 'none'
+        })
+        this.setState({ dataLoading: false })
+      }
+    } catch (error) {
+      console.error('获取数据列表失败:', error)
+      Taro.showToast({
+        title: '网络错误，请重试',
+        icon: 'none'
+      })
+      this.setState({ dataLoading: false })
+    }
   }
 
   handleTabChange = (tab: 'task' | 'data') => {
     this.setState({ activeTab: tab })
+
+    // 如果切换到数据列表Tab且还没有加载过数据，则加载数据
+    if (tab === 'data' && this.state.dataList.length === 0 && this.state.appkey) {
+      this.loadDataList(this.state.appkey)
+    }
   }
 
   handleGoToReport = () => {
+    const { appkey, title } = this.state
+    console.log('点击去填报，appkey:', appkey, 'title:', title)
+
+    // 可以根据appkey来决定跳转到不同的填报页面
     Taro.showToast({
-      title: '去填报功能开发中',
+      title: `将跳转到${title}填报页面`,
       icon: 'none'
     })
   }
 
-  handleDataItemClick = (item: any) => {
+  handleTaskItemClick = (task: TaskInfoItem) => {
+    console.log('点击任务:', task)
     Taro.showToast({
-      title: `点击了${item.month}`,
+      title: `点击了任务：${task.taskName}`,
       icon: 'none'
     })
   }
 
   render() {
-    const { title, description, timeRange, activeTab, dataList } = this.state
+    const { title, appkey, pageType, activeTab, taskList, dataList, loading, dataLoading } = this.state
 
     return (
       <View className='data-report-detail'>
@@ -75,7 +170,7 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
         <Breadcrumb
           items={[
             { name: '数据上报', path: '/pages/dataReportList/index' },
-            { name: '填报任务' }
+            { name: title || '填报任务' }
           ]}
         />
 
@@ -98,31 +193,81 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
         {/* 内容区域 */}
         <View className='content'>
           {activeTab === 'task' ? (
-            <View className='detail-card'>
-              <Text className='detail-title'>{title}</Text>
-              <Text className='detail-desc'>{description}</Text>
-              <Text className='detail-time'>时间：{timeRange}</Text>
-              <Button className='report-btn' onClick={this.handleGoToReport}>
-                去填报
-              </Button>
+            <View className='task-list-container'>
+              {loading ? (
+                <View className='loading-state'>
+                  <Text>正在加载填报任务...</Text>
+                </View>
+              ) : taskList.length === 0 ? (
+                <View className='empty-state'>
+                  <Text>暂无填报任务</Text>
+                </View>
+              ) : (
+                <View className='task-list'>
+                  {taskList.map(task => (
+                    <View key={task.id} className='task-card'>
+                      <Text className='task-card-title'>{task.taskName}</Text>
+                      {task.taskNote && (
+                        <Text className='task-card-desc'>
+                          {task.taskNote}
+                        </Text>
+                      )}
+                      <Text className='task-card-time'>
+                        时间：{task.taskStartdate.split(' ')[0]}~{task.taskEnddate.split(' ')[0]}
+                      </Text>
+                      <Button
+                        className='task-card-btn'
+                        onClick={() => this.handleTaskItemClick(task)}
+                      >
+                        去填报
+                      </Button>
+                    </View>
+                  ))}
+                </View>
+              )}
             </View>
           ) : (
             <View className='data-list-container'>
               <View className='data-header'>
                 <Text className='data-header-text'>已填报数据</Text>
               </View>
-              <View className='data-list'>
-                {dataList.map(item => (
-                  <View
-                    key={item.id}
-                    className='data-item'
-                    onClick={() => this.handleDataItemClick(item)}
-                  >
-                    <Text className='data-item-text'>{item.month}</Text>
-                    <View className='data-item-arrow'>›</View>
-                  </View>
-                ))}
-              </View>
+              {dataLoading ? (
+                <View className='loading-state'>
+                  <Text>正在加载数据列表...</Text>
+                </View>
+              ) : dataList.length === 0 ? (
+                <View className='empty-state'>
+                  <Text>暂无已填报数据</Text>
+                </View>
+              ) : (
+                <View className='data-list'>
+                  {dataList.map(item => (
+                    <View key={item.id} className='data-card'>
+                      <View className='data-card-header'>
+                        <Text className='data-card-title'>
+                          {item.title || `数据记录 ${item.id}`}
+                        </Text>
+                        <Text className='data-card-status'>
+                          {item.status === 1 ? '已提交' : '草稿'}
+                        </Text>
+                      </View>
+                      {item.content && (
+                        <Text className='data-card-content'>
+                          {item.content}
+                        </Text>
+                      )}
+                      <View className='data-card-footer'>
+                        <Text className='data-card-time'>
+                          创建时间：{item.createTime?.split(' ')[0] || ''}
+                        </Text>
+                        <Text className='data-card-author'>
+                          创建人：{item.createBy || ''}
+                        </Text>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              )}
             </View>
           )}
         </View>

@@ -582,6 +582,48 @@ class ApiClient {
     return response
   }
 
+  // 获取数据上报列表
+  async getDataReportList(pageType: string = 'zkzbtby'): Promise<ApiResponse<DataReportItem[]>> {
+    console.log('获取数据上报列表API请求:', '/api/v1/pageurl/settings/list')
+    console.log('请求参数:', { pageType })
+
+    const response = await this.request<DataReportItem[]>(
+      `/api/v1/pageurl/settings/list?pageType=${pageType}`,
+      'GET'
+    )
+
+    console.log('数据上报列表API响应:', response)
+    return response
+  }
+
+  // 获取填报任务列表
+  async getTaskInfoList(taskType: string): Promise<ApiResponse<TaskInfoItem[]>> {
+    console.log('获取填报任务列表API请求:', '/api/v1/taskInfo/listTaskInfosByuser')
+    console.log('请求参数:', { taskType })
+
+    const response = await this.request<TaskInfoItem[]>(
+      `/api/v1/taskInfo/listTaskInfosByuser?taskType=${taskType}`,
+      'GET'
+    )
+
+    console.log('填报任务列表API响应:', response)
+    return response
+  }
+
+  // 获取数据列表
+  async getDataList(appkey: string, pageNo: number = 1, pageSize: number = 10): Promise<ApiResponse<DataListResponseData>> {
+    console.log('获取数据列表API请求:', `/api/v1/data/${appkey}/list`)
+    console.log('请求参数:', { appkey, pageNo, pageSize })
+
+    const response = await this.request<DataListResponseData>(
+      `/api/v1/data/${appkey}/list?pageNo=${pageNo}&pageSize=${pageSize}`,
+      'GET'
+    )
+
+    console.log('数据列表API响应:', response)
+    return response
+  }
+
   // 文件上传接口
   async uploadFile(filePath: string): Promise<UploadFileResponseData> {
     const fullUrl = `${this.baseURL}/api/v1/upload/v2/upload`
@@ -844,6 +886,42 @@ interface InspectItemListResponseData {
   warnings: any
 }
 
+// 数据上报列表项
+interface DataReportItem {
+  id: string
+  appkey: string
+  pageName: string
+  pageType: string
+  departmentId: string | null
+  orgId: string | null
+  modelId: string
+  status: string
+  createBy: string | null
+  createTime: string | null
+  updateBy: string | null
+  updateTime: string | null
+  permission: any
+}
+
+// 填报任务列表项
+interface TaskInfoItem {
+  id: string
+  taskName: string
+  taskType: string
+  taskStartdate: string
+  taskEnddate: string
+  taskNote: string
+  taskUrl: string | null
+  status: number
+  orgId: string
+  createBy: string
+  createTime: string
+  updateBy: string
+  updateTime: string
+  remarks: string | null
+  permission: any
+}
+
 // 督查结果保存项目数据
 interface InspectResultItem {
   createBy?: string
@@ -997,5 +1075,28 @@ interface EvidenceListResponseData {
   warnings: any
 }
 
+// 数据列表项
+interface DataListItem {
+  id: string
+  createTime: string
+  updateTime: string
+  title?: string
+  content?: string
+  status: number
+  createBy: string
+  updateBy?: string
+  [key: string]: any  // 允许其他动态字段
+}
+
+// 数据列表响应数据
+interface DataListResponseData {
+  data: DataListItem[]
+  errCode: number
+  message: string | null
+  pageInfo: PageInfo
+  success: boolean
+  warnings: any
+}
+
 // 导出类型
-export type { OAuthLoginParams, LoginParams, LoginXParams, LoginResponseData, DecryptPhoneParams, DecryptPhoneResponseData, TaskLiveListParams, TaskLiveListItem, TaskLiveListResponseData, BatchInfo, BatchListParams, BatchListResponseData, PatientInfo, PatientListParams, PatientListResponseData, DepartmentInfo, DepartmentListParams, DepartmentListResponseData, PageInfo, ApiResponse, DictItem, DictDetailResponseData, PatientAddParams, PatientAddResponseData, PatientDetailParams, PatientDetailResponseData, InspectItem, InspectItemListParams, InspectItemListResponseData, InspectResultItem, InspectResultSaveParams, InspectResultSaveResponseData, DepartmentInspectResultItem, InspectEMRResult, UploadFileResponseData, CreateEvidenceParams, CreateDepartmentEvidenceParams, CreateEvidenceResponseData, EvidenceItem, EvidenceListResponseData }
+export type { OAuthLoginParams, LoginParams, LoginXParams, LoginResponseData, DecryptPhoneParams, DecryptPhoneResponseData, TaskLiveListParams, TaskLiveListItem, TaskLiveListResponseData, BatchInfo, BatchListParams, BatchListResponseData, PatientInfo, PatientListParams, PatientListResponseData, DepartmentInfo, DepartmentListParams, DepartmentListResponseData, PageInfo, ApiResponse, DictItem, DictDetailResponseData, PatientAddParams, PatientAddResponseData, PatientDetailParams, PatientDetailResponseData, InspectItem, InspectItemListParams, InspectItemListResponseData, InspectResultItem, InspectResultSaveParams, InspectResultSaveResponseData, DepartmentInspectResultItem, InspectEMRResult, UploadFileResponseData, CreateEvidenceParams, CreateDepartmentEvidenceParams, CreateEvidenceResponseData, EvidenceItem, EvidenceListResponseData, DataReportItem, TaskInfoItem, DataListItem, DataListResponseData }

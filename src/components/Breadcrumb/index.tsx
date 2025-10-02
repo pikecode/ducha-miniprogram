@@ -14,8 +14,8 @@ export default class Breadcrumb extends Component<BreadcrumbProps> {
 
   handleNavigate = (path?: string) => {
     if (path) {
-      // 督查页面是TabBar页面，使用switchTab
-      if (path === '/pages/qualityControl/index') {
+      // TabBar页面需要使用switchTab
+      if (path === '/pages/qualityControl/index' || path === '/pages/dataReportList/index') {
         Taro.switchTab({
           url: path
         })
