@@ -62,7 +62,7 @@
 /* 图片查看器主体 - 透明背景 */
 .image-viewer-body {
   flex: 1;
-  padding: 30px;
+  padding: 16px;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
 }
@@ -138,9 +138,10 @@
   align-items: center;
   justify-content: center;
   background: #f8f9fa;
-  border-radius: 12px;
+  border-radius: 6px;
   overflow: hidden;
   min-height: 300px;
+  border: 1px solid #e8e8e8;
 }
 
 .main-image {
@@ -189,18 +190,19 @@
 /* 删除按钮 */
 .delete-button {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 48px;
-  height: 48px;
-  background: rgba(255, 0, 0, 0.8);
-  border-radius: 50%;
+  top: 4px;
+  right: 4px;
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 77, 79, 0.9);
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .delete-button:active {
@@ -209,7 +211,7 @@
 }
 
 .delete-icon {
-  font-size: 24px;
+  font-size: 18px;
   color: #fff;
 }
 
@@ -241,17 +243,18 @@
   position: relative;
   width: 80px;
   height: 80px;
-  border-radius: 8px;
+  border-radius: 4px;
   overflow: hidden;
   cursor: pointer;
   transition: all 0.2s ease;
-  border: 2px solid transparent;
+  border: 1px solid #e8e8e8;
   flex-shrink: 0;
 }
 
 .thumbnail-item.active {
   border-color: #1890ff;
-  transform: scale(1.05);
+  border-width: 2px;
+  box-shadow: 0 0 0 1px rgba(24, 144, 255, 0.2);
 }
 
 .thumbnail-item:active {

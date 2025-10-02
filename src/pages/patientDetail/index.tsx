@@ -517,11 +517,21 @@ export default class PatientDetail extends Component<{}, PatientDetailState> {
         // 如果有整体存在不足内容，保存整体存在不足
         if (overallInsufficient && overallInsufficient.trim() !== '' && patient?.batchId) {
           try {
-            const insufficientResponse = await apiClient.updateEmrInsufficient({
+            console.log('=== updateEmrInsufficient API 参数调试 ===')
+            console.log('1. overallInsufficient:', overallInsufficient)
+            console.log('2. overallInsufficient.trim():', overallInsufficient.trim())
+            console.log('3. patient?.batchId:', patient?.batchId)
+            console.log('4. patientId:', patientId)
+            console.log('5. patient 完整对象:', JSON.stringify(patient, null, 2))
+
+            const updateParams = {
               batchId: patient.batchId,
               insufficient: overallInsufficient.trim(),
-              emr_info: patientId
-            })
+              id: patientId
+            }
+            console.log('6. 最终发送的API参数:', JSON.stringify(updateParams, null, 2))
+
+            const insufficientResponse = await apiClient.updateEmrInsufficient(updateParams)
 
             if (!insufficientResponse.success) {
               console.warn('保存整体存在不足失败:', insufficientResponse.message)

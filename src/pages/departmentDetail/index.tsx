@@ -5,6 +5,7 @@ import { apiClient, InspectItem, InspectResultItem, DictItem, DepartmentInspectR
 import apiConfig from '../../config/apiConfig.json'
 import Breadcrumb from '../../components/Breadcrumb'
 import InspectItemCard from '../../components/InspectItemCard'
+import ImageViewer from '../../components/ImageViewer'
 import './index.scss'
 
 interface DepartmentDetailState {
@@ -31,6 +32,10 @@ interface DepartmentDetailState {
   evaluationOptions: DictItem[]
   optionsLoading: boolean
   overallInsufficient: string
+  // 图片查看器相关
+  imageViewerVisible: boolean
+  currentEvidenceList: EvidenceItem[]
+  evidenceLoading: boolean
 }
 
 export default class DepartmentDetail extends Component<{}, DepartmentDetailState> {
@@ -52,7 +57,11 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
       remarks: {},
       evaluationOptions: [],
       optionsLoading: false,
-      overallInsufficient: ''
+      overallInsufficient: '',
+      // 图片查看器相关
+      imageViewerVisible: false,
+      currentEvidenceList: [],
+      evidenceLoading: false
     }
   }
 
@@ -98,6 +107,60 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
     }
   }
 
+  // 初始化表单状态
+  initializeFormState = (inspectItems: InspectItem[]) => {
+    const questions: Array<{
+      id: string
+      title: string
+      type: 'radio' | 'input'
+      options?: string[]
+      value?: string
+      inputValue?: string
+      scoreValue?: string
+    }> = []
+
+    const scores: Record<string, string> = {}
+
+    inspectItems.forEach(item => {
+      // 如果有评级数据，添加到questions中
+      if (item.levelName) {
+        questions.push({
+          id: item.id,
+          title: item.itemName,
+          type: 'radio',
+          value: item.levelName
+        })
+      }
+
+      // 如果有备注数据，添加到questions中
+      if (item.comment) {
+        const existingIndex = questions.findIndex(q => q.id === item.id)
+        if (existingIndex >= 0) {
+          questions[existingIndex].inputValue = item.comment
+        } else {
+          questions.push({
+            id: item.id,
+            title: item.itemName,
+            type: 'input',
+            inputValue: item.comment
+          })
+        }
+      }
+
+      // 如果有评分数据，添加到scores中
+      if (item.score !== undefined && item.score !== null) {
+        scores[item.id] = item.score.toString()
+      }
+    })
+
+    this.setState({
+      questions,
+      scores
+    })
+
+    console.log('初始化表单状态:', { questions, scores })
+  }
+
   // 加载督查项目列表
   loadInspectItems = async (planId: string, departmentId: string) => {
     if (!planId || !departmentId) {
@@ -114,8 +177,13 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
       console.log('部门督查项目响应:', response)
 
       if (response.success && response.data) {
+        const inspectItems = response.data || []
+
+        // 初始化表单状态，根据已有的数据设置
+        this.initializeFormState(inspectItems)
+
         this.setState({
-          inspectItems: response.data || [],
+          inspectItems: inspectItems,
           itemsLoading: false
         })
         console.log('部门督查项目获取成功:', response.data)
@@ -215,7 +283,10 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
 
   // 处理图片上传
   handleUploadImage = async (itemId: string) => {
-    const { taskId, departmentId } = this.state
+    const { taskId, departmentId, inspectItems } = this.state
+
+    // 根据itemId找到对应的督查项目
+    const currentItem = inspectItems.find(item => item.id === itemId)
 
     try {
       // 选择图片
@@ -245,11 +316,10 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
           if (fileId) {
             // 创建证据记录
             const evidenceParams: CreateDepartmentEvidenceParams = {
-              batchId: taskId,
+              batchId: currentItem?.batchId || taskId, // 使用接口返回的batchId
               departmentId: departmentId,
-              emrId: departmentId, // 部门督查中emrId使用departmentId
               fileId: fileId,
-              itemId: itemId,
+              itemId: currentItem?.itemId || itemId, // 使用接口返回的itemId
               orgId: apiConfig.config.orgId,
               planId: taskId
             }
@@ -262,6 +332,9 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
                 title: '上传成功',
                 icon: 'success'
               })
+
+              // 刷新督查项目列表，更新照片数量
+              this.refreshInspectItems()
             } else {
               throw new Error(evidenceResponse.message || '创建证据记录失败')
             }
@@ -284,36 +357,112 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
 
   // 处理查看图片
   handleViewImages = async (itemId: string) => {
+    const { inspectItems } = this.state
+
+    // 根据itemId找到对应的督查项目
+    const currentItem = inspectItems.find(item => item.id === itemId)
+    const actualItemId = currentItem?.itemId || itemId
+
+    // 先打开图片查看器，显示加载状态
+    this.setState({
+      imageViewerVisible: true,
+      evidenceLoading: true,
+      currentEvidenceList: []
+    })
+
     try {
-      // 获取图片列表
-      const response = await apiClient.getDepartmentEvidenceList(itemId)
+      // 获取图片列表，使用正确的itemId
+      const response = await apiClient.getDepartmentEvidenceList(actualItemId)
 
-      if (response.success && response.data && response.data.data) {
-        const evidences: EvidenceItem[] = response.data.data
+      console.log('部门图片列表响应:', response)
 
-        if (evidences.length === 0) {
-          Taro.showToast({
-            title: '暂无图片',
-            icon: 'none'
-          })
-          return
-        }
+      if (response.success && response.data) {
+        // 直接使用 response.data，不是 response.data.data
+        const evidences: EvidenceItem[] = response.data || []
 
-        // 打开图片查看器
-        // 这里可以使用现有的 ImageViewer 组件
-        console.log('查看图片:', evidences)
+        // 构造图片URL
+        const evidencesWithUrl = evidences.map(evidence => ({
+          ...evidence,
+          fileUrl: evidence.fileUrl || `https://bi.hskj.cc/api/v1/file/download/${evidence.fileId}`
+        }))
+
+        this.setState({
+          currentEvidenceList: evidencesWithUrl,
+          evidenceLoading: false
+        })
       } else {
-        Taro.showToast({
-          title: '获取图片列表失败',
-          icon: 'none'
+        console.warn('获取图片列表失败:', response.message)
+        this.setState({
+          currentEvidenceList: [],
+          evidenceLoading: false
         })
       }
     } catch (error) {
       console.error('获取图片列表失败:', error)
+      this.setState({
+        currentEvidenceList: [],
+        evidenceLoading: false
+      })
+    }
+  }
+
+  // 关闭图片查看器
+  handleCloseImageViewer = () => {
+    this.setState({
+      imageViewerVisible: false,
+      currentEvidenceList: []
+    })
+  }
+
+  // 删除图片
+  handleDeleteEvidence = async (evidenceId: string) => {
+    try {
+      const response = await apiClient.archiveEvidence(evidenceId)
+      if (response.success) {
+        Taro.showToast({
+          title: '删除成功',
+          icon: 'success'
+        })
+
+        // 重新加载图片列表
+        const updatedList = this.state.currentEvidenceList.filter(item => item.id !== evidenceId)
+        this.setState({
+          currentEvidenceList: updatedList
+        })
+
+        // 如果没有图片了，关闭查看器
+        if (updatedList.length === 0) {
+          this.handleCloseImageViewer()
+        }
+
+        // 刷新督查项目列表，更新照片数量
+        this.refreshInspectItems()
+      } else {
+        throw new Error(response.message || '删除失败')
+      }
+    } catch (error) {
+      console.error('删除图片失败:', error)
       Taro.showToast({
-        title: '获取图片失败',
+        title: error.message || '删除失败',
         icon: 'none'
       })
+    }
+  }
+
+  // 刷新督查项目列表
+  refreshInspectItems = async () => {
+    const { taskId, departmentId } = this.state
+    if (!taskId || !departmentId) return
+
+    try {
+      const response = await apiClient.getDepartmentInspectItemList(taskId, departmentId)
+      if (response.success && response.data) {
+        this.setState({
+          inspectItems: response.data || []
+        })
+      }
+    } catch (error) {
+      console.error('刷新督查项目列表失败:', error)
     }
   }
 
@@ -353,8 +502,8 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
     const saveData: DepartmentInspectResultItem[] = inspectItems.map(item => {
       const resultItem: DepartmentInspectResultItem = {
         id: item.id,
-        batchId: taskId,
-        itemId: item.id,
+        batchId: item.batchId || taskId, // 使用接口返回的batchId，fallback到taskId
+        itemId: item.itemId || item.id, // 使用接口返回的itemId，fallback到id
         itemuserId: item.itemuserId || undefined
       }
 
@@ -515,6 +664,15 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
             保存并返回
           </Button>
         </View>
+
+        {/* 图片查看器 */}
+        <ImageViewer
+          visible={this.state.imageViewerVisible}
+          evidenceList={this.state.currentEvidenceList}
+          loading={this.state.evidenceLoading}
+          onClose={this.handleCloseImageViewer}
+          onDelete={this.handleDeleteEvidence}
+        />
       </View>
     )
   }

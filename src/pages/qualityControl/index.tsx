@@ -7,9 +7,7 @@ import './index.scss'
 
 interface QualityControlState {
   taskList: TaskLiveListItem[]
-  filteredTaskList: TaskLiveListItem[]
   loading: boolean
-  currentFilter: 'all' | 'medical' | 'department'
 }
 
 export default class QualityControl extends Component<{}, QualityControlState> {
@@ -18,9 +16,7 @@ export default class QualityControl extends Component<{}, QualityControlState> {
     super(props)
     this.state = {
       taskList: [],
-      filteredTaskList: [],
-      loading: false,
-      currentFilter: 'all'
+      loading: false
     }
   }
 
@@ -72,7 +68,6 @@ export default class QualityControl extends Component<{}, QualityControlState> {
       if (response.success && response.data) {
         this.setState({
           taskList: response.data,
-          filteredTaskList: response.data,
           loading: false
         })
         console.log('督查列表获取成功:', response.data)
@@ -167,25 +162,9 @@ export default class QualityControl extends Component<{}, QualityControlState> {
     }
   }
 
-  // 筛选督查列表
-  filterTasks = (filter: 'all' | 'medical' | 'department') => {
-    const { taskList } = this.state
-    let filteredList = taskList
-
-    if (filter === 'medical') {
-      filteredList = taskList.filter(task => this.getTaskType(task).type === 'medical')
-    } else if (filter === 'department') {
-      filteredList = taskList.filter(task => this.getTaskType(task).type === 'department')
-    }
-
-    this.setState({
-      filteredTaskList: filteredList,
-      currentFilter: filter
-    })
-  }
 
   render () {
-    const { filteredTaskList, loading, currentFilter } = this.state
+    const { taskList, loading } = this.state
 
     if (loading) {
       return (
@@ -199,34 +178,12 @@ export default class QualityControl extends Component<{}, QualityControlState> {
 
     return (
       <View className='quality-control'>
-        {/* 筛选按钮 */}
-        <View className='filter-tabs'>
-          <View
-            className={`filter-tab ${currentFilter === 'all' ? 'active' : ''}`}
-            onClick={() => this.filterTasks('all')}
-          >
-            <Text>全部</Text>
-          </View>
-          <View
-            className={`filter-tab ${currentFilter === 'medical' ? 'active' : ''}`}
-            onClick={() => this.filterTasks('medical')}
-          >
-            <Text>现场督查</Text>
-          </View>
-          <View
-            className={`filter-tab ${currentFilter === 'department' ? 'active' : ''}`}
-            onClick={() => this.filterTasks('department')}
-          >
-            <Text>线上督查</Text>
-          </View>
-        </View>
-
-        {filteredTaskList.length === 0 ? (
+        {taskList.length === 0 ? (
           <View className='empty'>
             <Text>暂无督查任务</Text>
           </View>
         ) : (
-          filteredTaskList.map(task => {
+          taskList.map(task => {
             const taskType = this.getTaskType(task)
             return (
               <View

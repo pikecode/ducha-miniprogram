@@ -15,6 +15,7 @@
   align-items: center;
   gap: 16px;
   height: 64px;
+  min-height: 64px;
 }
 
 .add-btn {
@@ -62,8 +63,12 @@
 }
 
 .search-box {
+  margin: 0;
   width: 240px;
   flex: 1;
+  height: 64px;
+  display: flex;
+  align-items: center;
 }
 
 .search-input {
@@ -74,6 +79,8 @@
   padding: 0 16px;
   font-size: 22px;
   background: #fff;
+  box-sizing: border-box;
+  line-height: 64px;
 }
 
 /* 病例列表 */

@@ -557,9 +557,15 @@ class ApiClient {
   }
 
   // 更新病例整体存在不足接口
-  async updateEmrInsufficient(params: { batchId: string, insufficient: string, emr_info: string }): Promise<ApiResponse<any>> {
-    console.log('更新病例存在不足API请求:', '/api/v1/inspect/emr/result/updateEmrInsufficient')
-    console.log('请求参数:', JSON.stringify(params, null, 2))
+  async updateEmrInsufficient(params: { batchId: string, insufficient: string, id: string }): Promise<ApiResponse<any>> {
+    console.log('=== 更新病例存在不足API详细调试 ===')
+    console.log('API路径:', '/api/v1/inspect/emr/result/updateEmrInsufficient')
+    console.log('请求方法:', 'POST')
+    console.log('请求参数详情:')
+    console.log('  - batchId:', params.batchId, '(类型:', typeof params.batchId, ')')
+    console.log('  - insufficient:', params.insufficient, '(类型:', typeof params.insufficient, ', 长度:', params.insufficient?.length, ')')
+    console.log('  - id:', params.id, '(类型:', typeof params.id, ')')
+    console.log('完整请求参数JSON:', JSON.stringify(params, null, 2))
 
     const response = await this.request<any>(
       '/api/v1/inspect/emr/result/updateEmrInsufficient',
@@ -567,7 +573,12 @@ class ApiClient {
       params
     )
 
-    console.log('更新病例存在不足API响应:', response)
+    console.log('=== 更新病例存在不足API响应调试 ===')
+    console.log('响应状态:', response.success)
+    console.log('响应消息:', response.message)
+    console.log('响应数据:', response.data)
+    console.log('完整响应JSON:', JSON.stringify(response, null, 2))
+    console.log('=== API调试结束 ===')
     return response
   }
 
@@ -781,24 +792,40 @@ interface PatientDetailResponseData {
 interface InspectItem {
   id: string
   itemName: string
-  itemCode: string
+  itemCode?: string
   itemScore: number
   score: number
-  remarks: string | null
+  remarks?: string | null
   status: string
-  planId: string
-  createTime: string
-  updateTime: string | null
-  checkMode: string
-  dataIndex: number
-  flowCode: string
-  flowStatus: string
-  isFolder: string
-  fileCount: number
-  passCount: number
-  rejectCount: number
-  evidences: any[]
+  planId?: string
+  createTime?: string
+  updateTime?: string | null
+  checkMode?: string
+  dataIndex?: number
+  flowCode?: string
+  flowStatus?: string
+  isFolder?: string
+  fileCount?: number
+  passCount?: number
+  rejectCount?: number
+  evidences?: any[]
   itemuserId?: string
+  // 部门督查接口返回的额外字段
+  batchId?: string
+  itemId?: string
+  comment?: string | null
+  createBy?: string
+  creater?: string
+  createrUserId?: string
+  departmentId?: string
+  level?: string | null
+  levelName?: string | null
+  needImproved?: string | null
+  permission?: any
+  problem?: string | null
+  scoreRate?: any
+  suggestion?: string | null
+  updateBy?: string | null
 }
 
 // 督查项目列表请求参数
@@ -921,7 +948,6 @@ interface CreateEvidenceParams {
 interface CreateDepartmentEvidenceParams {
   batchId: string
   departmentId: string
-  emrId: string
   fileId: string
   itemId: string
   orgId: string
