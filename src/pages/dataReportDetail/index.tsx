@@ -1,7 +1,7 @@
 import { Component } from 'react'
 import { View, Text, Button } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { apiClient, TaskInfoItem, DataListItem, DataListResponseData } from '../../utils/api'
+import { apiClient, TaskInfoItem, DataListItem } from '../../utils/api'
 import Breadcrumb from '../../components/Breadcrumb'
 import './index.scss'
 
@@ -111,7 +111,7 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
 
       if (response.success && response.data) {
         this.setState({
-          dataList: response.data.data || [],
+          dataList: response.data || [],
           dataLoading: false
         })
         console.log('数据列表获取成功:', response.data)
@@ -155,9 +155,19 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
 
   handleTaskItemClick = (task: TaskInfoItem) => {
     console.log('点击任务:', task)
-    Taro.showToast({
-      title: `点击了任务：${task.taskName}`,
-      icon: 'none'
+
+    // 跳转到表单页面
+    Taro.navigateTo({
+      url: `/pages/dataForm/index?taskType=${this.state.appkey}&taskId=${task.id}&title=${encodeURIComponent(task.taskName)}`
+    })
+  }
+
+  handleDataItemClick = (dataItem: DataListItem) => {
+    console.log('点击数据项:', dataItem)
+
+    // 跳转到表单页面（编辑模式）
+    Taro.navigateTo({
+      url: `/pages/dataForm/index?taskType=${this.state.appkey}&dataId=${dataItem.id}&title=${encodeURIComponent(dataItem.dataDate || '编辑数据')}`
     })
   }
 
@@ -242,26 +252,32 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
               ) : (
                 <View className='data-list'>
                   {dataList.map(item => (
-                    <View key={item.id} className='data-card'>
+                    <View
+                      key={item.id}
+                      className='data-card'
+                      onClick={() => this.handleDataItemClick(item)}
+                    >
                       <View className='data-card-header'>
                         <Text className='data-card-title'>
-                          {item.title || `数据记录 ${item.id}`}
-                        </Text>
-                        <Text className='data-card-status'>
-                          {item.status === 1 ? '已提交' : '草稿'}
+                          {item.dataDate || `数据记录 ${item.id.slice(-8)}`}
                         </Text>
                       </View>
-                      {item.content && (
-                        <Text className='data-card-content'>
-                          {item.content}
+                      <View className='data-card-content'>
+                        <Text className='data-card-department'>
+                          部门：{item.departmentName}
                         </Text>
-                      )}
+                        {item.remarks && (
+                          <Text className='data-card-remarks'>
+                            备注：{item.remarks}
+                          </Text>
+                        )}
+                      </View>
                       <View className='data-card-footer'>
                         <Text className='data-card-time'>
                           创建时间：{item.createTime?.split(' ')[0] || ''}
                         </Text>
                         <Text className='data-card-author'>
-                          创建人：{item.createBy || ''}
+                          创建人：{item.userName || item.createBy}
                         </Text>
                       </View>
                     </View>

@@ -477,6 +477,45 @@ class ApiClient {
     )
   }
 
+  // 获取数据归属周期字典
+  async getDataDateDict(): Promise<ApiResponse<DictDetailResponseData>> {
+    console.log('获取数据归属周期字典API请求:', `${API_CONFIG.ENDPOINTS.DICT_DETAIL}?key=DataDate`)
+
+    const response = await this.request<DictDetailResponseData>(
+      `${API_CONFIG.ENDPOINTS.DICT_DETAIL}?key=DataDate`,
+      'GET'
+    )
+
+    console.log('数据归属周期字典API响应:', response)
+    return response
+  }
+
+  // 获取数据年度字典
+  async getDataYearDict(): Promise<ApiResponse<DictDetailResponseData>> {
+    console.log('获取数据年度字典API请求:', `${API_CONFIG.ENDPOINTS.DICT_DETAIL}?key=DataYear`)
+
+    const response = await this.request<DictDetailResponseData>(
+      `${API_CONFIG.ENDPOINTS.DICT_DETAIL}?key=DataYear`,
+      'GET'
+    )
+
+    console.log('数据年度字典API响应:', response)
+    return response
+  }
+
+  // 获取指标详情
+  async getIndicatorDetail(code: string): Promise<ApiResponse<IndicatorDetailResponseData>> {
+    console.log('获取指标详情API请求:', `/api/v1/indicator/detail/getbycode?code=${code}`)
+
+    const response = await this.request<IndicatorDetailResponseData>(
+      `/api/v1/indicator/detail/getbycode?code=${code}`,
+      'GET'
+    )
+
+    console.log('指标详情API响应:', response)
+    return response
+  }
+
   // 添加病例接口
   async addPatient(params: PatientAddParams): Promise<ApiResponse<PatientAddResponseData>> {
     return this.request<PatientAddResponseData>(
@@ -611,11 +650,11 @@ class ApiClient {
   }
 
   // 获取数据列表
-  async getDataList(appkey: string, pageNo: number = 1, pageSize: number = 10): Promise<ApiResponse<DataListResponseData>> {
+  async getDataList(appkey: string, pageNo: number = 1, pageSize: number = 10): Promise<ApiResponse<DataListItem[]>> {
     console.log('获取数据列表API请求:', `/api/v1/data/${appkey}/list`)
     console.log('请求参数:', { appkey, pageNo, pageSize })
 
-    const response = await this.request<DataListResponseData>(
+    const response = await this.request<DataListItem[]>(
       `/api/v1/data/${appkey}/list?pageNo=${pageNo}&pageSize=${pageSize}`,
       'GET'
     )
@@ -1079,13 +1118,23 @@ interface EvidenceListResponseData {
 interface DataListItem {
   id: string
   createTime: string
-  updateTime: string
-  title?: string
-  content?: string
-  status: number
+  updateTime?: string | null
   createBy: string
-  updateBy?: string
-  [key: string]: any  // 允许其他动态字段
+  updateBy?: string | null
+  userName: string
+  userId: string
+  departmentId: string
+  departmentName: string
+  orgId: string
+  dataDate: string
+  dataDateId: string
+  dataStatus: string
+  status: string
+  taskId: string
+  recordStatus?: string | null
+  remarks?: string | null
+  // 其他动态字段，以t开头的数据字段
+  [key: string]: any
 }
 
 // 数据列表响应数据
@@ -1098,5 +1147,55 @@ interface DataListResponseData {
   warnings: any
 }
 
+// 指标详情数据
+interface IndicatorDetail {
+  calculatorSQL: string | null
+  caliber: string
+  categoryId: string
+  code: string
+  createBy: string
+  createTime: string
+  dataCheckRule: string | null
+  dataIndex: number
+  dataLen: string | null
+  dataType: string | null
+  define: string
+  deleteFlag: string | null
+  enableFlag: string | null
+  evaluate: string | null
+  explain: string
+  folderId: string | null
+  id: string
+  inspectionMethod: string | null
+  maxValue: string | null
+  minValue: string | null
+  name: string
+  optmethod: string | null
+  orgId: string
+  permission: string | null
+  reasonAbleMax: string | null
+  reasonAbleMin: string | null
+  responsibleDepartment: string | null
+  significance: string
+  sourceId: string | null
+  status: string | null
+  updateBy: string
+  updateTime: string
+  version: string | null
+  viewId: string | null
+  vizId: string | null
+}
+
+// 指标详情响应数据
+interface IndicatorDetailResponseData {
+  data: IndicatorDetail
+  errCode: number
+  exception: any
+  message: string | null
+  pageInfo: any
+  success: boolean
+  warnings: any
+}
+
 // 导出类型
-export type { OAuthLoginParams, LoginParams, LoginXParams, LoginResponseData, DecryptPhoneParams, DecryptPhoneResponseData, TaskLiveListParams, TaskLiveListItem, TaskLiveListResponseData, BatchInfo, BatchListParams, BatchListResponseData, PatientInfo, PatientListParams, PatientListResponseData, DepartmentInfo, DepartmentListParams, DepartmentListResponseData, PageInfo, ApiResponse, DictItem, DictDetailResponseData, PatientAddParams, PatientAddResponseData, PatientDetailParams, PatientDetailResponseData, InspectItem, InspectItemListParams, InspectItemListResponseData, InspectResultItem, InspectResultSaveParams, InspectResultSaveResponseData, DepartmentInspectResultItem, InspectEMRResult, UploadFileResponseData, CreateEvidenceParams, CreateDepartmentEvidenceParams, CreateEvidenceResponseData, EvidenceItem, EvidenceListResponseData, DataReportItem, TaskInfoItem, DataListItem, DataListResponseData }
+export type { OAuthLoginParams, LoginParams, LoginXParams, LoginResponseData, DecryptPhoneParams, DecryptPhoneResponseData, TaskLiveListParams, TaskLiveListItem, TaskLiveListResponseData, BatchInfo, BatchListParams, BatchListResponseData, PatientInfo, PatientListParams, PatientListResponseData, DepartmentInfo, DepartmentListParams, DepartmentListResponseData, PageInfo, ApiResponse, DictItem, DictDetailResponseData, PatientAddParams, PatientAddResponseData, PatientDetailParams, PatientDetailResponseData, InspectItem, InspectItemListParams, InspectItemListResponseData, InspectResultItem, InspectResultSaveParams, InspectResultSaveResponseData, DepartmentInspectResultItem, InspectEMRResult, UploadFileResponseData, CreateEvidenceParams, CreateDepartmentEvidenceParams, CreateEvidenceResponseData, EvidenceItem, EvidenceListResponseData, DataReportItem, TaskInfoItem, DataListItem, DataListResponseData, IndicatorDetail, IndicatorDetailResponseData }

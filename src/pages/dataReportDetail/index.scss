@@ -63,26 +63,31 @@
 
 /* 填报任务容器 */
 .task-list-container {
-  background: transparent;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
   margin: 24px 0;
 }
 
 .task-list {
-  padding: 0 32px;
+  padding: 0;
   background: transparent;
 }
 
 .task-card {
   background: #fff;
-  border-radius: 16px;
   padding: 32px;
-  margin-bottom: 24px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-  border: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s;
 }
 
 .task-card:last-child {
-  margin-bottom: 0;
+  border-bottom: none;
+}
+
+.task-card:active {
+  background-color: #f7f8fa;
 }
 
 .task-card-title {
@@ -187,41 +192,27 @@
 }
 
 .data-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   margin-bottom: 16px;
 }
 
 .data-card-title {
-  flex: 1;
   font-size: 30px;
   font-weight: 500;
   color: #333;
   line-height: 1.4;
-  margin-right: 16px;
-}
-
-.data-card-status {
-  padding: 8px 16px;
-  background-color: #f0f9ff;
-  color: #0369a1;
-  border-radius: 12px;
-  font-size: 22px;
-  white-space: nowrap;
 }
 
 .data-card-content {
+  margin-bottom: 20px;
+}
+
+.data-card-department,
+.data-card-remarks {
   display: block;
   font-size: 26px;
   color: #666;
   line-height: 1.5;
-  margin-bottom: 20px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  margin-bottom: 8px;
 }
 
 .data-card-footer {

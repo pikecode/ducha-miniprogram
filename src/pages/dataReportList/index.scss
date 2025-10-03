@@ -21,14 +21,31 @@
   margin-bottom: 16px;
 }
 
-.report-date {
+.report-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.report-time {
   display: block;
-  font-size: 26px;
+  font-size: 24px;
+  color: #ccc;
+  line-height: 1.5;
+}
+
+/* 加载状态 */
+.loading {
+  text-align: center;
+  padding: 120px 0;
+  font-size: 28px;
   color: #999;
-  line-height: 1.6;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
+}
+
+/* 空状态 */
+.empty {
+  text-align: center;
+  padding: 120px 0;
+  font-size: 28px;
+  color: #999;
 }

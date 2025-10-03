@@ -1,18 +1,12 @@
 import { Component } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
+import { apiClient, DataReportItem } from '../../utils/api'
 import './index.scss'
 
 interface DataReportListState {
-  reports: ReportItem[]
-}
-
-interface ReportItem {
-  id: string
-  title: string
-  date: string
-  status: 'draft' | 'submitted'
-  timeRange: string
+  reports: DataReportItem[]
+  loading: boolean
 }
 
 export default class DataReportList extends Component<{}, DataReportListState> {
@@ -20,22 +14,8 @@ export default class DataReportList extends Component<{}, DataReportListState> {
   constructor(props) {
     super(props)
     this.state = {
-      reports: [
-        {
-          id: '1',
-          title: '口腔医疗质量数据上报（年度）',
-          date: '口腔年度数据上报的具体描述等要求描述，详细描述，只显示3行，超过的截断…',
-          status: 'draft',
-          timeRange: '2025.9.9~2025.9.31'
-        },
-        {
-          id: '2',
-          title: '口腔医疗质量数据上报（月度）',
-          date: '口腔年度数据上报的具体描述等要求描述，详细描述，只显示3行，超过的截断…',
-          status: 'draft',
-          timeRange: '2025.9.9~2025.9.31'
-        }
-      ]
+      reports: [],
+      loading: false
     }
   }
 
@@ -43,6 +23,7 @@ export default class DataReportList extends Component<{}, DataReportListState> {
     Taro.setNavigationBarTitle({
       title: '数据上报'
     })
+    this.loadDataReportList()
   }
 
   componentDidShow() {
@@ -56,28 +37,84 @@ export default class DataReportList extends Component<{}, DataReportListState> {
     }
   }
 
-  handleReportClick = (report: ReportItem) => {
+  // 加载数据上报列表
+  loadDataReportList = async () => {
+    this.setState({ loading: true })
+
+    try {
+      console.log('开始获取数据上报列表...')
+      const response = await apiClient.getDataReportList('zkzbtby')
+
+      if (response.success && response.data) {
+        this.setState({
+          reports: response.data,
+          loading: false
+        })
+        console.log('数据上报列表获取成功:', response.data)
+      } else {
+        console.warn('数据上报列表获取失败:', response.message)
+        Taro.showToast({
+          title: response.message || '获取列表失败',
+          icon: 'none'
+        })
+        this.setState({ loading: false })
+      }
+    } catch (error) {
+      console.error('获取数据上报列表失败:', error)
+      Taro.showToast({
+        title: '网络错误，请重试',
+        icon: 'none'
+      })
+      this.setState({ loading: false })
+    }
+  }
+
+  handleReportClick = (report: DataReportItem) => {
     console.log('点击报表:', report)
+
+    // 跳转到详情页，传递相关参数
     Taro.navigateTo({
-      url: `/pages/dataReportDetail/index?title=${encodeURIComponent(report.title)}&description=${encodeURIComponent(report.date)}&timeRange=${encodeURIComponent(report.timeRange)}`
+      url: `/pages/dataReportDetail/index?id=${report.id}&appkey=${report.appkey}&title=${encodeURIComponent(report.pageName)}&pageType=${report.pageType}`
     })
   }
 
   render () {
-    const { reports } = this.state
+    const { reports, loading } = this.state
+
+    if (loading) {
+      return (
+        <View className='data-report-list'>
+          <View className='loading'>
+            <Text>正在加载数据上报列表...</Text>
+          </View>
+        </View>
+      )
+    }
 
     return (
       <View className='data-report-list'>
-        {reports.map(report => (
-          <View
-            key={report.id}
-            className='report-item'
-            onClick={() => this.handleReportClick(report)}
-          >
-            <Text className='report-title'>{report.title}</Text>
-            <Text className='report-date'>{report.date}</Text>
+        {reports.length === 0 ? (
+          <View className='empty'>
+            <Text>暂无数据上报任务</Text>
           </View>
-        ))}
+        ) : (
+          reports.map(report => (
+            <View
+              key={report.id}
+              className='report-item'
+              onClick={() => this.handleReportClick(report)}
+            >
+              <Text className='report-title'>{report.pageName}</Text>
+              <View className='report-meta'>
+                {report.createTime && (
+                  <Text className='report-time'>
+                    创建时间：{report.createTime}
+                  </Text>
+                )}
+              </View>
+            </View>
+          ))
+        )}
       </View>
     )
   }

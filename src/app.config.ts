@@ -3,6 +3,7 @@ export default {
     'pages/login/index',
     'pages/dataReportList/index',
     'pages/dataReportDetail/index',
+    'pages/dataForm/index',
     'pages/qualityControl/index',
     'pages/qualityDetail/index',
     'pages/departmentList/index',
