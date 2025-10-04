@@ -4,6 +4,7 @@
   "lastUpdated": "2024-10-01",
   "config": {
     "orgId": "b3140ef6c8344abb9544b3f836b27332",
-    "description": "组织ID，用于督查任务列表等接口"
+    "taskId": "default_task_id",
+    "description": "组织ID和任务ID，用于督查任务列表等接口"
   }
 }

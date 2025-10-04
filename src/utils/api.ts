@@ -663,6 +663,47 @@ class ApiClient {
     return response
   }
 
+  // 获取表单详情
+  async getFormDetail(taskType: string, id: string): Promise<ApiResponse<any>> {
+    console.log('获取表单详情API请求:', `/api/v1/data/${taskType}/detail?id=${id}`)
+
+    const response = await this.request<any>(
+      `/api/v1/data/${taskType}/detail?id=${id}`,
+      'GET'
+    )
+
+    console.log('获取表单详情API响应:', response)
+    return response
+  }
+
+  // 保存表单数据
+  async saveFormData(taskType: string, formData: any): Promise<ApiResponse<any>> {
+    console.log('保存表单数据API请求:', `/api/v1/data/${taskType}/add`)
+    console.log('请求参数:', JSON.stringify(formData, null, 2))
+
+    const response = await this.request<any>(
+      `/api/v1/data/${taskType}/add`,
+      'POST',
+      formData
+    )
+
+    console.log('保存表单数据API响应:', response)
+    return response
+  }
+
+  // 检查数据是否已填写
+  async checkDataFill(appkey: string, dataDateId: string): Promise<ApiResponse<boolean>> {
+    console.log('检查数据填写状态API请求:', `/api/v1/data/${appkey}/checkfill?dataDateId=${dataDateId}`)
+
+    const response = await this.request<boolean>(
+      `/api/v1/data/${appkey}/checkfill?dataDateId=${dataDateId}`,
+      'GET'
+    )
+
+    console.log('检查数据填写状态API响应:', response)
+    return response
+  }
+
   // 文件上传接口
   async uploadFile(filePath: string): Promise<UploadFileResponseData> {
     const fullUrl = `${this.baseURL}/api/v1/upload/v2/upload`

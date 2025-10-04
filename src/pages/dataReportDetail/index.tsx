@@ -165,9 +165,9 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
   handleDataItemClick = (dataItem: DataListItem) => {
     console.log('点击数据项:', dataItem)
 
-    // 跳转到表单页面（编辑模式）
+    // 跳转到表单页面（查看模式）
     Taro.navigateTo({
-      url: `/pages/dataForm/index?taskType=${this.state.appkey}&dataId=${dataItem.id}&title=${encodeURIComponent(dataItem.dataDate || '编辑数据')}`
+      url: `/pages/dataForm/index?taskType=${this.state.appkey}&dataId=${dataItem.id}&mode=view&title=${encodeURIComponent(dataItem.dataDate || '查看数据')}`
     })
   }
 
