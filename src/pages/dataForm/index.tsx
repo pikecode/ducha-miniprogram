@@ -17,6 +17,7 @@ interface FormField {
   group?: string
   groupIndex?: number
   hasHelp?: boolean  // 是否有说明图标
+  saveValue?: string | number  // 保存时使用的值（用于计算字段）
 }
 
 interface FormGroup {
@@ -228,12 +229,73 @@ export default class DataForm extends Component<{}, DataFormState> {
 
         // 填充分组字段数据
         const { formGroups } = this.state
+
+        // 定义所有百分比字段
+        const calculatedPercentageFields = [
+          't16Mzblsxhgl', 't21Xpgglsggzlsyl', 't23Ggcthgl', 't31Byhchl',
+          't32Byhgcl', 't34Ycfgl', 't38Zjzljhxsfhl', 't40Zjylwjwcwzl',
+          't42Gjgpl', 't44Zztxfqtll', 't45Zztzwyfsl'
+        ]
+
+        const directPercentageFields = [
+          't17Cfhl', 't18Mzkjywcfbl', 't19Kqzlqxdjhl', 't24Rygglzhl',
+          't49Rcyzdhfhl', 't50Ssqyzdhfhl', 't51Wjssqkjxyhl', 't52Zyhskjywsl',
+          't53Blzyylcdzydhfhl', 't5410Ypzzfybl', 't5411Kjywzypfybl'
+        ]
+
         const updatedGroups = formGroups.map(group => ({
           ...group,
-          fields: group.fields.map(field => ({
-            ...field,
-            value: formData[field.key] !== undefined ? formData[field.key] : field.value
-          }))
+          fields: group.fields.map(field => {
+            if (formData[field.key] !== undefined) {
+              // 如果是计算的百分比字段，需要转换显示格式（小数转百分比）
+              if (calculatedPercentageFields.includes(field.key) && this.state.taskType === 'njkqkzkzzbyd') {
+                const value = Number(formData[field.key]) || 0
+                const displayValue = (value * 100).toFixed(2) + '%'
+                return {
+                  ...field,
+                  value: displayValue,
+                  saveValue: value
+                }
+              }
+
+              // 如果是直接输入的百分比字段，需要从小数转换为百分比显示（0.02 → 2%）
+              if (directPercentageFields.includes(field.key) && this.state.taskType === 'njkqkzkzzbyd') {
+                const value = formData[field.key]
+
+                if (typeof value === 'number') {
+                  // 数据库存储的是小数，转换为百分比显示
+                  const percentageValue = (value * 100).toFixed(2).replace(/\.?0+$/, '') // 移除尾随的0
+                  return {
+                    ...field,
+                    value: percentageValue + '%'
+                  }
+                } else if (typeof value === 'string') {
+                  // 如果已经是字符串格式且包含%，直接使用
+                  if (value.includes('%')) {
+                    return {
+                      ...field,
+                      value: value
+                    }
+                  } else if (value !== '' && !isNaN(Number(value))) {
+                    // 如果是数字字符串，当作小数处理
+                    const percentageValue = (Number(value) * 100).toFixed(2).replace(/\.?0+$/, '')
+                    return {
+                      ...field,
+                      value: percentageValue + '%'
+                    }
+                  }
+                }
+
+                return {
+                  ...field,
+                  value: value
+                }
+              }
+
+              return { ...field, value: formData[field.key] }
+            }
+            return field
+          })
         }))
 
         // 填充独立字段数据
@@ -256,6 +318,11 @@ export default class DataForm extends Component<{}, DataFormState> {
           dataYearField: updatedDataYearField,
           dataStatus: formData.dataStatus || null,
           loading: false
+        }, () => {
+          // 如果是njkqkzkzzbyd表单，加载完成后计算合格率
+          if (this.state.taskType === 'njkqkzkzzbyd') {
+            this.calculateAllRates()
+          }
         })
 
         console.log('表单数据加载成功')
@@ -772,9 +839,10 @@ export default class DataForm extends Component<{}, DataFormState> {
             },
             {
               key: 't16Mzblsxhgl',
-              label: '门诊病历书写合格率',
+              label: '门诊病历书写合格率（%）',
               type: 'input',
               value: '',
+              disabled: true,
               hasHelp: true
             }
           ]
@@ -835,6 +903,7 @@ export default class DataForm extends Component<{}, DataFormState> {
               label: '橡皮障隔离术在根管治疗中的使用率（%）',
               type: 'input',
               value: '',
+              disabled: true,
               hasHelp: true
             },
             {
@@ -856,6 +925,7 @@ export default class DataForm extends Component<{}, DataFormState> {
               label: '根管充填合格率（%）',
               type: 'input',
               value: '',
+              disabled: true,
               hasHelp: true
             }
           ]
@@ -940,9 +1010,10 @@ export default class DataForm extends Component<{}, DataFormState> {
             },
             {
               key: 't31Byhchl',
-              label: '拔牙术后出血率',
+              label: '拔牙术后出血率（%）',
               type: 'input',
               value: '',
+              disabled: true,
               hasHelp: true
             },
             {
@@ -954,9 +1025,10 @@ export default class DataForm extends Component<{}, DataFormState> {
             },
             {
               key: 't32Byhgcl',
-              label: '拔牙术后干槽率',
+              label: '拔牙术后干槽率（%）',
               type: 'input',
               value: '',
+              disabled: true,
               hasHelp: true
             }
           ]
@@ -981,9 +1053,10 @@ export default class DataForm extends Component<{}, DataFormState> {
             },
             {
               key: 't34Ycfgl',
-              label: '义齿返工率',
+              label: '义齿返工率（%）',
               type: 'input',
               value: '',
+              disabled: true,
               hasHelp: true
             },
             {
@@ -1022,9 +1095,10 @@ export default class DataForm extends Component<{}, DataFormState> {
             },
             {
               key: 't38Zjzljhxsfhl',
-              label: '正畸治疗计划与实际完成符合率',
+              label: '正畸治疗计划与实际完成符合率（%）',
               type: 'input',
               value: '',
+              disabled: true,
               hasHelp: true
             },
             {
@@ -1043,9 +1117,10 @@ export default class DataForm extends Component<{}, DataFormState> {
             },
             {
               key: 't40Zjylwjwcwzl',
-              label: '正畸医疗文件完整率',
+              label: '正畸医疗文件完整率（%）',
               type: 'input',
               value: '',
+              disabled: true,
               hasHelp: true
             }
           ]
@@ -1070,9 +1145,10 @@ export default class DataForm extends Component<{}, DataFormState> {
             },
             {
               key: 't42Gjgpl',
-              label: '牙片甲片率',
+              label: '牙片甲片率（%）',
               type: 'input',
               value: '',
+              disabled: true,
               hasHelp: true
             }
           ]
@@ -1097,9 +1173,10 @@ export default class DataForm extends Component<{}, DataFormState> {
             },
             {
               key: 't44Zztxfqtll',
-              label: '种植体修复前脱落率',
+              label: '种植体修复前脱落率（%）',
               type: 'input',
               value: '',
+              disabled: true,
               hasHelp: true
             },
             {
@@ -1111,9 +1188,10 @@ export default class DataForm extends Component<{}, DataFormState> {
             },
             {
               key: 't45Zztzwyfsl',
-              label: '种植体周围炎发生率',
+              label: '种植体周围炎发生率（%）',
               type: 'input',
               value: '',
+              disabled: true,
               hasHelp: true
             }
           ]
@@ -1272,15 +1350,15 @@ export default class DataForm extends Component<{}, DataFormState> {
 
   // 检查数据填写状态
   checkDataFillStatus = async (dataDateId: string) => {
-    if (!dataDateId || this.state.taskType !== 'njkqkzkzzbnd') {
+    if (!dataDateId || (this.state.taskType !== 'njkqkzkzzbnd' && this.state.taskType !== 'njkqkzkzzbyd')) {
       return
     }
 
     this.setState({ checkingDataFill: true })
 
     try {
-      console.log('开始检查数据填写状态，dataDateId:', dataDateId)
-      const response = await apiClient.checkDataFill('njkqkzkzzbnd', dataDateId)
+      console.log('开始检查数据填写状态，taskType:', this.state.taskType, 'dataDateId:', dataDateId)
+      const response = await apiClient.checkDataFill(this.state.taskType, dataDateId)
 
       if (response.success) {
         const alreadyFilled = response.data === true
@@ -1315,15 +1393,122 @@ export default class DataForm extends Component<{}, DataFormState> {
     }
   }
 
+  // 实时验证字段值
+  validateFieldRealtime = (key: string, value: string | number): string | null => {
+    const { taskType } = this.state
+
+    if (taskType !== 'njkqkzkzzbyd') {
+      return null
+    }
+
+    // 如果是数字字段，验证非负数
+    if (typeof value === 'number' && value < 0) {
+      return '数值不能为负数'
+    }
+
+    // 定义分子分母关系进行实时验证
+    const numeratorDenominatorPairs = [
+      { numerator: 't16Mzblhgfs', denominator: 't15Mzblccfs' },
+      { numerator: 't21Ggzlxpzgys', denominator: 't20Ggzlbl' },
+      { numerator: 't23Ggcthgrs', denominator: 't22Ggctrs' },
+      { numerator: 't31Byhchrcs', denominator: 't30Byrcs' },
+      { numerator: 't32Byhgccrcs', denominator: 't30Byrcs' },
+      { numerator: 't34Ycfgjs', denominator: 't33Ycjjs' },
+      { numerator: 't38Zjzljhxs', denominator: 't37Zjblbl' },
+      { numerator: 't40Zjylwjwcbls', denominator: 't39Zjylwjccbl' },
+      { numerator: 't42Gjpcypjjp', denominator: 't41Gjpcypjbl' },
+      { numerator: 't44Xfqtlzztkks', denominator: 't43Zzztkks' },
+      { numerator: 't45Zztywfsbl', denominator: 't43Zzztkks' }
+    ]
+
+    // 检查当前字段是否为分子，若是则验证不能超过对应分母
+    const pair = numeratorDenominatorPairs.find(p => p.numerator === key)
+    if (pair) {
+      // 获取分母值
+      let denominatorValue = 0
+      this.state.formGroups.forEach(group => {
+        group.fields.forEach(field => {
+          if (field.key === pair.denominator) {
+            denominatorValue = Number(field.value) || 0
+          }
+        })
+      })
+
+      if (Number(value) > denominatorValue && denominatorValue > 0) {
+        return `不能大于对应分母值(${denominatorValue})`
+      }
+    }
+
+    return null
+  }
+
   // 处理字段值变化
   handleFieldChange = (key: string, value: string | number) => {
+    // 实时验证
+    const validationError = this.validateFieldRealtime(key, value)
+    if (validationError) {
+      Taro.showToast({
+        title: validationError,
+        icon: 'none',
+        duration: 1500
+      })
+    }
+
+    // 定义直接输入百分比的字段（用户输入2表示2%）
+    const directPercentageFields = [
+      't17Cfhl',        // 处方合格率
+      't18Mzkjywcfbl',  // 门诊患者抗菌药物处方比例
+      't19Kqzlqxdjhl',  // 口腔诊疗器械消毒或灭菌合格率
+      't24Rygglzhl',    // 乳牙根管治疗合格率
+      't49Rcyzdhfhl',   // 入出院诊断符合率
+      't50Ssqyzdhfhl',  // 手术前后诊断符合率
+      't51Wjssqkjxyhl', // 无菌手术切口甲级愈合率
+      't52Zyhskjywsl',  // 住院患者抗菌药物使用率
+      't53Blzyylcdzydhfhl', // 病理诊断与临床诊断符合率
+      't5410Ypzzfybl',  // 腮腺肿瘤 - 药品占总费用比例
+      't5411Kjywzypfybl' // 腮腺肿瘤 - 抗菌药物占药品费用比例
+    ]
+
+    // 处理直接输入百分比字段的格式化
+    if (directPercentageFields.includes(key) && typeof value === 'string') {
+      // 移除用户可能输入的%符号
+      let numericValue = value.replace('%', '')
+
+      // 验证是否为有效数字
+      if (numericValue !== '' && !isNaN(Number(numericValue))) {
+        const num = Number(numericValue)
+
+        // 验证不超过100%
+        if (num > 100) {
+          Taro.showToast({
+            title: '百分比不能超过100%',
+            icon: 'none',
+            duration: 1500
+          })
+          return // 不更新字段值
+        }
+
+        // 验证不能为负数
+        if (num < 0) {
+          Taro.showToast({
+            title: '百分比不能为负数',
+            icon: 'none',
+            duration: 1500
+          })
+          return // 不更新字段值
+        }
+
+        // 格式化显示：如果用户输入数字，自动添加%符号
+        value = numericValue + '%'
+      }
+    }
     // 处理独立的数据归属周期字段
     if (key === 'dataDateId' && this.state.dataDateField) {
       this.setState({
         dataDateField: { ...this.state.dataDateField, value }
       })
-      // 当选择数据归属周期时，检查是否已填写
-      if (value && typeof value === 'string') {
+      // 当选择数据归属周期时，检查是否已填写（njkqkzkzzbnd和njkqkzkzzbyd都需要）
+      if (value && typeof value === 'string' && (this.state.taskType === 'njkqkzkzzbnd' || this.state.taskType === 'njkqkzkzzbyd')) {
         this.checkDataFillStatus(value)
       }
       return
@@ -1351,7 +1536,12 @@ export default class DataForm extends Component<{}, DataFormState> {
         return field
       })
     }))
-    this.setState({ formGroups: updatedGroups })
+    this.setState({ formGroups: updatedGroups }, () => {
+      // 如果是njkqkzkzzbyd表单且修改的是相关字段，则计算所有比率
+      if (this.state.taskType === 'njkqkzkzzbyd') {
+        this.calculateAllRates()
+      }
+    })
   }
 
   // 处理选择器变化
@@ -1408,6 +1598,21 @@ export default class DataForm extends Component<{}, DataFormState> {
 
   // 保存表单
   handleSubmit = async () => {
+    // 先进行表单验证
+    const validation = this.validateForm()
+    if (!validation.isValid) {
+      const errorMessage = validation.errors.slice(0, 3).join('\n') +
+        (validation.errors.length > 3 ? `\n还有${validation.errors.length - 3}个错误...` : '')
+
+      Taro.showModal({
+        title: '表单验证失败',
+        content: errorMessage,
+        showCancel: false,
+        confirmText: '知道了'
+      })
+      return
+    }
+
     const { formGroups, isEdit, taskType, dataDateField, dataYearField, dataId } = this.state
 
     // 获取用户信息
@@ -1432,9 +1637,31 @@ export default class DataForm extends Component<{}, DataFormState> {
     }
 
     // 添加分组字段数据
+    const directPercentageFields = [
+      't17Cfhl', 't18Mzkjywcfbl', 't19Kqzlqxdjhl', 't24Rygglzhl',
+      't49Rcyzdhfhl', 't50Ssqyzdhfhl', 't51Wjssqkjxyhl', 't52Zyhskjywsl',
+      't53Blzyylcdzydhfhl', 't5410Ypzzfybl', 't5411Kjywzypfybl'
+    ]
+
     formGroups.forEach(group => {
       group.fields.forEach(field => {
-        formData[field.key] = field.value
+        // 直接输入百分比字段转换为小数保存（2% → 0.02）
+        if (directPercentageFields.includes(field.key)) {
+          const value = field.value as string
+          if (value && value.includes('%')) {
+            const numericValue = value.replace('%', '')
+            const decimalValue = Number(numericValue) / 100
+            formData[field.key] = decimalValue
+          } else if (value && !isNaN(Number(value))) {
+            // 如果用户直接输入数字没有%符号，也转换为小数
+            formData[field.key] = Number(value) / 100
+          } else {
+            formData[field.key] = field.value
+          }
+        } else {
+          // 其他字段：如果有saveValue（计算字段），使用saveValue，否则使用value
+          formData[field.key] = field.saveValue !== undefined ? field.saveValue : field.value
+        }
       })
     })
 
@@ -1502,6 +1729,21 @@ export default class DataForm extends Component<{}, DataFormState> {
       return
     }
 
+    // 先进行表单验证
+    const validation = this.validateForm()
+    if (!validation.isValid) {
+      const errorMessage = validation.errors.slice(0, 3).join('\n') +
+        (validation.errors.length > 3 ? `\n还有${validation.errors.length - 3}个错误...` : '')
+
+      Taro.showModal({
+        title: '表单验证失败',
+        content: errorMessage,
+        showCancel: false,
+        confirmText: '知道了'
+      })
+      return
+    }
+
     const { formGroups, taskType, dataDateField, dataYearField, dataId } = this.state
 
     // 获取用户信息
@@ -1526,9 +1768,31 @@ export default class DataForm extends Component<{}, DataFormState> {
     }
 
     // 添加分组字段数据
+    const directPercentageFields = [
+      't17Cfhl', 't18Mzkjywcfbl', 't19Kqzlqxdjhl', 't24Rygglzhl',
+      't49Rcyzdhfhl', 't50Ssqyzdhfhl', 't51Wjssqkjxyhl', 't52Zyhskjywsl',
+      't53Blzyylcdzydhfhl', 't5410Ypzzfybl', 't5411Kjywzypfybl'
+    ]
+
     formGroups.forEach(group => {
       group.fields.forEach(field => {
-        formData[field.key] = field.value
+        // 直接输入百分比字段转换为小数保存（2% → 0.02）
+        if (directPercentageFields.includes(field.key)) {
+          const value = field.value as string
+          if (value && value.includes('%')) {
+            const numericValue = value.replace('%', '')
+            const decimalValue = Number(numericValue) / 100
+            formData[field.key] = decimalValue
+          } else if (value && !isNaN(Number(value))) {
+            // 如果用户直接输入数字没有%符号，也转换为小数
+            formData[field.key] = Number(value) / 100
+          } else {
+            formData[field.key] = field.value
+          }
+        } else {
+          // 其他字段：如果有saveValue（计算字段），使用saveValue，否则使用value
+          formData[field.key] = field.saveValue !== undefined ? field.saveValue : field.value
+        }
       })
     })
 
@@ -1576,6 +1840,21 @@ export default class DataForm extends Component<{}, DataFormState> {
       Taro.showToast({
         title: '当前数据状态不允许提审',
         icon: 'none'
+      })
+      return
+    }
+
+    // 先进行表单验证
+    const validation = this.validateForm()
+    if (!validation.isValid) {
+      const errorMessage = validation.errors.slice(0, 3).join('\n') +
+        (validation.errors.length > 3 ? `\n还有${validation.errors.length - 3}个错误...` : '')
+
+      Taro.showModal({
+        title: '表单验证失败',
+        content: errorMessage,
+        showCancel: false,
+        confirmText: '知道了'
       })
       return
     }
@@ -1684,6 +1963,198 @@ export default class DataForm extends Component<{}, DataFormState> {
     })
   }
 
+  // 表单验证
+  validateForm = (): { isValid: boolean; errors: string[] } => {
+    const { formGroups, taskType, dataDateField, dataYearField } = this.state
+    const errors: string[] = []
+
+    // 收集所有字段值
+    const fieldValues: { [key: string]: any } = {}
+    const fieldLabels: { [key: string]: string } = {}
+
+    // 收集独立字段
+    if (dataDateField) {
+      fieldValues[dataDateField.key] = dataDateField.value
+      fieldLabels[dataDateField.key] = dataDateField.label
+    }
+    if (dataYearField) {
+      fieldValues[dataYearField.key] = dataYearField.value
+      fieldLabels[dataYearField.key] = dataYearField.label
+    }
+
+    // 收集分组字段
+    formGroups.forEach(group => {
+      group.fields.forEach(field => {
+        fieldValues[field.key] = field.value
+        fieldLabels[field.key] = field.label.replace('（%）', '') // 移除标签中的%符号
+      })
+    })
+
+    // 1. 必填验证 - 所有项目都必填
+    Object.keys(fieldValues).forEach(key => {
+      const value = fieldValues[key]
+      const label = fieldLabels[key]
+
+      if (value === '' || value === null || value === undefined) {
+        errors.push(`${label}不能为空`)
+      }
+    })
+
+    // 2. 针对njkqkzkzzbyd表单的特殊验证
+    if (taskType === 'njkqkzkzzbyd') {
+      // 定义分子分母关系
+      const numeratorDenominatorPairs = [
+        {
+          numerator: 't16Mzblhgfs',   // 抽查门诊病历合格份数
+          denominator: 't15Mzblccfs', // 门诊病历抽查份数
+          numeratorLabel: '抽查门诊病历合格份数',
+          denominatorLabel: '门诊病历抽查份数'
+        },
+        {
+          numerator: 't21Ggzlxpzgys',  // 根管治疗中橡皮障隔离术使用次数
+          denominator: 't20Ggzlbl',    // 根管治疗病例数
+          numeratorLabel: '根管治疗中橡皮障隔离术使用次数',
+          denominatorLabel: '根管治疗病例数'
+        },
+        {
+          numerator: 't23Ggcthgrs',  // 根管充填合格人数
+          denominator: 't22Ggctrs',  // 根管充填人数
+          numeratorLabel: '根管充填合格人数',
+          denominatorLabel: '根管充填人数'
+        },
+        {
+          numerator: 't31Byhchrcs',  // 拔牙后出血人次数
+          denominator: 't30Byrcs',   // 拔牙人次数
+          numeratorLabel: '拔牙后出血人次数',
+          denominatorLabel: '拔牙人次数'
+        },
+        {
+          numerator: 't32Byhgccrcs', // 拔牙后干槽症人次数
+          denominator: 't30Byrcs',   // 拔牙人次数
+          numeratorLabel: '拔牙后干槽症人次数',
+          denominatorLabel: '拔牙人次数'
+        },
+        {
+          numerator: 't34Ycfgjs',   // 义齿返工件数
+          denominator: 't33Ycjjs',  // 义齿总件数
+          numeratorLabel: '义齿返工件数',
+          denominatorLabel: '义齿总件数'
+        },
+        {
+          numerator: 't38Zjzljhxs',  // 正畸病例中治疗计划与实际符合例数
+          denominator: 't37Zjblbl',  // 正畸病例例数
+          numeratorLabel: '正畸病例中治疗计划与实际符合例数',
+          denominatorLabel: '正畸病例例数'
+        },
+        {
+          numerator: 't40Zjylwjwcbls', // 抽查正畸医疗文件完整例数
+          denominator: 't39Zjylwjccbl', // 正畸医疗文件抽查例数
+          numeratorLabel: '抽查正畸医疗文件完整例数',
+          denominatorLabel: '正畸医疗文件抽查例数'
+        },
+        {
+          numerator: 't42Gjpcypjjp',  // 根尖片抽样评价甲片例数
+          denominator: 't41Gjpcypjbl', // 根尖片抽样评价例数
+          numeratorLabel: '根尖片抽样评价甲片例数',
+          denominatorLabel: '根尖片抽样评价例数'
+        },
+        {
+          numerator: 't44Xfqtlzztkks', // 修复前脱落种植体颗数
+          denominator: 't43Zzztkks',   // 植入种植体总颗数
+          numeratorLabel: '修复前脱落种植体颗数',
+          denominatorLabel: '植入种植体总颗数'
+        },
+        {
+          numerator: 't45Zztywfsbl',  // 种植体周围炎发生例数
+          denominator: 't43Zzztkks',  // 植入种植体总颗数
+          numeratorLabel: '种植体周围炎发生例数',
+          denominatorLabel: '植入种植体总颗数'
+        }
+      ]
+
+      // 验证分子必须小于等于分母
+      numeratorDenominatorPairs.forEach(pair => {
+        const numeratorValue = Number(fieldValues[pair.numerator]) || 0
+        const denominatorValue = Number(fieldValues[pair.denominator]) || 0
+
+        if (numeratorValue > denominatorValue) {
+          errors.push(`${pair.numeratorLabel}(${numeratorValue})不能大于${pair.denominatorLabel}(${denominatorValue})`)
+        }
+
+        // 分母不能为0
+        if (denominatorValue === 0 && numeratorValue > 0) {
+          errors.push(`当${pair.numeratorLabel}大于0时，${pair.denominatorLabel}不能为0`)
+        }
+      })
+
+      // 3. 百分比字段验证
+      const calculatedPercentageFields = [
+        't16Mzblsxhgl', 't21Xpgglsggzlsyl', 't23Ggcthgl', 't31Byhchl',
+        't32Byhgcl', 't34Ycfgl', 't38Zjzljhxsfhl', 't40Zjylwjwcwzl',
+        't42Gjgpl', 't44Zztxfqtll', 't45Zztzwyfsl'
+      ]
+
+      const directPercentageFields = [
+        't17Cfhl', 't18Mzkjywcfbl', 't19Kqzlqxdjhl', 't24Rygglzhl',
+        't49Rcyzdhfhl', 't50Ssqyzdhfhl', 't51Wjssqkjxyhl', 't52Zyhskjywsl',
+        't53Blzyylcdzydhfhl', 't5410Ypzzfybl', 't5411Kjywzypfybl'
+      ]
+
+      // 验证计算的百分比字段 - 值必须在0-1之间
+      formGroups.forEach(group => {
+        group.fields.forEach(field => {
+          if (calculatedPercentageFields.includes(field.key)) {
+            const saveValue = field.saveValue !== undefined ? Number(field.saveValue) : null
+            const label = fieldLabels[field.key]
+
+            if (saveValue !== null) {
+              if (saveValue < 0) {
+                errors.push(`${label}不能小于0%`)
+              }
+              if (saveValue > 1) {
+                errors.push(`${label}不能大于100%`)
+              }
+            }
+          }
+
+          // 验证直接输入的百分比字段 - 转换为小数后值必须在0-1之间
+          if (directPercentageFields.includes(field.key)) {
+            const value = field.value as string
+            const label = fieldLabels[field.key]
+
+            if (value && value !== '') {
+              // 移除%符号获取数值
+              const numericValue = value.replace('%', '')
+              const num = Number(numericValue)
+
+              if (!isNaN(num)) {
+                if (num < 0) {
+                  errors.push(`${label}不能小于0%`)
+                }
+                if (num > 100) {
+                  errors.push(`${label}不能大于100%`)
+                }
+
+                // 转换为小数验证存储值是否在合理范围内
+                const decimalValue = num / 100
+                if (decimalValue > 1) {
+                  errors.push(`${label}转换后的值超出范围`)
+                }
+              } else {
+                errors.push(`${label}必须为有效的数字`)
+              }
+            }
+          }
+        })
+      })
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors
+    }
+  }
+
   // 检查是否可以进行保存和提审操作
   canPerformOperations = () => {
     const { dataStatus } = this.state
@@ -1691,11 +2162,118 @@ export default class DataForm extends Component<{}, DataFormState> {
     return dataStatus === '0' || dataStatus === '3'
   }
 
+  // 计算所有比率字段
+  calculateAllRates = () => {
+    const { formGroups } = this.state
+
+    // 收集所有字段值
+    const fieldValues: { [key: string]: number } = {}
+    formGroups.forEach(group => {
+      group.fields.forEach(field => {
+        if (field.type === 'number') {
+          fieldValues[field.key] = Number(field.value) || 0
+        }
+      })
+    })
+
+    // 定义所有计算公式
+    const calculations = [
+      {
+        resultField: 't16Mzblsxhgl', // 门诊病历书写合格率
+        numerator: 't16Mzblhgfs',   // 抽查门诊病历合格份数
+        denominator: 't15Mzblccfs'  // 门诊病历抽查份数
+      },
+      {
+        resultField: 't21Xpgglsggzlsyl', // 橡皮障隔离术在根管治疗中的使用率
+        numerator: 't21Ggzlxpzgys',     // 根管治疗中橡皮障隔离术使用次数
+        denominator: 't20Ggzlbl'        // 根管治疗病例数
+      },
+      {
+        resultField: 't23Ggcthgl', // 根管充填合格率
+        numerator: 't23Ggcthgrs',  // 根管充填合格人数
+        denominator: 't22Ggctrs'   // 根管充填人数
+      },
+      {
+        resultField: 't31Byhchl', // 拔牙术后出血率
+        numerator: 't31Byhchrcs', // 拔牙后出血人次数
+        denominator: 't30Byrcs'   // 拔牙人次数
+      },
+      {
+        resultField: 't32Byhgcl', // 拔牙术后干槽率
+        numerator: 't32Byhgccrcs', // 拔牙后干槽症人次数
+        denominator: 't30Byrcs'    // 拔牙人次数
+      },
+      {
+        resultField: 't34Ycfgl', // 义齿返工率
+        numerator: 't34Ycfgjs',  // 义齿返工件数
+        denominator: 't33Ycjjs'  // 义齿总件数
+      },
+      {
+        resultField: 't38Zjzljhxsfhl', // 正畸治疗计划与实际完成符合率
+        numerator: 't38Zjzljhxs',      // 正畸病例中治疗计划与实际符合例数
+        denominator: 't37Zjblbl'       // 正畸病例例数
+      },
+      {
+        resultField: 't40Zjylwjwcwzl', // 正畸医疗文件完整率
+        numerator: 't40Zjylwjwcbls',   // 抽查正畸医疗文件完整例数
+        denominator: 't39Zjylwjccbl'   // 正畸医疗文件抽查例数
+      },
+      {
+        resultField: 't42Gjgpl', // 牙片甲片率
+        numerator: 't42Gjpcypjjp', // 根尖片抽样评价甲片例数
+        denominator: 't41Gjpcypjbl' // 根尖片抽样评价例数
+      },
+      {
+        resultField: 't44Zztxfqtll', // 种植体修复前脱落率
+        numerator: 't44Xfqtlzztkks', // 修复前脱落种植体颗数
+        denominator: 't43Zzztkks'    // 植入种植体总颗数
+      },
+      {
+        resultField: 't45Zztzwyfsl', // 种植体周围炎发生率
+        numerator: 't45Zztywfsbl',   // 种植体周围炎发生例数
+        denominator: 't43Zzztkks'    // 植入种植体总颗数
+      }
+    ]
+
+    // 执行所有计算
+    const updatedGroups = formGroups.map(group => ({
+      ...group,
+      fields: group.fields.map(field => {
+        // 查找是否是计算结果字段
+        const calculation = calculations.find(calc => calc.resultField === field.key)
+        if (calculation) {
+          const numerator = fieldValues[calculation.numerator] || 0
+          const denominator = fieldValues[calculation.denominator] || 0
+
+          let displayValue = '' // 显示值（带%）
+          let saveValue = ''    // 保存值（小数）
+
+          if (denominator > 0 && numerator >= 0) {
+            const decimal = numerator / denominator // 小数形式
+            const percentage = (decimal * 100).toFixed(2) // 百分比
+            displayValue = percentage + '%'
+            saveValue = decimal.toFixed(4) // 保存4位小数精度
+          }
+
+          return {
+            ...field,
+            value: displayValue, // 显示带%的值
+            saveValue: saveValue // 保存小数值
+          }
+        }
+        return field
+      })
+    }))
+
+    this.setState({ formGroups: updatedGroups })
+    console.log('所有比率字段计算完成')
+  }
+
   // 渲染独立字段
   renderIndependentField = (field: FormField) => {
     const isDataDateField = field.key === 'dataDateId'
-    const showCheckingStatus = isDataDateField && this.state.checkingDataFill
-    const showFilledWarning = isDataDateField && this.state.dataAlreadyFilled
+    const showCheckingStatus = isDataDateField && this.state.checkingDataFill && (this.state.taskType === 'njkqkzkzzbnd' || this.state.taskType === 'njkqkzkzzbyd')
+    const showFilledWarning = isDataDateField && this.state.dataAlreadyFilled && (this.state.taskType === 'njkqkzkzzbnd' || this.state.taskType === 'njkqkzkzzbyd')
     const isFieldDisabled = field.disabled || this.state.isViewMode
 
     return (
@@ -2041,13 +2619,13 @@ export default class DataForm extends Component<{}, DataFormState> {
                 </View>
               ) : (
                 <Button
-                  className={`submit-btn ${this.state.dataAlreadyFilled ? 'disabled' : ''}`}
+                  className={`submit-btn ${(this.state.dataAlreadyFilled && (this.state.taskType === 'njkqkzkzzbnd' || this.state.taskType === 'njkqkzkzzbyd')) ? 'disabled' : ''}`}
                   type='primary'
                   loading={loading}
-                  disabled={this.state.dataAlreadyFilled}
+                  disabled={this.state.dataAlreadyFilled && (this.state.taskType === 'njkqkzkzzbnd' || this.state.taskType === 'njkqkzkzzbyd')}
                   onClick={this.handleSubmit}
                 >
-                  {this.state.dataAlreadyFilled
+                  {(this.state.dataAlreadyFilled && (this.state.taskType === 'njkqkzkzzbnd' || this.state.taskType === 'njkqkzkzzbyd'))
                     ? '数据已填写'
                     : (loading ? '保存中...' : '提交')
                   }
