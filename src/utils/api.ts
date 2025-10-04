@@ -719,6 +719,32 @@ class ApiClient {
     return response
   }
 
+  // 提审数据
+  async submitDataForReview(taskType: string, id: string): Promise<ApiResponse<any>> {
+    console.log('提审数据API请求:', `/api/v1/data/${taskType}/submit/${id}`)
+
+    const response = await this.request<any>(
+      `/api/v1/data/${taskType}/submit/${id}`,
+      'POST'
+    )
+
+    console.log('提审数据API响应:', response)
+    return response
+  }
+
+  // 获取审批记录列表
+  async getFlowRecordList(dataId: string): Promise<ApiResponse<FlowRecordItem[]>> {
+    console.log('获取审批记录API请求:', `/api/v1/flow/record/list?dataId=${dataId}`)
+
+    const response = await this.request<FlowRecordItem[]>(
+      `/api/v1/flow/record/list?dataId=${dataId}`,
+      'GET'
+    )
+
+    console.log('获取审批记录API响应:', response)
+    return response
+  }
+
   // 文件上传接口
   async uploadFile(filePath: string): Promise<UploadFileResponseData> {
     const fullUrl = `${this.baseURL}/api/v1/upload/v2/upload`
@@ -1253,5 +1279,66 @@ interface IndicatorDetailResponseData {
   warnings: any
 }
 
+// 审批操作选项
+interface FlowRecordOpt {
+  approveDate: string | null
+  approveOpt: string | null
+  approveStatus: string
+  approverId: string
+  approverName: string
+  createBy: string | null
+  createTime: string | null
+  hisStatus: string | null
+  id: string | null
+  instanceId: string
+  permission: any
+  recordId: string
+  updateBy: string | null
+  updateTime: string | null
+}
+
+// 审批记录详情
+interface FlowRecordDetail {
+  createBy: string
+  createTime: string
+  dataId: string
+  definitionId: string
+  flowRecordOpts: FlowRecordOpt[]
+  id: string
+  instanceId: string
+  nodeCode: string | null
+  nodeName: string
+  nodeOpername: string
+  recordStatus: string
+  recordStatusName: string
+  remarks: string | null
+  updateBy: string | null
+  updateTime: string | null
+}
+
+// 流程实例
+interface FlowInstance {
+  createBy: string
+  createTime: string
+  dataId: string
+  dataKey: string | null
+  definitionId: string
+  flowStatus: string
+  hisStatus: string
+  id: string
+  orgId: string | null
+  permission: any
+  status: string
+  updateBy: string | null
+  updateTime: string | null
+}
+
+// 审批记录项数据
+interface FlowRecordItem {
+  hisStatus: string
+  instance: FlowInstance
+  recordDetails: FlowRecordDetail[]
+}
+
 // 导出类型
-export type { OAuthLoginParams, LoginParams, LoginXParams, LoginResponseData, DecryptPhoneParams, DecryptPhoneResponseData, TaskLiveListParams, TaskLiveListItem, TaskLiveListResponseData, BatchInfo, BatchListParams, BatchListResponseData, PatientInfo, PatientListParams, PatientListResponseData, DepartmentInfo, DepartmentListParams, DepartmentListResponseData, PageInfo, ApiResponse, DictItem, DictDetailResponseData, PatientAddParams, PatientAddResponseData, PatientDetailParams, PatientDetailResponseData, InspectItem, InspectItemListParams, InspectItemListResponseData, InspectResultItem, InspectResultSaveParams, InspectResultSaveResponseData, DepartmentInspectResultItem, InspectEMRResult, UploadFileResponseData, CreateEvidenceParams, CreateDepartmentEvidenceParams, CreateEvidenceResponseData, EvidenceItem, EvidenceListResponseData, DataReportItem, TaskInfoItem, DataListItem, DataListResponseData, IndicatorDetail, IndicatorDetailResponseData }
+export type { OAuthLoginParams, LoginParams, LoginXParams, LoginResponseData, DecryptPhoneParams, DecryptPhoneResponseData, TaskLiveListParams, TaskLiveListItem, TaskLiveListResponseData, BatchInfo, BatchListParams, BatchListResponseData, PatientInfo, PatientListParams, PatientListResponseData, DepartmentInfo, DepartmentListParams, DepartmentListResponseData, PageInfo, ApiResponse, DictItem, DictDetailResponseData, PatientAddParams, PatientAddResponseData, PatientDetailParams, PatientDetailResponseData, InspectItem, InspectItemListParams, InspectItemListResponseData, InspectResultItem, InspectResultSaveParams, InspectResultSaveResponseData, DepartmentInspectResultItem, InspectEMRResult, UploadFileResponseData, CreateEvidenceParams, CreateDepartmentEvidenceParams, CreateEvidenceResponseData, EvidenceItem, EvidenceListResponseData, DataReportItem, TaskInfoItem, DataListItem, DataListResponseData, IndicatorDetail, IndicatorDetailResponseData, FlowRecordItem, FlowRecordDetail, FlowRecordOpt, FlowInstance }

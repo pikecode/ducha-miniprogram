@@ -1,7 +1,7 @@
 import { Component } from 'react'
 import { View, Text, Input, Button, Picker } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { apiClient } from '../../utils/api'
+import { apiClient, FlowRecordItem, FlowRecordDetail } from '../../utils/api'
 import { getUserInfo } from '../../utils/auth'
 import Breadcrumb from '../../components/Breadcrumb'
 import apiConfig from '../../config/apiConfig.json'
@@ -54,6 +54,12 @@ interface DataFormState {
   // 数据填写状态检查
   checkingDataFill: boolean
   dataAlreadyFilled: boolean
+  // 审批记录弹窗
+  showReviewModal: boolean
+  reviewRecords: FlowRecordItem[]
+  reviewLoading: boolean
+  // 数据状态控制
+  dataStatus: string | null
 }
 
 export default class DataForm extends Component<{}, DataFormState> {
@@ -81,7 +87,11 @@ export default class DataForm extends Component<{}, DataFormState> {
       dataDateField: null,
       dataYearField: null,
       checkingDataFill: false,
-      dataAlreadyFilled: false
+      dataAlreadyFilled: false,
+      showReviewModal: false,
+      reviewRecords: [],
+      reviewLoading: false,
+      dataStatus: null
     }
   }
 
@@ -244,10 +254,13 @@ export default class DataForm extends Component<{}, DataFormState> {
           formGroups: updatedGroups,
           dataDateField: updatedDataDateField,
           dataYearField: updatedDataYearField,
+          dataStatus: formData.dataStatus || null,
           loading: false
         })
 
         console.log('表单数据加载成功')
+        console.log('当前数据状态 dataStatus:', formData.dataStatus)
+        console.log('是否可以操作:', this.canPerformOperations())
         console.log('当前独立字段状态:', {
           dataDateField: updatedDataDateField,
           dataYearField: updatedDataYearField
@@ -1457,6 +1470,9 @@ export default class DataForm extends Component<{}, DataFormState> {
           icon: 'success'
         })
 
+        // 发送数据更新事件，通知数据列表刷新
+        Taro.eventCenter.trigger('dataListRefresh')
+
         // 返回上一页
         setTimeout(() => {
           Taro.navigateBack()
@@ -1473,6 +1489,206 @@ export default class DataForm extends Component<{}, DataFormState> {
     }
 
     this.setState({ loading: false })
+  }
+
+  // 保存表单（编辑模式）
+  handleSave = async () => {
+    // 检查操作权限
+    if (!this.canPerformOperations()) {
+      Taro.showToast({
+        title: '当前数据状态不允许保存',
+        icon: 'none'
+      })
+      return
+    }
+
+    const { formGroups, taskType, dataDateField, dataYearField, dataId } = this.state
+
+    // 获取用户信息
+    const userInfo = getUserInfo()
+    if (!userInfo) {
+      Taro.showToast({
+        title: '用户信息获取失败，请重新登录',
+        icon: 'none'
+      })
+      return
+    }
+
+    // 构建提交数据
+    const formData: any = {}
+
+    // 添加独立字段数据
+    if (dataDateField) {
+      formData[dataDateField.key] = dataDateField.value
+    }
+    if (dataYearField) {
+      formData[dataYearField.key] = dataYearField.value
+    }
+
+    // 添加分组字段数据
+    formGroups.forEach(group => {
+      group.fields.forEach(field => {
+        formData[field.key] = field.value
+      })
+    })
+
+    // 添加额外必要字段
+    formData.taskId = this.state.taskId || apiConfig.config.taskId
+    formData.userId = userInfo.id
+    formData.userName = userInfo.name
+    formData.departmentId = userInfo.departmentId
+    formData.departmentName = userInfo.departmentName
+    formData.id = dataId
+
+    console.log('保存表单数据:', formData)
+
+    this.setState({ loading: true })
+
+    try {
+      const response = await apiClient.updateFormData(taskType, formData)
+
+      if (response.success) {
+        Taro.showToast({
+          title: '保存成功',
+          icon: 'success'
+        })
+
+        // 发送数据更新事件，通知数据列表刷新
+        Taro.eventCenter.trigger('dataListRefresh')
+      } else {
+        throw new Error(response.message || '保存失败')
+      }
+    } catch (error) {
+      console.error('保存失败:', error)
+      Taro.showToast({
+        title: error.message || '保存失败，请重试',
+        icon: 'none'
+      })
+    }
+
+    this.setState({ loading: false })
+  }
+
+  // 提审
+  handleSubmitForReview = () => {
+    // 检查操作权限
+    if (!this.canPerformOperations()) {
+      Taro.showToast({
+        title: '当前数据状态不允许提审',
+        icon: 'none'
+      })
+      return
+    }
+
+    const { taskType, dataId } = this.state
+
+    if (!dataId) {
+      Taro.showToast({
+        title: '数据ID不能为空',
+        icon: 'none'
+      })
+      return
+    }
+
+    Taro.showModal({
+      title: '提审确认',
+      content: '确认提交审核吗？提交后将无法修改。',
+      success: async (result) => {
+        if (result.confirm) {
+          try {
+            Taro.showLoading({
+              title: '提审中...'
+            })
+
+            const response = await apiClient.submitDataForReview(taskType, dataId)
+
+            Taro.hideLoading()
+
+            if (response.success) {
+              Taro.showToast({
+                title: '提审成功',
+                icon: 'success'
+              })
+
+              // 发送数据更新事件，通知数据列表刷新
+              Taro.eventCenter.trigger('dataListRefresh')
+
+              // 提审成功后返回上一页
+              setTimeout(() => {
+                Taro.navigateBack()
+              }, 1500)
+            } else {
+              throw new Error(response.message || '提审失败')
+            }
+          } catch (error) {
+            console.error('提审失败:', error)
+            Taro.hideLoading()
+            Taro.showToast({
+              title: error.message || '提审失败，请重试',
+              icon: 'none'
+            })
+          }
+        }
+      }
+    })
+  }
+
+  // 查看审批记录
+  handleViewReviewRecords = async () => {
+    const { dataId } = this.state
+
+    if (!dataId) {
+      Taro.showToast({
+        title: '数据ID不能为空',
+        icon: 'none'
+      })
+      return
+    }
+
+    // 显示弹窗并开始加载
+    this.setState({
+      showReviewModal: true,
+      reviewLoading: true,
+      reviewRecords: []
+    })
+
+    try {
+      const response = await apiClient.getFlowRecordList(dataId)
+
+      if (response.success) {
+        this.setState({
+          reviewRecords: response.data || [],
+          reviewLoading: false
+        })
+      } else {
+        throw new Error(response.message || '获取审批记录失败')
+      }
+    } catch (error) {
+      console.error('获取审批记录失败:', error)
+      this.setState({
+        reviewLoading: false
+      })
+      Taro.showToast({
+        title: error.message || '获取审批记录失败',
+        icon: 'none'
+      })
+    }
+  }
+
+  // 关闭审批记录弹窗
+  handleCloseReviewModal = () => {
+    this.setState({
+      showReviewModal: false,
+      reviewRecords: [],
+      reviewLoading: false
+    })
+  }
+
+  // 检查是否可以进行保存和提审操作
+  canPerformOperations = () => {
+    const { dataStatus } = this.state
+    // dataStatus=0 或 dataStatus=3 时可以操作
+    return dataStatus === '0' || dataStatus === '3'
   }
 
   // 渲染独立字段
@@ -1539,6 +1755,84 @@ export default class DataForm extends Component<{}, DataFormState> {
               </View>
             </Picker>
           )}
+        </View>
+      </View>
+    )
+  }
+
+  // 渲染审批记录弹窗
+  renderReviewModal = () => {
+    const { showReviewModal, reviewRecords, reviewLoading } = this.state
+
+    if (!showReviewModal) {
+      return null
+    }
+
+    return (
+      <View className='review-modal-overlay' onClick={this.handleCloseReviewModal}>
+        <View className='review-modal' onClick={(e) => e.stopPropagation()}>
+          <View className='review-modal-header'>
+            <Text className='review-modal-title'>审批记录</Text>
+            <Text className='review-modal-close' onClick={this.handleCloseReviewModal}>×</Text>
+          </View>
+
+          <View className='review-modal-content'>
+            {reviewLoading ? (
+              <View className='review-loading'>
+                <Text>加载中...</Text>
+              </View>
+            ) : reviewRecords.length === 0 ? (
+              <View className='review-empty'>
+                <Text>暂无审批记录</Text>
+              </View>
+            ) : (
+              <View className='review-timeline'>
+                {reviewRecords.map((record, recordIndex) =>
+                  record.recordDetails.map((detail, detailIndex) => (
+                    <View key={`${record.instance.id}-${detail.id}`} className='review-step'>
+                      <View className='step-number'>
+                        <View className={`step-circle ${detail.recordStatus === '1' ? 'completed' : ''}`}>
+                          {detail.recordStatus === '1' ? '✓' : detailIndex + 1}
+                        </View>
+                        {(recordIndex < reviewRecords.length - 1 || detailIndex < record.recordDetails.length - 1) && <View className='step-line' />}
+                      </View>
+
+                      <View className='step-content'>
+                        <View className='step-title'>{detail.nodeName}</View>
+                        <View className='step-status'>
+                          {detail.recordStatusName}
+                        </View>
+
+                        <View className='step-info'>
+                          <View className='step-user'>
+                            <Text className='user-icon'>👤</Text>
+                            <Text className='user-name'>
+                              {detail.flowRecordOpts.length > 0
+                                ? detail.flowRecordOpts.map(opt => opt.approverName).join('、')
+                                : '待分配'
+                              }
+                            </Text>
+                          </View>
+                          <Text className='step-time'>
+                            {detail.flowRecordOpts.length > 0 && detail.flowRecordOpts[0].approveDate
+                              ? detail.flowRecordOpts[0].approveDate.split(' ')[0]
+                              : detail.createTime.split(' ')[0]
+                            }
+                          </Text>
+                        </View>
+
+                        {detail.remarks && (
+                          <View className='step-comments'>
+                            <Text>备注：{detail.remarks}</Text>
+                          </View>
+                        )}
+                      </View>
+                    </View>
+                  ))
+                )}
+              </View>
+            )}
+          </View>
         </View>
       </View>
     )
@@ -1717,24 +2011,54 @@ export default class DataForm extends Component<{}, DataFormState> {
             </View>
           ))}
 
-          {/* 提交按钮 - 查看模式下不显示 */}
+          {/* 操作按钮 - 查看模式下不显示 */}
           {!this.state.isViewMode && (
             <View className='form-footer'>
-              <Button
-                className={`submit-btn ${this.state.dataAlreadyFilled ? 'disabled' : ''}`}
-                type='primary'
-                loading={loading}
-                disabled={this.state.dataAlreadyFilled}
-                onClick={this.handleSubmit}
-              >
-                {this.state.dataAlreadyFilled
-                  ? '数据已填写'
-                  : (loading ? '保存中...' : (isEdit ? '保存修改' : '提交'))
-                }
-              </Button>
+              {isEdit ? (
+                <View className='form-actions'>
+                  <Button
+                    className={`action-btn save-btn ${!this.canPerformOperations() ? 'disabled' : ''}`}
+                    type='primary'
+                    loading={loading}
+                    disabled={!this.canPerformOperations()}
+                    onClick={this.handleSave}
+                  >
+                    {loading ? '保存中...' : '保存'}
+                  </Button>
+                  <Button
+                    className={`action-btn submit-btn ${!this.canPerformOperations() ? 'disabled' : ''}`}
+                    disabled={!this.canPerformOperations()}
+                    onClick={this.handleSubmitForReview}
+                  >
+                    提审
+                  </Button>
+                  <Button
+                    className='action-btn review-btn'
+                    onClick={this.handleViewReviewRecords}
+                  >
+                    审批记录
+                  </Button>
+                </View>
+              ) : (
+                <Button
+                  className={`submit-btn ${this.state.dataAlreadyFilled ? 'disabled' : ''}`}
+                  type='primary'
+                  loading={loading}
+                  disabled={this.state.dataAlreadyFilled}
+                  onClick={this.handleSubmit}
+                >
+                  {this.state.dataAlreadyFilled
+                    ? '数据已填写'
+                    : (loading ? '保存中...' : '提交')
+                  }
+                </Button>
+              )}
             </View>
           )}
         </View>
+
+        {/* 审批记录弹窗 */}
+        {this.renderReviewModal()}
       </View>
     )
   }

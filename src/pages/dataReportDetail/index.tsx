@@ -67,6 +67,23 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
         title: '填报任务'
       })
     }
+
+    // 监听数据更新事件
+    Taro.eventCenter.on('dataListRefresh', this.handleDataListRefresh)
+  }
+
+  componentWillUnmount() {
+    // 移除事件监听
+    Taro.eventCenter.off('dataListRefresh', this.handleDataListRefresh)
+  }
+
+  // 处理数据列表刷新
+  handleDataListRefresh = () => {
+    console.log('收到数据更新事件，刷新数据列表')
+    // 如果当前在数据列表tab且已经加载过数据，则重新加载
+    if (this.state.activeTab === 'data' && this.state.appkey) {
+      this.loadDataList(this.state.appkey)
+    }
   }
 
   // 加载填报任务列表
@@ -136,8 +153,8 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
   handleTabChange = (tab: 'task' | 'data') => {
     this.setState({ activeTab: tab })
 
-    // 如果切换到数据列表Tab且还没有加载过数据，则加载数据
-    if (tab === 'data' && this.state.dataList.length === 0 && this.state.appkey) {
+    // 如果切换到数据列表Tab，则加载数据
+    if (tab === 'data' && this.state.appkey) {
       this.loadDataList(this.state.appkey)
     }
   }
@@ -165,22 +182,12 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
   handleDataItemClick = (dataItem: DataListItem) => {
     console.log('点击数据项:', dataItem)
 
-    // 跳转到表单页面（查看模式）
-    Taro.navigateTo({
-      url: `/pages/dataForm/index?taskType=${this.state.appkey}&dataId=${dataItem.id}&mode=view&title=${encodeURIComponent(dataItem.dataDate || '查看数据')}`
-    })
-  }
-
-  handleDataItemEdit = (dataItem: DataListItem, e: any) => {
-    // 阻止事件冒泡
-    e.stopPropagation()
-    console.log('编辑数据项:', dataItem)
-
     // 跳转到表单页面（编辑模式）
     Taro.navigateTo({
       url: `/pages/dataForm/index?taskType=${this.state.appkey}&dataId=${dataItem.id}&mode=edit&title=${encodeURIComponent(dataItem.dataDate || '编辑数据')}`
     })
   }
+
 
   render() {
     const { title, appkey, pageType, activeTab, taskList, dataList, loading, dataLoading } = this.state
@@ -272,13 +279,6 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
                         <Text className='data-card-title'>
                           {item.dataDate || `数据记录 ${item.id.slice(-8)}`}
                         </Text>
-                        <Button
-                          className='data-card-edit-btn'
-                          size='mini'
-                          onClick={(e) => this.handleDataItemEdit(item, e)}
-                        >
-                          编辑
-                        </Button>
                       </View>
                       <View className='data-card-content'>
                         <Text className='data-card-department'>
