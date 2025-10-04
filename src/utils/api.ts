@@ -33,14 +33,40 @@ interface LoginXParams {
 
 // 登录响应数据
 interface LoginResponseData {
-  token: string
-  userInfo: {
+  token?: string
+  userInfo?: {
     id: string
     username: string
     nickname: string
     avatar: string
     phone: string
   }
+  // 新增字段以支持直接返回用户信息的情况
+  areaCity?: string | null
+  areaCityname?: string | null
+  areaDistrict?: string | null
+  areaDistrictname?: string | null
+  areaProvince?: string | null
+  areaProvincename?: string | null
+  avatar?: string
+  departmentAddress?: string | null
+  departmentAddsuboper?: string | null
+  departmentAddsubopermoblie?: string | null
+  departmentId?: string
+  departmentLevel?: string | null
+  departmentName?: string
+  departmentQcoper?: string | null
+  departmentQcopermobile?: string | null
+  description?: string | null
+  email?: string
+  id?: string
+  isFolder?: number
+  isMain?: string | null
+  mobile?: string
+  name?: string
+  orgOwner?: boolean
+  userType?: string
+  username?: string
 }
 
 // 解密手机号请求参数
@@ -368,41 +394,15 @@ class ApiClient {
 
   // 获取验证码接口
   async getCaptcha(): Promise<ApiResponse<{ image: string, key: string }>> {
-    const fullUrl = `${this.baseURL}${API_CONFIG.ENDPOINTS.CAPTCHA}`
+    console.log('获取验证码API请求:', `${this.baseURL}${API_CONFIG.ENDPOINTS.CAPTCHA}`)
 
-    try {
-      console.log('获取验证码:', fullUrl)
+    const response = await this.request<{ image: string, key: string }>(
+      API_CONFIG.ENDPOINTS.CAPTCHA,
+      'GET'
+    )
 
-      const response = await Taro.request({
-        url: fullUrl,
-        method: 'GET',
-        timeout: REQUEST_TIMEOUT
-      })
-
-      console.log('验证码响应:', response)
-
-      // 检查HTTP状态码
-      if (response.statusCode !== 200) {
-        throw new Error(`HTTP错误: ${response.statusCode}`)
-      }
-
-      // 如果返回的是JSON格式
-      if (response.data && typeof response.data === 'object' && response.data.image) {
-        return {
-          success: true,
-          code: 200,
-          message: '获取验证码成功',
-          data: response.data
-        }
-      }
-
-      // 如果返回的是图片，抛出错误让调用方使用fallback
-      throw new Error('返回格式不是JSON，使用图片URL')
-
-    } catch (error) {
-      console.error('获取验证码失败:', error)
-      throw error
-    }
+    console.log('获取验证码API响应:', response)
+    return response
   }
 
   // 解密手机号接口

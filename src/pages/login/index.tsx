@@ -17,6 +17,7 @@ interface LoginState {
   phoneNumber: string
   hasPhoneNumber: boolean
   phoneEncryptedData: any    // 手机号加密数据
+  inputPhoneNumber: string   // 用户输入的手机号（添加缺失字段）
 
   // 用户名密码登录相关
   username: string           // 用户名
@@ -35,8 +36,8 @@ export default class Login extends Component<{}, LoginState> {
   constructor(props) {
     super(props)
     this.state = {
-      // 默认使用用户名登录
-      loginMode: 'username',
+      // 默认使用密码登录模式
+      loginMode: 'password',
 
       // 微信授权相关
       userInfo: {},
@@ -45,6 +46,7 @@ export default class Login extends Component<{}, LoginState> {
       phoneNumber: '',
       hasPhoneNumber: false,
       phoneEncryptedData: null,
+      inputPhoneNumber: '',
 
       // 用户名密码登录相关
       username: '',
@@ -67,8 +69,10 @@ export default class Login extends Component<{}, LoginState> {
     // 检查是否已登录
     this.checkLoginStatus()
 
-    // 暂时不加载验证码
-    // this.loadCaptcha()
+    // 默认使用密码登录，需要立即加载验证码
+    if (this.state.loginMode === 'password') {
+      this.loadCaptcha()
+    }
   }
 
   // 检查登录状态
@@ -443,26 +447,17 @@ export default class Login extends Component<{}, LoginState> {
   // 获取验证码
   loadCaptcha = async () => {
     try {
-      // 先调用API获取验证码key
+      console.log('开始获取验证码')
       const response = await apiClient.getCaptcha()
 
       if (response.success && response.data) {
-        // 如果API返回了image和key，使用API返回的数据
         this.setState({
           captchaImage: response.data.image,
-          captchaKey: response.data.key
+          captchaKey: response.data.key || new Date().getTime().toString()
         })
         console.log('获取验证码成功:', response.data)
       } else {
-        // 如果API不返回JSON，直接使用图片URL
-        const timestamp = new Date().getTime()
-        const captchaUrl = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CAPTCHA}?t=${timestamp}`
-
-        this.setState({
-          captchaImage: captchaUrl,
-          captchaKey: timestamp.toString()
-        })
-        console.log('使用图片URL:', captchaUrl)
+        throw new Error(response.message || '获取验证码失败')
       }
     } catch (error) {
       console.error('获取验证码失败:', error)
@@ -522,8 +517,8 @@ export default class Login extends Component<{}, LoginState> {
       const loginParams = {
         username,
         password,
-        captcha: captchaCode
-        // 先不传captchaKey，看看后端是否需要
+        captcha: captchaCode,
+        captchaKey // 包含验证码key
       }
 
       console.log('密码登录参数:', loginParams)
@@ -532,22 +527,39 @@ export default class Login extends Component<{}, LoginState> {
 
       console.log('密码登录响应:', response)
 
-      if (response.success) {
-        // 登录成功
-        const { token, userInfo: serverUserInfo } = response.data
+      if (response.success && response.data) {
+        // 处理新的API返回格式
+        const userData = response.data
 
-        // 保存登录信息
-        Taro.setStorageSync('token', token)
-        Taro.setStorageSync('userInfo', serverUserInfo)
-        Taro.setStorageSync('phoneNumber', serverUserInfo.phone)
+        // 保存登录信息 - 适配新的返回格式
+        const userInfo = {
+          id: userData.id,
+          username: userData.username,
+          nickname: userData.name || userData.username,
+          avatar: userData.avatar,
+          phone: userData.mobile || '',
+          departmentId: userData.departmentId,
+          departmentName: userData.departmentName,
+          email: userData.email
+        }
 
-        // 设置API客户端token
-        apiClient.setAuthToken(token)
+        // 使用authManager管理token（可能在响应头中）
+        const authorization = response.authorization
+        if (authorization) {
+          authManager.setToken(authorization)
+        }
+
+        Taro.setStorageSync('userInfo', userInfo)
+        Taro.setStorageSync('phoneNumber', userInfo.phone)
 
         this.setState({
-          phoneNumber: serverUserInfo.phone,
+          phoneNumber: userInfo.phone,
           hasPhoneNumber: true,
-          currentStep: 4
+          currentStep: 4,
+          userInfo: {
+            avatarUrl: userInfo.avatar,
+            nickName: userInfo.nickname
+          }
         })
 
         Taro.hideLoading()
@@ -671,26 +683,117 @@ export default class Login extends Component<{}, LoginState> {
   }
 
   render() {
-    const { isLogging, username } = this.state
+    const { loginMode, isLogging, username, password, captchaCode, captchaImage } = this.state
+
+    // 获取当前登录模式的标题
+    const getModeTitle = () => {
+      switch (loginMode) {
+        case 'username': return '用户名登录'
+        case 'password': return '用户名密码登录'
+        case 'oauth': return '微信授权登录'
+        default: return '登录'
+      }
+    }
+
+    // 获取切换按钮文字
+    const getSwitchText = () => {
+      switch (loginMode) {
+        case 'username': return '切换到密码登录'
+        case 'password': return '切换到微信登录'
+        case 'oauth': return '切换到用户名登录'
+        default: return '切换登录方式'
+      }
+    }
 
     return (
       <View className='login'>
         <View className='login-content'>
-          <Input
-            className='username-input'
-            placeholder='请输入用户名'
-            value={username}
-            onInput={this.handleUsernameInput}
-          />
+          <Text className='login-title'>{getModeTitle()}</Text>
 
-          <Button
-            className={`login-btn ${isLogging ? 'loading' : ''}`}
-            onClick={this.performUsernameLogin}
-            disabled={isLogging || !username}
-          >
-            {isLogging && <View className='loading-spinner'></View>}
-            <Text className='btn-text'>{isLogging ? '正在登录...' : '登录'}</Text>
-          </Button>
+          {/* 用户名登录模式 */}
+          {loginMode === 'username' && (
+            <View className='form-section'>
+              <Input
+                className='username-input'
+                placeholder='请输入用户名'
+                value={username}
+                onInput={this.handleUsernameInput}
+              />
+
+              <Button
+                className={`login-btn ${isLogging ? 'loading' : ''}`}
+                onClick={this.performUsernameLogin}
+                disabled={isLogging || !username}
+              >
+                {isLogging && <View className='loading-spinner'></View>}
+                <Text className='btn-text'>{isLogging ? '正在登录...' : '登录'}</Text>
+              </Button>
+            </View>
+          )}
+
+          {/* 用户名密码登录模式 */}
+          {loginMode === 'password' && (
+            <View className='form-section'>
+              <Input
+                className='form-input'
+                placeholder='请输入用户名'
+                value={username}
+                onInput={this.handleUsernameInput}
+              />
+
+              <Input
+                className='form-input'
+                placeholder='请输入密码'
+                type='password'
+                value={password}
+                onInput={this.handlePasswordInput}
+              />
+
+              <View className='captcha-section'>
+                <Input
+                  className='captcha-input'
+                  placeholder='请输入验证码'
+                  value={captchaCode}
+                  onInput={this.handleCaptchaInput}
+                />
+                <Image
+                  className='captcha-image'
+                  src={captchaImage}
+                  onClick={this.loadCaptcha}
+                />
+              </View>
+
+              <Button
+                className={`login-btn ${isLogging ? 'loading' : ''}`}
+                onClick={this.performPasswordLogin}
+                disabled={isLogging || !username || !password || !captchaCode}
+              >
+                {isLogging && <View className='loading-spinner'></View>}
+                <Text className='btn-text'>{isLogging ? '正在登录...' : '登录'}</Text>
+              </Button>
+            </View>
+          )}
+
+          {/* 微信授权登录模式 */}
+          {loginMode === 'oauth' && (
+            <View className='form-section'>
+              <Button
+                className='wechat-login-btn'
+                openType='getPhoneNumber'
+                onGetPhoneNumber={this.getPhoneNumber}
+                disabled={isLogging}
+              >
+                微信授权登录
+              </Button>
+            </View>
+          )}
+
+          {/* 切换登录方式按钮 */}
+          <View className='switch-section'>
+            <Text className='switch-btn' onClick={this.switchLoginMode}>
+              {getSwitchText()}
+            </Text>
+          </View>
         </View>
       </View>
     )

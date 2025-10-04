@@ -21,6 +21,26 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
+/* 登录标题 */
+.login-title {
+  font-size: 32px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+/* 表单区域 */
+.form-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+/* 通用输入框样式 */
+.form-input,
 .username-input {
   width: 320px;
   height: 60px;
@@ -35,17 +55,63 @@
   text-align: center;
 }
 
+.form-input:focus,
 .username-input:focus {
   border-color: #6b7280;
   box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.1);
 }
 
+.form-input::placeholder,
 .username-input::placeholder {
   color: #9ca3af;
   font-weight: 400;
 }
 
-.login-btn {
+/* 验证码区域 */
+.captcha-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 320px;
+}
+
+.captcha-input {
+  flex: 1;
+  height: 60px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 0 20px;
+  font-size: 26px;
+  color: #374151;
+  background: #ffffff;
+  transition: all 0.2s ease;
+  outline: none;
+  text-align: center;
+}
+
+.captcha-input:focus {
+  border-color: #6b7280;
+  box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.1);
+}
+
+.captcha-image {
+  width: 120px;
+  height: 60px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #f9fafb;
+}
+
+.captcha-image:active {
+  transform: scale(0.98);
+  border-color: #6b7280;
+}
+
+/* 按钮样式 */
+.login-btn,
+.wechat-login-btn {
   width: 320px;
   height: 60px;
   background: #9ca3af;
@@ -63,9 +129,21 @@
   overflow: hidden;
 }
 
-.login-btn:not([disabled]):active {
+.wechat-login-btn {
+  background: #1aad19;
+}
+
+.login-btn:not([disabled]):active,
+.wechat-login-btn:not([disabled]):active {
   transform: scale(0.98);
+}
+
+.login-btn:not([disabled]):active {
   background: #6b7280;
+}
+
+.wechat-login-btn:not([disabled]):active {
+  background: #179b16;
 }
 
 .login-btn.loading {
@@ -73,7 +151,8 @@
   cursor: not-allowed;
 }
 
-.login-btn[disabled] {
+.login-btn[disabled],
+.wechat-login-btn[disabled] {
   background: #d1d5db;
   color: #9ca3af;
   cursor: not-allowed;
@@ -85,6 +164,24 @@
   color: inherit;
 }
 
+/* 切换登录方式 */
+.switch-section {
+  margin-top: 16px;
+}
+
+.switch-btn {
+  color: #6b7280;
+  font-size: 24px;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.switch-btn:active {
+  color: #374151;
+}
+
+/* 加载动画 */
 .loading-spinner {
   width: 20px;
   height: 20px;
