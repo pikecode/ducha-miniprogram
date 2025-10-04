@@ -4,6 +4,7 @@ import Taro from '@tarojs/taro'
 import { apiClient } from '../../utils/api'
 import { API_CONFIG } from '../../utils/config'
 import { authManager } from '../../utils/auth'
+import { base64Encode } from '../../utils/crypto'
 import './index.scss'
 
 interface LoginState {
@@ -514,9 +515,14 @@ export default class Login extends Component<{}, LoginState> {
         title: '正在登录...'
       })
 
+      // 使用base64加密密码
+      const encryptedPassword = base64Encode(password)
+      console.log('密码加密前:', password)
+      console.log('密码加密后:', encryptedPassword)
+
       const loginParams = {
         username,
-        password,
+        password: encryptedPassword,  // 使用加密后的密码
         captcha: captchaCode,
         captchaKey // 包含验证码key
       }
