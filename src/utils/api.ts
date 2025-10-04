@@ -691,6 +691,21 @@ class ApiClient {
     return response
   }
 
+  // 更新表单数据
+  async updateFormData(taskType: string, formData: any): Promise<ApiResponse<any>> {
+    console.log('更新表单数据API请求:', `/api/v1/data/${taskType}/update`)
+    console.log('请求参数:', JSON.stringify(formData, null, 2))
+
+    const response = await this.request<any>(
+      `/api/v1/data/${taskType}/update`,
+      'POST',
+      formData
+    )
+
+    console.log('更新表单数据API响应:', response)
+    return response
+  }
+
   // 检查数据是否已填写
   async checkDataFill(appkey: string, dataDateId: string): Promise<ApiResponse<boolean>> {
     console.log('检查数据填写状态API请求:', `/api/v1/data/${appkey}/checkfill?dataDateId=${dataDateId}`)

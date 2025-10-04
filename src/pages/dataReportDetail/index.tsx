@@ -171,6 +171,17 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
     })
   }
 
+  handleDataItemEdit = (dataItem: DataListItem, e: any) => {
+    // 阻止事件冒泡
+    e.stopPropagation()
+    console.log('编辑数据项:', dataItem)
+
+    // 跳转到表单页面（编辑模式）
+    Taro.navigateTo({
+      url: `/pages/dataForm/index?taskType=${this.state.appkey}&dataId=${dataItem.id}&mode=edit&title=${encodeURIComponent(dataItem.dataDate || '编辑数据')}`
+    })
+  }
+
   render() {
     const { title, appkey, pageType, activeTab, taskList, dataList, loading, dataLoading } = this.state
 
@@ -261,6 +272,13 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
                         <Text className='data-card-title'>
                           {item.dataDate || `数据记录 ${item.id.slice(-8)}`}
                         </Text>
+                        <Button
+                          className='data-card-edit-btn'
+                          size='mini'
+                          onClick={(e) => this.handleDataItemEdit(item, e)}
+                        >
+                          编辑
+                        </Button>
                       </View>
                       <View className='data-card-content'>
                         <Text className='data-card-department'>

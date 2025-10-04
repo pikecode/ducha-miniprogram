@@ -90,12 +90,13 @@ export default class DataForm extends Component<{}, DataFormState> {
     if (params) {
       const isEdit = params.dataId ? true : false
       const isViewMode = params.mode === 'view'
+      const isEditMode = params.mode === 'edit'
       this.setState({
         taskType: params.taskType || '',
         taskId: params.taskId || '',
         dataId: params.dataId || '',
         title: decodeURIComponent(params.title || ''),
-        isEdit,
+        isEdit: isEdit || isEditMode,
         isViewMode
       })
 
@@ -103,7 +104,7 @@ export default class DataForm extends Component<{}, DataFormState> {
       let title = '填报数据'
       if (isViewMode) {
         title = '查看详情'
-      } else if (isEdit) {
+      } else if (isEdit || isEditMode) {
         title = '编辑数据'
       }
       Taro.setNavigationBarTitle({
@@ -114,15 +115,16 @@ export default class DataForm extends Component<{}, DataFormState> {
       this.initFormFields(params.taskType || '')
 
       // 根据表单类型加载字典数据，然后加载表单详情
-      this.loadDictionariesAndFormData(params.taskType || '', params.dataId || '', isViewMode, isEdit)
+      this.loadDictionariesAndFormData(params.taskType || '', params.dataId || '', isViewMode, isEdit || isEditMode)
 
       console.log('表单页接收参数:', {
         taskType: params.taskType,
         taskId: params.taskId,
         dataId: params.dataId,
         title: decodeURIComponent(params.title || ''),
-        isEdit,
-        isViewMode
+        isEdit: isEdit || isEditMode,
+        isViewMode,
+        mode: params.mode
       })
     }
   }
@@ -174,7 +176,7 @@ export default class DataForm extends Component<{}, DataFormState> {
           })
         } else if (taskType === 'njkqkzkzzbnd') {
           const dataYearField: FormField = {
-            key: 'dataYearId',
+            key: 'dataDateId',  // 修正字段名为 dataDateId
             label: '数据归属周期',
             type: 'select',
             value: '',
@@ -233,9 +235,9 @@ export default class DataForm extends Component<{}, DataFormState> {
           updatedDataDateField = { ...updatedDataDateField, value: formData.dataDateId }
         }
 
-        if (updatedDataYearField && formData.dataYearId) {
-          console.log('填充dataYearField，原值:', updatedDataYearField.value, '新值:', formData.dataYearId)
-          updatedDataYearField = { ...updatedDataYearField, value: formData.dataYearId }
+        if (updatedDataYearField && formData.dataDateId) {
+          console.log('填充dataYearField，原值:', updatedDataYearField.value, '新值:', formData.dataDateId)
+          updatedDataYearField = { ...updatedDataYearField, value: formData.dataDateId }
         }
 
         this.setState({
@@ -464,7 +466,7 @@ export default class DataForm extends Component<{}, DataFormState> {
       // 口腔科质控中心表单字段 - 按分组组织
       // 单独处理数据归属周期字段
       const dataYearField: FormField = {
-        key: 'dataYearId',
+        key: 'dataDateId',  // 修正字段名为 dataDateId
         label: '数据归属周期',
         type: 'select',
         value: '',
@@ -1314,11 +1316,11 @@ export default class DataForm extends Component<{}, DataFormState> {
       return
     }
 
-    if (key === 'dataYearId' && this.state.dataYearField) {
+    if (key === 'dataDateId' && this.state.dataYearField) {
       this.setState({
         dataYearField: { ...this.state.dataYearField, value }
       })
-      // 当选择数据归属周期时，检查是否已填写（njkqkzkzzbnd使用dataYearId）
+      // 当选择数据归属周期时，检查是否已填写（njkqkzkzzbnd使用dataDateId）
       if (value && typeof value === 'string' && this.state.taskType === 'njkqkzkzzbnd') {
         this.checkDataFillStatus(value)
       }
@@ -1350,7 +1352,7 @@ export default class DataForm extends Component<{}, DataFormState> {
       return
     }
 
-    if (key === 'dataYearId' && this.state.dataYearField?.options) {
+    if (key === 'dataDateId' && this.state.dataYearField?.options) {
       const selectedOption = this.state.dataYearField.options[e.detail.value]
       if (selectedOption) {
         this.handleFieldChange(key, selectedOption.value)
@@ -1393,7 +1395,7 @@ export default class DataForm extends Component<{}, DataFormState> {
 
   // 保存表单
   handleSubmit = async () => {
-    const { formGroups, isEdit, taskType, dataDateField, dataYearField } = this.state
+    const { formGroups, isEdit, taskType, dataDateField, dataYearField, dataId } = this.state
 
     // 获取用户信息
     const userInfo = getUserInfo()
@@ -1430,13 +1432,24 @@ export default class DataForm extends Component<{}, DataFormState> {
     formData.departmentId = userInfo.departmentId
     formData.departmentName = userInfo.departmentName
 
+    // 如果是编辑模式，添加数据ID
+    if (isEdit && dataId) {
+      formData.id = dataId
+    }
+
     console.log('提交表单数据:', formData)
+    console.log('提交模式:', isEdit ? '编辑' : '新建')
 
     this.setState({ loading: true })
 
     try {
-      // 调用保存接口
-      const response = await apiClient.saveFormData(taskType, formData)
+      let response
+      // 根据是否为编辑模式调用不同的接口
+      if (isEdit && dataId) {
+        response = await apiClient.updateFormData(taskType, formData)
+      } else {
+        response = await apiClient.saveFormData(taskType, formData)
+      }
 
       if (response.success) {
         Taro.showToast({
@@ -1464,7 +1477,7 @@ export default class DataForm extends Component<{}, DataFormState> {
 
   // 渲染独立字段
   renderIndependentField = (field: FormField) => {
-    const isDataDateField = field.key === 'dataDateId' || field.key === 'dataYearId'
+    const isDataDateField = field.key === 'dataDateId'
     const showCheckingStatus = isDataDateField && this.state.checkingDataFill
     const showFilledWarning = isDataDateField && this.state.dataAlreadyFilled
     const isFieldDisabled = field.disabled || this.state.isViewMode

@@ -192,6 +192,9 @@
 }
 
 .data-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 16px;
 }
 
@@ -200,6 +203,24 @@
   font-weight: 500;
   color: #333;
   line-height: 1.4;
+  flex: 1;
+}
+
+.data-card-edit-btn {
+  background-color: #6366f1;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 24px;
+  margin-left: 16px;
+  min-width: 64px;
+  height: 48px;
+  line-height: 48px;
+}
+
+.data-card-edit-btn:active {
+  background-color: #5856eb;
 }
 
 .data-card-content {
