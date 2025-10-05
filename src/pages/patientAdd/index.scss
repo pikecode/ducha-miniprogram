@@ -1,6 +1,9 @@
 .patient-add {
   min-height: 100vh;
+  height: 100vh;
   background-color: #f7f8fa;
+  display: flex;
+  flex-direction: column;
 }
 
 .page-title {
@@ -19,6 +22,9 @@
   border-radius: 16px;
   padding: 32px;
   margin: 24px 30px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .form-item {
@@ -47,7 +53,7 @@
 
 .form-input {
   flex: 1;
-  height: 64px;
+  height: 86px;
   padding: 0 20px;
   background-color: #f7f8fa;
   border-radius: 8px;
@@ -56,7 +62,7 @@
 
 .form-picker {
   flex: 1;
-  height: 64px;
+  height: 86px;
   padding: 0 20px;
   background-color: #f7f8fa;
   border-radius: 8px;
@@ -90,14 +96,15 @@
 }
 
 .form-actions {
-  margin-top: 48px;
+  margin-top: auto;
+  padding-top: 48px;
   display: flex;
   justify-content: center;
 }
 
 .save-btn {
   width: 200px;
-  height: 64px;
+  height: 86px;
   background-color: #19be6b;
   color: #fff;
   border: none;

@@ -1,3 +1,3 @@
 export default {
-  navigationBarTitleText: '添加病例'
+  navigationBarTitleText: '添加病案'
 }

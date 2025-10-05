@@ -10,6 +10,7 @@ interface PatientAddState {
   taskId: string
   batchId: string
   patientNo: string
+  medicalRecordNo: string
   patientName: string
   gender: string
   genderId: string
@@ -34,6 +35,7 @@ export default class PatientAdd extends Component<{}, PatientAddState> {
       taskId: '',
       batchId: '',
       patientNo: '',
+      medicalRecordNo: '',
       patientName: '',
       gender: '',
       genderId: '',
@@ -72,7 +74,7 @@ export default class PatientAdd extends Component<{}, PatientAddState> {
     this.loadDepartmentList()
 
     Taro.setNavigationBarTitle({
-      title: '添加病例'
+      title: '添加病案'
     })
   }
 
@@ -132,6 +134,10 @@ export default class PatientAdd extends Component<{}, PatientAddState> {
     this.setState({ patientNo: e.detail.value })
   }
 
+  handleMedicalRecordNoChange = (e) => {
+    this.setState({ medicalRecordNo: e.detail.value })
+  }
+
   handlePatientNameChange = (e) => {
     this.setState({ patientName: e.detail.value })
   }
@@ -165,7 +171,7 @@ export default class PatientAdd extends Component<{}, PatientAddState> {
   }
 
   handleSubmit = async () => {
-    const { taskId, batchId, patientNo, patientName, gender, genderId, age, department, departmentId, doctor, diagnosis } = this.state
+    const { taskId, batchId, patientNo, medicalRecordNo, patientName, gender, genderId, age, department, departmentId, doctor, diagnosis } = this.state
 
     // 基本验证
     if (!patientNo) {
@@ -200,6 +206,7 @@ export default class PatientAdd extends Component<{}, PatientAddState> {
         inspectPlanId: taskId,
         batchId: batchId,
         emrNo: patientNo,
+        medicalRecordNo: medicalRecordNo,
         patientName: patientName,
         patientAge: parseInt(age) || 0,
         patientSex: genderId || '',
@@ -248,7 +255,7 @@ export default class PatientAdd extends Component<{}, PatientAddState> {
   }
 
   render() {
-    const { taskTitle, taskId, patientNo, patientName, gender, age, department, doctor, diagnosis, genderList, departmentList, genderLoading, departmentLoading, submitting } = this.state
+    const { taskTitle, taskId, patientNo, medicalRecordNo, patientName, gender, age, department, doctor, diagnosis, genderList, departmentList, genderLoading, departmentLoading, submitting } = this.state
 
     return (
       <View className='patient-add'>
@@ -263,10 +270,37 @@ export default class PatientAdd extends Component<{}, PatientAddState> {
 
         {/* 页面标题 */}
         <View className='page-title'>
-          <Text className='title-text'>添加病例</Text>
+          <Text className='title-text'>添加病案</Text>
         </View>
 
         <View className='form-content'>
+          <View className='form-item'>
+            <Text className='form-label'>部门：</Text>
+            <Picker
+              mode='selector'
+              range={departmentList}
+              rangeKey='departmentName'
+              onChange={this.handleDepartmentChange}
+              disabled={departmentLoading}
+            >
+              <View className='form-picker'>
+                <Text className={department ? 'picker-text' : 'picker-placeholder'}>
+                  {departmentLoading ? '加载中...' : (department || '请选择')}
+                </Text>
+              </View>
+            </Picker>
+          </View>
+
+          <View className='form-item'>
+            <Text className='form-label'>医疗组：</Text>
+            <Input
+              className='form-input'
+              placeholder='请输入'
+              value={doctor}
+              onInput={this.handleDoctorChange}
+            />
+          </View>
+
           <View className='form-item required'>
             <Text className='form-label'>病案号：</Text>
             <Input
@@ -278,12 +312,33 @@ export default class PatientAdd extends Component<{}, PatientAddState> {
           </View>
 
           <View className='form-item'>
+            <Text className='form-label'>病历号：</Text>
+            <Input
+              className='form-input'
+              placeholder='请输入'
+              value={medicalRecordNo}
+              onInput={this.handleMedicalRecordNoChange}
+            />
+          </View>
+
+          <View className='form-item'>
             <Text className='form-label'>患者姓名：</Text>
             <Input
               className='form-input'
               placeholder='请输入'
               value={patientName}
               onInput={this.handlePatientNameChange}
+            />
+          </View>
+
+          <View className='form-item'>
+            <Text className='form-label'>患者年龄：</Text>
+            <Input
+              className='form-input'
+              placeholder='请输入'
+              type='number'
+              value={age}
+              onInput={this.handleAgeChange}
             />
           </View>
 
@@ -305,45 +360,7 @@ export default class PatientAdd extends Component<{}, PatientAddState> {
           </View>
 
           <View className='form-item'>
-            <Text className='form-label'>患者年龄：</Text>
-            <Input
-              className='form-input'
-              placeholder='请输入'
-              type='number'
-              value={age}
-              onInput={this.handleAgeChange}
-            />
-          </View>
-
-          <View className='form-item'>
-            <Text className='form-label'>部门：</Text>
-            <Picker
-              mode='selector'
-              range={departmentList}
-              rangeKey='departmentName'
-              onChange={this.handleDepartmentChange}
-              disabled={departmentLoading}
-            >
-              <View className='form-picker'>
-                <Text className={department ? 'picker-text' : 'picker-placeholder'}>
-                  {departmentLoading ? '加载中...' : (department || '请选择')}
-                </Text>
-              </View>
-            </Picker>
-          </View>
-
-          <View className='form-item'>
-            <Text className='form-label'>主治医生：</Text>
-            <Input
-              className='form-input'
-              placeholder='请输入'
-              value={doctor}
-              onInput={this.handleDoctorChange}
-            />
-          </View>
-
-          <View className='form-item'>
-            <Text className='form-label'>诊断：</Text>
+            <Text className='form-label'>主要诊断：</Text>
             <Input
               className='form-input'
               placeholder='请输入'

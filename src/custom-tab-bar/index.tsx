@@ -1,12 +1,15 @@
 import { Component } from 'react'
-import { View, Text } from '@tarojs/components'
+import { View, Text, Image } from '@tarojs/components'
 import Taro from '@tarojs/taro'
+import { apiClient, type TabBarItem } from '../utils/api'
 import { configTabManager, TabConfig } from '../utils/configTabManager'
 import './index.scss'
 
 interface CustomTabBarState {
   selected: number
-  tabs: TabConfig[]
+  tabs: TabBarItem[]
+  loading: boolean
+  useServerConfig: boolean
 }
 
 export default class CustomTabBar extends Component<{}, CustomTabBarState> {
@@ -15,11 +18,14 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
     super(props)
     this.state = {
       selected: 0,
-      tabs: []
+      tabs: [],
+      loading: true,
+      useServerConfig: false
     }
   }
 
-  componentDidMount() {
+  async componentDidMount() {
+    await this.loadTabBarConfig()
     this.updateTabBar()
   }
 
@@ -27,19 +33,50 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
     this.updateTabBar()
   }
 
-  updateTabBar = () => {
+  // 加载TabBar配置
+  loadTabBarConfig = async () => {
+    console.log('直接使用默认TabBar配置，不调用服务器接口')
+    this.useDefaultTabConfig()
+  }
+
+  // 使用默认TabBar配置
+  useDefaultTabConfig = () => {
     const enabledTabs = configTabManager.getEnabledTabs()
+    // 转换为TabBarItem格式
+    const tabBarItems: TabBarItem[] = enabledTabs.map(tab => ({
+      id: tab.id,
+      pagePath: tab.pagePath,
+      text: tab.text,
+      icon: tab.icon,
+      activeIcon: tab.selectedIcon,
+      order: tab.order
+    }))
+
+    this.setState({
+      tabs: tabBarItems,
+      useServerConfig: false,
+      loading: false
+    })
+    console.log('使用默认TabBar配置:', tabBarItems)
+  }
+
+  updateTabBar = () => {
+    if (this.state.loading) {
+      return
+    }
+
     const currentPages = Taro.getCurrentPages()
     const currentPage = currentPages[currentPages.length - 1]
     const currentRoute = currentPage?.route || ''
 
     console.log('=== TabBar更新调试 ===')
     console.log('当前页面路由:', currentRoute)
-    console.log('启用的Tab配置:', enabledTabs.map(tab => ({ pagePath: tab.pagePath, text: tab.text })))
+    console.log('TabBar配置:', this.state.tabs.map(tab => ({ pagePath: tab.pagePath, text: tab.text })))
+    console.log('使用服务器配置:', this.state.useServerConfig)
 
     // 找到当前页面对应的Tab索引
     let selected = 0
-    enabledTabs.forEach((tab, index) => {
+    this.state.tabs.forEach((tab, index) => {
       console.log(`检查Tab ${index}: ${tab.pagePath} === ${currentRoute} ?`, tab.pagePath === currentRoute)
       if (currentRoute === tab.pagePath) {
         selected = index
@@ -50,10 +87,7 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
     console.log('最终选中索引:', selected)
     console.log('=== TabBar更新完成 ===')
 
-    this.setState({
-      tabs: enabledTabs,
-      selected
-    })
+    this.setState({ selected })
   }
 
   switchTab = (tab: any, index: number) => {
@@ -71,9 +105,9 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
   }
 
   render() {
-    const { tabs, selected } = this.state
+    const { tabs, selected, loading, useServerConfig } = this.state
 
-    if (tabs.length === 0) {
+    if (loading || tabs.length === 0) {
       return null
     }
 
@@ -81,22 +115,35 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
       <View className='custom-tab-bar'>
         <View className='tab-bar-border'></View>
         <View className='tab-bar-container'>
-          {tabs.map((tab, index) => (
-            <View
-              key={tab.id}
-              className={`tab-bar-item ${selected === index ? 'tab-bar-item--active' : ''}`}
-              onClick={() => this.switchTab(tab, index)}
-            >
-              <View className='tab-bar-item__icon-wrapper'>
-                <View className={`tab-bar-item__icon ${selected === index ? 'tab-bar-item__icon--active' : ''}`}>
-                  {selected === index ? tab.selectedIcon : tab.icon}
+          {tabs.map((tab, index) => {
+            const isActive = selected === index
+            const iconUrl = isActive ? tab.activeIcon : tab.icon
+
+            return (
+              <View
+                key={tab.id}
+                className={`tab-bar-item ${isActive ? 'tab-bar-item--active' : ''}`}
+                onClick={() => this.switchTab(tab, index)}
+              >
+                <View className='tab-bar-item__icon-wrapper'>
+                  {useServerConfig && iconUrl ? (
+                    <Image
+                      className={`tab-bar-item__icon-img ${isActive ? 'tab-bar-item__icon-img--active' : ''}`}
+                      src={iconUrl}
+                      mode='aspectFit'
+                    />
+                  ) : (
+                    <View className={`tab-bar-item__icon ${isActive ? 'tab-bar-item__icon--active' : ''}`}>
+                      {iconUrl}
+                    </View>
+                  )}
                 </View>
+                <Text className={`tab-bar-item__text ${isActive ? 'tab-bar-item__text--active' : ''}`}>
+                  {tab.text}
+                </Text>
               </View>
-              <Text className={`tab-bar-item__text ${selected === index ? 'tab-bar-item__text--active' : ''}`}>
-                {tab.text}
-              </Text>
-            </View>
-          ))}
+            )
+          })}
         </View>
       </View>
     )

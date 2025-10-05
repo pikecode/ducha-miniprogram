@@ -234,7 +234,15 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
                 <View className='task-list'>
                   {taskList.map(task => (
                     <View key={task.id} className='task-card'>
-                      <Text className='task-card-title'>{task.taskName}</Text>
+                      <View className='task-card-header'>
+                        <Text className='task-card-title'>{task.taskName}</Text>
+                        <Button
+                          className='task-card-btn'
+                          onClick={() => this.handleTaskItemClick(task)}
+                        >
+                          去填报
+                        </Button>
+                      </View>
                       {task.taskNote && (
                         <Text className='task-card-desc'>
                           {task.taskNote}
@@ -243,12 +251,6 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
                       <Text className='task-card-time'>
                         时间：{task.taskStartdate.split(' ')[0]}~{task.taskEnddate.split(' ')[0]}
                       </Text>
-                      <Button
-                        className='task-card-btn'
-                        onClick={() => this.handleTaskItemClick(task)}
-                      >
-                        去填报
-                      </Button>
                     </View>
                   ))}
                 </View>
@@ -277,7 +279,7 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
                     >
                       <View className='data-card-header'>
                         <Text className='data-card-title'>
-                          {item.dataDate || `数据记录 ${item.id.slice(-8)}`}
+                          {item.data_date || item.dataDate || `数据记录${item.id.slice(-8)}`}
                         </Text>
                       </View>
                       <View className='data-card-content'>
@@ -292,7 +294,7 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
                       </View>
                       <View className='data-card-footer'>
                         <Text className='data-card-time'>
-                          创建时间：{item.createTime?.split(' ')[0] || ''}
+                          创建时间：{item.createTime ? item.createTime.slice(0, 16) : ''}
                         </Text>
                         <Text className='data-card-author'>
                           创建人：{item.userName || item.createBy}

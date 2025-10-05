@@ -2281,12 +2281,12 @@ export default class DataForm extends Component<{}, DataFormState> {
         <View className='form-item-label'>
           <Text className='item-label'>{field.label}</Text>
           {showCheckingStatus && (
-            <Text style={{ marginLeft: '8px', color: '#999', fontSize: '24px' }}>
+            <Text style={{ marginLeft: '8px', color: '#999', fontSize: '12px' }}>
               检查中...
             </Text>
           )}
           {showFilledWarning && !this.state.isViewMode && (
-            <Text style={{ marginLeft: '8px', color: '#ff4d4f', fontSize: '24px' }}>
+            <Text style={{ marginLeft: '8px', color: '#ff4d4f', fontSize: '12px' }}>
               已填写
             </Text>
           )}
@@ -2451,9 +2451,11 @@ export default class DataForm extends Component<{}, DataFormState> {
         {/* 表单内容 */}
         <View className='form-container' onClick={this.handleHideTooltip}>
           <View className='form-header'>
-            <Text className='form-title'>
-              {this.state.isViewMode ? '数据详情' : (isEdit ? '编辑数据' : '数据填报')}
-            </Text>
+            {this.state.isViewMode && (
+              <Text className='form-title'>
+                数据详情
+              </Text>
+            )}
             {/* 如果是njkqkzkzzbyd或njkqkzkzzbnd表单，显示填报单位名称 */}
             {(taskType === 'njkqkzkzzbyd' || taskType === 'njkqkzkzzbnd') && (
               <View className='form-org-info'>

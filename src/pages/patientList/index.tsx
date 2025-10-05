@@ -189,7 +189,7 @@ export default class PatientList extends Component<{}, PatientListState> {
     })
   }
 
-  // 添加病历
+  // 添加病案
   handleAddPatient = () => {
     const { taskId, taskTitle, selectedBatch } = this.state
     Taro.navigateTo({
@@ -260,7 +260,7 @@ export default class PatientList extends Component<{}, PatientListState> {
             </View>
 
             <Button className='add-btn' onClick={this.handleAddPatient}>
-              添加病历
+              添加病案
             </Button>
           </View>
         </View>

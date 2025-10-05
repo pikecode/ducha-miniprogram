@@ -131,13 +131,13 @@ export default class QualityControl extends Component<{}, QualityControlState> {
     if (task.planType === '0') {
       return {
         type: 'medical',
-        label: '现场督查(病历)',
+        label: '病历督查',
         color: '#ff6b6b'
       }
     } else if (task.planType === '1') {
       return {
         type: 'department',
-        label: '线上督查(部门)',
+        label: '部门督查',
         color: '#4ecdc4'
       }
     }
@@ -150,13 +150,13 @@ export default class QualityControl extends Component<{}, QualityControlState> {
         batchName.includes('病历') || batchName.includes('病案') || batchName.includes('医疗')) {
       return {
         type: 'medical',
-        label: '现场督查',
+        label: '病历督查',
         color: '#ff6b6b'
       }
     } else {
       return {
         type: 'department',
-        label: '线上督查',
+        label: '部门督查',
         color: '#4ecdc4'
       }
     }

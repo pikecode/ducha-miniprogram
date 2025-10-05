@@ -110,11 +110,10 @@
 }
 
 /* 按钮样式 */
-.login-btn,
-.wechat-login-btn {
+.login-btn {
   width: 320px;
   height: 60px;
-  background: #9ca3af;
+  background: #6b7280;
   color: white;
   border: none;
   border-radius: 8px;
@@ -129,21 +128,9 @@
   overflow: hidden;
 }
 
-.wechat-login-btn {
-  background: #1aad19;
-}
-
-.login-btn:not([disabled]):active,
-.wechat-login-btn:not([disabled]):active {
-  transform: scale(0.98);
-}
-
 .login-btn:not([disabled]):active {
-  background: #6b7280;
-}
-
-.wechat-login-btn:not([disabled]):active {
-  background: #179b16;
+  transform: scale(0.98);
+  background: #4b5563;
 }
 
 .login-btn.loading {
@@ -151,8 +138,7 @@
   cursor: not-allowed;
 }
 
-.login-btn[disabled],
-.wechat-login-btn[disabled] {
+.login-btn[disabled] {
   background: #d1d5db;
   color: #9ca3af;
   cursor: not-allowed;

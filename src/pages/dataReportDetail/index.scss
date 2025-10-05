@@ -90,13 +90,21 @@
   background-color: #f7f8fa;
 }
 
+.task-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
 .task-card-title {
   display: block;
   font-size: 32px;
   font-weight: 500;
   color: #333;
   line-height: 1.5;
-  margin-bottom: 16px;
+  flex: 1;
+  margin-right: 16px;
 }
 
 .task-card-desc {
@@ -133,6 +141,7 @@
   text-align: center;
   padding: 0;
   margin: 0;
+  flex-shrink: 0;
 }
 
 .task-card-btn:active {
@@ -227,7 +236,12 @@
   color: #999;
 }
 
-.data-card-time,
+.data-card-time {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  margin-right: 16px;
+}
+
 .data-card-author {
   flex: 1;
 }

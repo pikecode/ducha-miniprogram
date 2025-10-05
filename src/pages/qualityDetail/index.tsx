@@ -202,7 +202,7 @@ export default class QualityDetail extends Component<{}, QualityDetailState> {
             {/* 顶部操作栏 */}
             <View className='header-actions'>
               <Button className='add-btn' onClick={this.handleAddPatient}>
-                添加病历
+                添加病案
               </Button>
               <Button className='batch-btn' onClick={this.handleBatchAction}>
                 批次

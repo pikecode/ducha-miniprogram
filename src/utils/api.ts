@@ -2,6 +2,15 @@ import Taro from '@tarojs/taro'
 import { API_CONFIG, REQUEST_TIMEOUT } from './config'
 import { authManager } from './auth'
 
+// 存储验证码session
+let captchaSessionId: string | null = null
+
+// 从cookie字符串中提取JSESSIONID
+function extractSessionId(cookieString: string): string | null {
+  const match = cookieString.match(/JSESSIONID=([^;]+)/)
+  return match ? match[1] : null
+}
+
 // 接口响应类型
 interface ApiResponse<T = any> {
   code: number
@@ -291,31 +300,85 @@ class ApiClient {
     // 获取token
     const token = authManager.getToken()
 
+    // 构建请求头，包含验证码session（如果存在）
+    const requestHeaders: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      ...headers
+    }
+
+    // 如果存在验证码session且没有手动设置Cookie，则自动添加
+    if (captchaSessionId && !requestHeaders['Cookie']) {
+      requestHeaders['Cookie'] = `JSESSIONID=${captchaSessionId}`
+      console.log('添加session到请求头:', captchaSessionId)
+    } else if (requestHeaders['Cookie']) {
+      console.log('请求已包含Cookie头:', requestHeaders['Cookie'])
+    } else if (!captchaSessionId) {
+      console.log('当前没有验证码session')
+    }
+
     try {
       console.log('发起请求:', {
         url: fullUrl,
         method,
         data,
-        headers,
-        token: token ? '***' : 'null'
+        headers: requestHeaders,
+        token: token ? '***' : 'null',
+        captchaSession: captchaSessionId ? '***' : 'null'
       })
 
       const response = await Taro.request({
         url: fullUrl,
         method,
         data,
-        header: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-          ...headers
-        },
+        header: requestHeaders,
         timeout: REQUEST_TIMEOUT
       })
 
       console.log('接口响应:', response)
 
+      // 检查响应头中是否有新的session，如果有则更新
+      const setCookieHeader = response.header['set-cookie'] || response.header['Set-Cookie']
+      if (setCookieHeader) {
+        if (Array.isArray(setCookieHeader)) {
+          for (const cookie of setCookieHeader) {
+            const sessionId = extractSessionId(cookie)
+            if (sessionId && sessionId !== captchaSessionId) {
+              console.log('从响应更新session ID:', sessionId, '(原:', captchaSessionId, ')')
+              captchaSessionId = sessionId
+              break
+            }
+          }
+        } else {
+          const sessionId = extractSessionId(setCookieHeader)
+          if (sessionId && sessionId !== captchaSessionId) {
+            console.log('从响应更新session ID:', sessionId, '(原:', captchaSessionId, ')')
+            captchaSessionId = sessionId
+          }
+        }
+      }
+
       // 检查HTTP状态码
       if (response.statusCode !== 200) {
+        console.log('HTTP错误详情:', {
+          statusCode: response.statusCode,
+          data: response.data,
+          header: response.header,
+          url: fullUrl
+        })
+
+        // 尝试解析错误信息
+        let errorMessage = `HTTP错误: ${response.statusCode}`
+        if (response.data && typeof response.data === 'object') {
+          if (response.data.message) {
+            errorMessage += ` - ${response.data.message}`
+          } else if (response.data.error) {
+            errorMessage += ` - ${response.data.error}`
+          }
+        } else if (response.data && typeof response.data === 'string') {
+          errorMessage += ` - ${response.data}`
+        }
+
         // 401未授权，清除token并跳转登录
         if (response.statusCode === 401) {
           console.log('Token已失效，清除认证信息')
@@ -324,7 +387,13 @@ class ApiClient {
             url: '/pages/login/index'
           })
         }
-        throw new Error(`HTTP错误: ${response.statusCode}`)
+
+        // 404错误特殊处理（接口不存在）
+        if (response.statusCode === 404) {
+          errorMessage = `接口不存在(404): ${fullUrl.split('/').pop()}`
+        }
+
+        throw new Error(errorMessage)
       }
 
       const result = response.data as ApiResponse<T>
@@ -334,6 +403,13 @@ class ApiClient {
 
       // 检查业务状态码
       if (!result.success && result.code !== 200) {
+        console.log('业务逻辑错误详情:', {
+          success: result.success,
+          code: result.code,
+          message: result.message,
+          data: result.data
+        })
+
         // 如果是认证相关错误，也清除token
         if (result.code === 401 || result.code === 403) {
           console.log('认证失败，清除认证信息')
@@ -354,12 +430,14 @@ class ApiClient {
     } catch (error) {
       console.error('接口请求失败:', error)
 
-      // 显示错误提示
-      Taro.showToast({
-        title: error.message || '网络请求失败',
-        icon: 'none',
-        duration: 2000
-      })
+      // 404错误不显示Toast提示，其他错误正常显示
+      if (!error.message || !error.message.includes('404')) {
+        Taro.showToast({
+          title: error.message || '网络请求失败',
+          icon: 'none',
+          duration: 2000
+        })
+      }
 
       throw error
     }
@@ -376,11 +454,24 @@ class ApiClient {
 
   // 用户名密码登录接口
   async login(params: LoginParams): Promise<ApiResponse<LoginResponseData>> {
-    return this.request<LoginResponseData>(
+    console.log('=== API登录方法调试 ===')
+    console.log('登录接口URL:', `${this.baseURL}${API_CONFIG.ENDPOINTS.LOGIN}`)
+    console.log('登录参数:', params)
+    console.log('登录参数JSON:', JSON.stringify(params, null, 2))
+    console.log('当前验证码Session ID:', captchaSessionId)
+
+    // 通用request方法会自动处理验证码session
+    const response = await this.request<LoginResponseData>(
       API_CONFIG.ENDPOINTS.LOGIN,
       'POST',
       params
     )
+
+    console.log('=== API登录响应调试 ===')
+    console.log('响应数据:', response)
+    console.log('响应JSON:', JSON.stringify(response, null, 2))
+
+    return response
   }
 
   // 用户名登录接口
@@ -396,13 +487,101 @@ class ApiClient {
   async getCaptcha(): Promise<ApiResponse<{ image: string, key: string }>> {
     console.log('获取验证码API请求:', `${this.baseURL}${API_CONFIG.ENDPOINTS.CAPTCHA}`)
 
-    const response = await this.request<{ image: string, key: string }>(
-      API_CONFIG.ENDPOINTS.CAPTCHA,
-      'GET'
-    )
+    // 生成时间戳作为key
+    const timestamp = new Date().getTime().toString()
+    const fullUrl = `${this.baseURL}${API_CONFIG.ENDPOINTS.CAPTCHA}?t=${timestamp}`
 
-    console.log('获取验证码API响应:', response)
-    return response
+    try {
+      console.log('获取验证码图片和session:', fullUrl)
+
+      // 获取当前token以确保session一致性
+      const token = authManager.getToken()
+
+      const response = await Taro.request({
+        url: fullUrl,
+        method: 'GET',
+        header: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        timeout: REQUEST_TIMEOUT,
+        responseType: 'arraybuffer' // 获取图片数据
+      })
+
+      console.log('验证码响应:', {
+        statusCode: response.statusCode,
+        dataLength: response.data ? response.data.byteLength : 0,
+        headers: response.header
+      })
+
+      // 提取并保存JSESSIONID
+      const setCookieHeader = response.header['set-cookie'] || response.header['Set-Cookie']
+      console.log('Set-Cookie头:', setCookieHeader)
+
+      if (setCookieHeader) {
+        if (Array.isArray(setCookieHeader)) {
+          // 处理cookie数组
+          for (const cookie of setCookieHeader) {
+            const sessionId = extractSessionId(cookie)
+            if (sessionId) {
+              captchaSessionId = sessionId
+              console.log('提取到验证码Session ID:', sessionId)
+              break
+            }
+          }
+        } else {
+          // 处理单个cookie字符串
+          const sessionId = extractSessionId(setCookieHeader)
+          if (sessionId) {
+            captchaSessionId = sessionId
+            console.log('提取到验证码Session ID:', sessionId)
+          }
+        }
+      }
+
+      console.log('当前保存的验证码Session ID:', captchaSessionId)
+
+      // 检查HTTP状态码
+      if (response.statusCode !== 200) {
+        throw new Error(`HTTP错误: ${response.statusCode}`)
+      }
+
+      // 确保session ID被正确保存
+      if (!captchaSessionId) {
+        console.warn('警告：未能获取验证码Session ID，验证码可能无法正常工作')
+      }
+
+      // 将图片数据转换为base64，避免Image组件再次请求
+      let imageBase64 = ''
+      if (response.data) {
+        try {
+          // 在小程序中转换arraybuffer为base64
+          const base64 = Taro.arrayBufferToBase64(response.data)
+          imageBase64 = `data:image/png;base64,${base64}`
+          console.log('验证码图片转换为base64成功，长度:', base64.length)
+        } catch (e) {
+          console.warn('base64转换失败，使用URL方式:', e)
+          imageBase64 = fullUrl
+        }
+      } else {
+        console.warn('未获取到图片数据，使用URL方式')
+        imageBase64 = fullUrl
+      }
+
+      return {
+        success: true,
+        code: 200,
+        message: '获取验证码成功',
+        data: {
+          image: imageBase64, // 使用base64避免二次请求
+          key: timestamp
+        }
+      }
+
+    } catch (error) {
+      console.error('获取验证码失败:', error)
+      throw error
+    }
   }
 
   // 解密手机号接口
@@ -745,6 +924,19 @@ class ApiClient {
     return response
   }
 
+  // 获取首页配置
+  async getHomeConfig(): Promise<ApiResponse<HomeConfigResponseData>> {
+    console.log('获取首页配置API请求:', '/api/v1/config/home')
+
+    const response = await this.request<HomeConfigResponseData>(
+      '/api/v1/config/home',
+      'GET'
+    )
+
+    console.log('获取首页配置API响应:', response)
+    return response
+  }
+
   // 文件上传接口
   async uploadFile(filePath: string): Promise<UploadFileResponseData> {
     const fullUrl = `${this.baseURL}/api/v1/upload/v2/upload`
@@ -844,6 +1036,17 @@ class ApiClient {
 
 // 导出API客户端实例
 export const apiClient = new ApiClient()
+
+// 导出session管理函数
+export const getCaptchaSessionId = () => captchaSessionId
+export const clearCaptchaSession = () => {
+  console.log('清除验证码session:', captchaSessionId)
+  captchaSessionId = null
+}
+export const setCaptchaSessionId = (sessionId: string) => {
+  console.log('手动设置验证码session:', sessionId)
+  captchaSessionId = sessionId
+}
 
 // 字典项数据
 interface DictItem {
@@ -1209,6 +1412,7 @@ interface DataListItem {
   departmentName: string
   orgId: string
   dataDate: string
+  data_date?: string  // 后端接口新增字段，待后端添加
   dataDateId: string
   dataStatus: string
   status: string
@@ -1340,5 +1544,36 @@ interface FlowRecordItem {
   recordDetails: FlowRecordDetail[]
 }
 
+// 首页配置 - 快捷操作
+interface QuickAction {
+  id: string
+  name: string
+  subtitle?: string
+  icon: string
+  activeIcon: string
+  path: string
+  color: string
+  order: number
+}
+
+// 首页配置 - TabBar项
+interface TabBarItem {
+  id: string
+  pagePath: string
+  text: string
+  icon: string
+  activeIcon: string
+  order: number
+}
+
+// 首页配置响应数据
+interface HomeConfigResponseData {
+  backgroundImage: string        // 背景图片URL
+  quickActions: QuickAction[]     // 快捷操作列表
+  tabBarItems: TabBarItem[]       // TabBar配置
+  appName: string                 // 应用名称
+  logoUrl: string | null          // Logo URL
+}
+
 // 导出类型
-export type { OAuthLoginParams, LoginParams, LoginXParams, LoginResponseData, DecryptPhoneParams, DecryptPhoneResponseData, TaskLiveListParams, TaskLiveListItem, TaskLiveListResponseData, BatchInfo, BatchListParams, BatchListResponseData, PatientInfo, PatientListParams, PatientListResponseData, DepartmentInfo, DepartmentListParams, DepartmentListResponseData, PageInfo, ApiResponse, DictItem, DictDetailResponseData, PatientAddParams, PatientAddResponseData, PatientDetailParams, PatientDetailResponseData, InspectItem, InspectItemListParams, InspectItemListResponseData, InspectResultItem, InspectResultSaveParams, InspectResultSaveResponseData, DepartmentInspectResultItem, InspectEMRResult, UploadFileResponseData, CreateEvidenceParams, CreateDepartmentEvidenceParams, CreateEvidenceResponseData, EvidenceItem, EvidenceListResponseData, DataReportItem, TaskInfoItem, DataListItem, DataListResponseData, IndicatorDetail, IndicatorDetailResponseData, FlowRecordItem, FlowRecordDetail, FlowRecordOpt, FlowInstance }
+export type { OAuthLoginParams, LoginParams, LoginXParams, LoginResponseData, DecryptPhoneParams, DecryptPhoneResponseData, TaskLiveListParams, TaskLiveListItem, TaskLiveListResponseData, BatchInfo, BatchListParams, BatchListResponseData, PatientInfo, PatientListParams, PatientListResponseData, DepartmentInfo, DepartmentListParams, DepartmentListResponseData, PageInfo, ApiResponse, DictItem, DictDetailResponseData, PatientAddParams, PatientAddResponseData, PatientDetailParams, PatientDetailResponseData, InspectItem, InspectItemListParams, InspectItemListResponseData, InspectResultItem, InspectResultSaveParams, InspectResultSaveResponseData, DepartmentInspectResultItem, InspectEMRResult, UploadFileResponseData, CreateEvidenceParams, CreateDepartmentEvidenceParams, CreateEvidenceResponseData, EvidenceItem, EvidenceListResponseData, DataReportItem, TaskInfoItem, DataListItem, DataListResponseData, IndicatorDetail, IndicatorDetailResponseData, FlowRecordItem, FlowRecordDetail, FlowRecordOpt, FlowInstance, QuickAction, TabBarItem, HomeConfigResponseData }

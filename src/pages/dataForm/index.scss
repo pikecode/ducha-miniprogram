@@ -65,7 +65,7 @@
   background-color: #f8f9fa;
   border-bottom: 1px solid #e9ecef;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.1s;
 }
 
 .group-header:active {
@@ -82,7 +82,7 @@
 .group-arrow {
   font-size: 20px;
   color: #666;
-  transition: transform 0.3s ease;
+  transition: transform 0.15s ease;
   transform: rotate(0deg);
 }
 
@@ -92,7 +92,7 @@
 
 .group-content {
   padding: 32px;
-  animation: fadeIn 0.3s ease;
+  animation: fadeIn 0.15s ease;
 }
 
 @keyframes fadeIn {
@@ -171,32 +171,23 @@
 
 /* Tooltip */
 .tooltip {
-  position: absolute;
-  top: 40px;
+  position: fixed;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   background-color: #333;
   color: #fff;
   border-radius: 8px;
   padding: 16px;
   width: max-content;
   max-width: 80vw;
+  max-height: 80vh;
+  overflow-y: auto;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 1000;
 }
 
-.tooltip::before {
-  content: '';
-  position: absolute;
-  top: -6px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-bottom: 6px solid #333;
-}
+/* 移除箭头，因为现在是居中显示 */
 
 .tooltip-loading {
   text-align: center;
