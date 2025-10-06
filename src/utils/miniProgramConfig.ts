@@ -125,6 +125,28 @@ export const getAiApiConfig = () => {
   }
 }
 
+/**
+ * 获取首页数据上报导航配置
+ */
+export const getNavDataConfig = () => {
+  return {
+    picUrl: getConfigValue('nav_data_pic_url', ''),
+    name: getConfigValue('nav_data_name', '数据上报'),
+    desc: getConfigValue('nav_data_desc', '统计数据填报')
+  }
+}
+
+/**
+ * 获取首页质控督查导航配置
+ */
+export const getNavInspectConfig = () => {
+  return {
+    picUrl: getConfigValue('nav_inspect_pic_url', ''),
+    name: getConfigValue('nav_inspect_name', '质控督查'),
+    desc: getConfigValue('nav_inspect_desc', '质量控制管理')
+  }
+}
+
 export default {
   getMiniProgramConfig,
   getConfigArray,
@@ -137,5 +159,7 @@ export default {
   getTabBarDataConfig,
   getTabBarInspectConfig,
   getTabBarAiConfig,
-  getAiApiConfig
+  getAiApiConfig,
+  getNavDataConfig,
+  getNavInspectConfig
 }

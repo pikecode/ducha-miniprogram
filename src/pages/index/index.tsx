@@ -3,7 +3,7 @@ import { View, Text, Image } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { authManager } from '../../utils/auth'
 import { apiClient, type HomeConfigResponseData, type QuickAction } from '../../utils/api'
-import { getMainPicUrl } from '../../utils/miniProgramConfig'
+import { getMainPicUrl, getNavDataConfig, getNavInspectConfig } from '../../utils/miniProgramConfig'
 import './index.scss'
 
 interface IndexState {
@@ -92,23 +92,27 @@ export default class Index extends Component<{}, IndexState> {
 
   // 使用默认配置
   useDefaultConfig = () => {
+    // 获取服务器配置
+    const navDataConfig = getNavDataConfig()
+    const navInspectConfig = getNavInspectConfig()
+
     const defaultQuickActions: QuickAction[] = [
       {
         id: '1',
-        name: '数据上报',
-        subtitle: '统计数据填报',
-        icon: '📊',
-        activeIcon: '📊',
+        name: navDataConfig.name,
+        subtitle: navDataConfig.desc,
+        icon: navDataConfig.picUrl || '📊',
+        activeIcon: navDataConfig.picUrl || '📊',
         path: '/pages/dataReportList/index',
         color: '#ff6b6b',
         order: 1
       },
       {
         id: '2',
-        name: '质控督查',
-        subtitle: '质量控制管理',
-        icon: '🔍',
-        activeIcon: '🔍',
+        name: navInspectConfig.name,
+        subtitle: navInspectConfig.desc,
+        icon: navInspectConfig.picUrl || '🔍',
+        activeIcon: navInspectConfig.picUrl || '🔍',
         path: '/pages/qualityControl/index',
         color: '#4ecdc4',
         order: 2
@@ -241,7 +245,15 @@ export default class Index extends Component<{}, IndexState> {
                 onClick={() => this.handleQuickAction(action)}
               >
                 <View className='action-icon-wrapper'>
-                  <Text className='action-icon-emoji'>{action.icon}</Text>
+                  {action.icon && action.icon.startsWith('http') ? (
+                    <Image
+                      className='action-icon-img'
+                      src={action.icon}
+                      mode='aspectFit'
+                    />
+                  ) : (
+                    <Text className='action-icon-emoji'>{action.icon}</Text>
+                  )}
                 </View>
                 <View className='action-text'>
                   <Text className='action-name'>{action.name}</Text>
