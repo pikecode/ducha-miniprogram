@@ -11,7 +11,6 @@ interface CustomTabBarState {
   tabs: TabBarItem[]
   loading: boolean
   useServerConfig: boolean
-  isManuallyUpdated: boolean
 }
 
 export default class CustomTabBar extends Component<{}, CustomTabBarState> {
@@ -22,8 +21,7 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
       selected: 0,
       tabs: [],
       loading: true,
-      useServerConfig: false,
-      isManuallyUpdated: false
+      useServerConfig: false
     }
   }
 
@@ -133,7 +131,7 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
   }
 
   updateTabBar = () => {
-    if (this.state.loading || this.state.isManuallyUpdated) {
+    if (this.state.loading) {
       return
     }
 
@@ -167,27 +165,10 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
   switchTab = (tab: any, index: number) => {
     const url = `/${tab.pagePath}`
 
-    // 立即更新选中状态，标记为手动更新
-    this.setState({
-      selected: index,
-      isManuallyUpdated: true
-    }, () => {
-      // 状态更新后强制重新渲染
-      this.forceUpdate()
-    })
-
     Taro.switchTab({
       url
-    }).then(() => {
-      // 页面切换成功后，清除手动更新标记
-      setTimeout(() => {
-        this.setState({ isManuallyUpdated: false })
-      }, 100)
     }).catch((error) => {
       console.error('切换Tab失败:', error)
-      // 如果切换失败，恢复之前的状态
-      this.setState({ isManuallyUpdated: false })
-      this.updateTabBar()
     })
   }
 
