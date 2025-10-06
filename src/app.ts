@@ -1,15 +1,34 @@
 import { Component } from 'react'
 import Taro from '@tarojs/taro'
 import { configTabManager } from './utils/configTabManager'
+import { apiClient } from './utils/api'
 import './app.scss'
 
 class App extends Component {
 
   onLaunch() {
-
+    // 加载小程序配置
+    this.loadMiniProgramConfig()
 
     // 初始化动态Tab配置
     this.initDynamicTabBar()
+  }
+
+  /**
+   * 加载小程序配置
+   */
+  async loadMiniProgramConfig() {
+    try {
+      const response = await apiClient.getMiniProgramConfig()
+
+      if (response.success && response.data) {
+        // 将配置保存到本地存储
+        Taro.setStorageSync('miniProgramConfig', response.data)
+      }
+    } catch (error) {
+      console.error('加载小程序配置失败:', error)
+      // 配置加载失败不影响小程序启动，静默处理
+    }
   }
 
   /**
@@ -54,6 +73,13 @@ class App extends Component {
     if (app && app.initDynamicTabBar) {
       app.initDynamicTabBar()
     }
+  }
+
+  /**
+   * 获取小程序配置（供其他地方调用）
+   */
+  static getMiniProgramConfig() {
+    return Taro.getStorageSync('miniProgramConfig') || {}
   }
 
   componentDidShow() {}

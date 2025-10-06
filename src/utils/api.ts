@@ -993,6 +993,14 @@ class ApiClient {
     return response
   }
 
+  // 获取小程序配置
+  async getMiniProgramConfig(): Promise<ApiResponse<any>> {
+    return this.request<any>(
+      '/api/v1/sys/config/category/miniprogram',
+      'GET'
+    )
+  }
+
   // 设置请求头（用于设置token等）
   setAuthToken(authorization: string) {
     // 使用authManager管理token
