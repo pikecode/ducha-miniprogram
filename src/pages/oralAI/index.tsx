@@ -17,6 +17,8 @@ interface OralAIState {
   inputText: string
   isLoading: boolean
   conversationId: string
+  streamingMessage: string
+  isStreaming: boolean
 }
 
 export default class OralAI extends Component<{}, OralAIState> {
@@ -27,7 +29,9 @@ export default class OralAI extends Component<{}, OralAIState> {
       messages: [],
       inputText: '',
       isLoading: false,
-      conversationId: ''
+      conversationId: '',
+      streamingMessage: '',
+      isStreaming: false
     }
   }
 
@@ -67,9 +71,9 @@ export default class OralAI extends Component<{}, OralAIState> {
   }
 
   handleSend = async () => {
-    const { inputText, messages, isLoading, conversationId } = this.state
+    const { inputText, messages, isLoading, conversationId, isStreaming } = this.state
 
-    if (!inputText.trim() || isLoading) {
+    if (!inputText.trim() || isLoading || isStreaming) {
       return
     }
 
@@ -83,7 +87,11 @@ export default class OralAI extends Component<{}, OralAIState> {
     this.setState({
       messages: [...messages, userMessage],
       inputText: '',
-      isLoading: true
+      isLoading: true,
+      streamingMessage: '',
+      isStreaming: false
+    }, () => {
+      this.scrollToBottom()
     })
 
     try {
@@ -109,7 +117,13 @@ export default class OralAI extends Component<{}, OralAIState> {
       })
 
       if (response.statusCode === 200 && response.data) {
-        // 处理流式响应或普通响应
+        // 开始流式显示
+        this.setState({
+          isLoading: false,
+          isStreaming: true,
+          streamingMessage: ''
+        })
+
         let aiContent = ''
 
         if (typeof response.data === 'string') {
@@ -137,17 +151,8 @@ export default class OralAI extends Component<{}, OralAIState> {
           }
         }
 
-        const aiMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          type: 'ai',
-          content: aiContent || '抱歉，我无法理解您的问题，请重新提问。',
-          time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-        }
-
-        this.setState({
-          messages: [...this.state.messages, aiMessage],
-          isLoading: false
-        })
+        // 开始逐字显示AI回答
+        this.simulateTyping(aiContent || '抱歉，我无法理解您的问题，请重新提问。')
       } else {
         throw new Error('API请求失败')
       }
@@ -164,6 +169,8 @@ export default class OralAI extends Component<{}, OralAIState> {
       this.setState({
         messages: [...this.state.messages, errorMessage],
         isLoading: false
+      }, () => {
+        this.scrollToBottom()
       })
 
       Taro.showToast({
@@ -183,8 +190,128 @@ export default class OralAI extends Component<{}, OralAIState> {
     return userId
   }
 
+  // 滚动到底部
+  scrollToBottom = () => {
+    setTimeout(() => {
+      Taro.pageScrollTo({
+        scrollTop: 99999,
+        duration: 300
+      })
+    }, 100)
+  }
+
+  // 模拟打字效果
+  simulateTyping = (content: string) => {
+    const formattedContent = this.formatMarkdownContent(content)
+    const chars = formattedContent.split('')
+    let currentText = ''
+    let index = 0
+
+    const typeNextChar = () => {
+      if (index < chars.length) {
+        currentText += chars[index]
+        this.setState({
+          streamingMessage: currentText
+        }, () => {
+          // 每显示几个字符就滚动一次
+          if (index % 10 === 0) {
+            this.scrollToBottom()
+          }
+        })
+        index++
+
+        // 根据字符类型调整速度
+        let delay = 30 // 基础延迟
+        const char = chars[index - 1]
+        if (char === '\n') {
+          delay = 200 // 换行稍慢
+        } else if (char === '。' || char === '！' || char === '？') {
+          delay = 300 // 句号更慢
+        } else if (char === '，' || char === '、') {
+          delay = 100 // 逗号稍慢
+        }
+
+        setTimeout(typeNextChar, delay)
+      } else {
+        // 打字完成，添加到消息列表
+        const aiMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          type: 'ai',
+          content: formattedContent,
+          time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+        }
+
+        this.setState({
+          messages: [...this.state.messages, aiMessage],
+          isStreaming: false,
+          streamingMessage: ''
+        }, () => {
+          this.scrollToBottom()
+        })
+      }
+    }
+
+    typeNextChar()
+  }
+
+  // 格式化markdown内容
+  formatMarkdownContent = (content: string): string => {
+    if (!content) return ''
+
+    return content
+      // 首先移除思考标签
+      .replace(/<think>[\s\S]*?<\/think>/g, '')
+      .replace(/<thinking>[\s\S]*?<\/thinking>/g, '')
+
+      // 处理标题
+      .replace(/^### (.*$)/gim, '\n📌 $1\n')
+      .replace(/^## (.*$)/gim, '\n🔹 $1\n')
+      .replace(/^# (.*$)/gim, '\n📋 $1\n')
+
+      // 处理粗体
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/__(.*?)__/g, '$1')
+
+      // 处理斜体
+      .replace(/\*(.*?)\*/g, '$1')
+      .replace(/_(.*?)_/g, '$1')
+
+      // 处理列表项
+      .replace(/^\* (.*$)/gim, '• $1')
+      .replace(/^- (.*$)/gim, '• $1')
+      .replace(/^\+ (.*$)/gim, '• $1')
+
+      // 处理有序列表
+      .replace(/^\d+\.\s+(.*$)/gim, '▪ $1')
+
+      // 处理代码块
+      .replace(/```[\s\S]*?```/g, (match) => {
+        const code = match.replace(/```\w*\n?/g, '').replace(/```$/g, '')
+        return `\n【代码】\n${code}\n`
+      })
+
+      // 处理行内代码
+      .replace(/`([^`]+)`/g, '「$1」')
+
+      // 处理引用
+      .replace(/^> (.*$)/gim, '💬 $1')
+
+      // 处理分隔线
+      .replace(/^---+$/gm, '\n────────────────\n')
+      .replace(/^\*\*\*+$/gm, '\n────────────────\n')
+
+      // 处理表格（简化处理）
+      .replace(/\|(.+)\|/g, (match) => {
+        return match.replace(/\|/g, ' | ').trim()
+      })
+
+      // 清理多余的换行
+      .replace(/\n{3,}/g, '\n\n')
+      .trim()
+  }
+
   render() {
-    const { messages, inputText, isLoading } = this.state
+    const { messages, inputText, isLoading, isStreaming } = this.state
 
     return (
       <View className='oral-ai'>
@@ -225,6 +352,20 @@ export default class OralAI extends Component<{}, OralAIState> {
             </View>
           )}
 
+          {/* AI流式回答显示 */}
+          {this.state.isStreaming && this.state.streamingMessage && (
+            <View className='message-item ai'>
+              <View className='ai-message'>
+                <View className='ai-avatar'>
+                  <Text className='avatar-icon'>🤖</Text>
+                </View>
+                <View className='ai-bubble'>
+                  <Text className='message-text'>{this.state.streamingMessage}</Text>
+                </View>
+              </View>
+            </View>
+          )}
+
           <View id='bottom'></View>
         </ScrollView>
 
@@ -232,14 +373,14 @@ export default class OralAI extends Component<{}, OralAIState> {
         <View className='input-bar'>
           <Input
             className='message-input'
-            placeholder='请输入问题，默认一行，文字增加后自动变多行。'
+            placeholder='请输入问题'
             value={inputText}
             onInput={this.handleInputChange}
             confirmType='send'
             onConfirm={this.handleSend}
           />
           <View
-            className={`send-btn ${isLoading ? 'disabled' : ''}`}
+            className={`send-btn ${isLoading || isStreaming ? 'disabled' : ''}`}
             onClick={this.handleSend}
           >
             <Text className='send-icon'>➤</Text>

@@ -85,6 +85,43 @@
   word-wrap: break-word;
   white-space: pre-wrap;
   font-weight: 400;
+
+  /* 改善markdown格式化后的显示效果 */
+  &.formatted {
+    line-height: 1.8;
+
+    /* 标题样式 */
+    .title {
+      font-weight: 600;
+      margin: 16px 0 8px 0;
+      color: #1f2937;
+    }
+
+    /* 列表项样式 */
+    .list-item {
+      margin: 4px 0;
+      padding-left: 8px;
+    }
+
+    /* 代码块样式 */
+    .code-block {
+      background-color: #f3f4f6;
+      padding: 12px;
+      border-radius: 6px;
+      margin: 8px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 26px;
+      border-left: 3px solid #6b7280;
+    }
+
+    /* 引用样式 */
+    .quote {
+      padding-left: 12px;
+      border-left: 3px solid #3b82f6;
+      color: #6b7280;
+      font-style: italic;
+    }
+  }
 }
 
 /* 用户消息文字颜色 */
