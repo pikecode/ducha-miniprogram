@@ -22,8 +22,8 @@ class App extends Component {
       const response = await apiClient.getMiniProgramConfig()
 
       if (response.success && response.data) {
-        // 将配置保存到本地存储
-        Taro.setStorageSync('miniProgramConfig', response.data)
+        // 将配置保存到本地存储，保持数据结构一致
+        Taro.setStorageSync('miniProgramConfig', { data: response.data })
       }
     } catch (error) {
       console.error('加载小程序配置失败:', error)

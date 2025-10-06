@@ -4,6 +4,7 @@ import Taro from '@tarojs/taro'
 import { apiClient, getCaptchaSessionId } from '../../utils/api'
 import { authManager } from '../../utils/auth'
 import { base64Encode } from '../../utils/crypto'
+import { getSystemName, getLogoUrl } from '../../utils/miniProgramConfig'
 import './index.scss'
 
 interface LoginState {
@@ -16,6 +17,10 @@ interface LoginState {
 
   // 公共状态
   isLogging: boolean         // 是否正在登录
+
+  // 配置状态
+  logoUrl: string           // logo地址
+  systemName: string        // 系统名称
 }
 
 export default class Login extends Component<{}, LoginState> {
@@ -31,7 +36,11 @@ export default class Login extends Component<{}, LoginState> {
       captchaKey: '',
 
       // 公共状态
-      isLogging: false
+      isLogging: false,
+
+      // 配置状态
+      logoUrl: '',
+      systemName: '督查小程序'
     }
   }
 
@@ -40,11 +49,52 @@ export default class Login extends Component<{}, LoginState> {
       title: '登录'
     })
 
+    // 加载配置
+    this.loadConfig()
+
     // 检查是否已登录
     this.checkLoginStatus()
 
     // 加载验证码
     this.loadCaptcha()
+  }
+
+  componentDidShow() {
+    // 页面显示时重新加载配置，确保获取最新的配置信息
+    this.loadConfig()
+  }
+
+  // 加载配置
+  loadConfig = async () => {
+    try {
+      // 尝试重新加载配置（如果还没加载或需要更新）
+      const response = await apiClient.getMiniProgramConfig()
+      if (response.success && response.data) {
+        Taro.setStorageSync('miniProgramConfig', { data: response.data })
+      }
+    } catch (error) {
+      console.error('加载配置失败:', error)
+    }
+
+    // 获取配置值
+    let logoUrl = getLogoUrl()
+    const systemName = getSystemName()
+
+    // 注意：如果是SVG URL，小程序可能不支持，会通过onError回调处理
+
+    this.setState({
+      logoUrl,
+      systemName
+    })
+  }
+
+  // 处理logo加载错误
+  handleLogoError = (e) => {
+    console.log('Logo加载失败，切换到占位符')
+    // 如果图片加载失败，清空logoUrl使用占位符
+    this.setState({
+      logoUrl: ''
+    })
   }
 
   // 检查登录状态
@@ -230,14 +280,29 @@ export default class Login extends Component<{}, LoginState> {
 
 
   render() {
-    const { isLogging, username, password, captchaCode, captchaImage } = this.state
+    const { isLogging, username, password, captchaCode, captchaImage, logoUrl, systemName } = this.state
 
     return (
       <View className='login'>
-        <View className='login-content'>
-          <Text className='login-title'>用户名密码登录</Text>
+        <View className='login-container'>
+          <View className='login-header'>
+            {logoUrl ? (
+              <Image
+                className='logo'
+                src={logoUrl}
+                mode='aspectFit'
+                onError={this.handleLogoError}
+              />
+            ) : (
+              <View className='logo logo-placeholder'>
+                <Text className='logo-text'>L</Text>
+              </View>
+            )}
+            <Text className='system-title'>{systemName}</Text>
+          </View>
 
-          <View className='form-section'>
+          <View className='login-content'>
+            <View className='form-section'>
             <Input
               className='form-input'
               placeholder='请输入用户名'
@@ -276,6 +341,7 @@ export default class Login extends Component<{}, LoginState> {
               <Text className='btn-text'>{isLogging ? '正在登录...' : '登录'}</Text>
             </Button>
           </View>
+        </View>
         </View>
       </View>
     )
