@@ -570,7 +570,6 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
       const response = await apiClient.saveDepartmentInspectResults(saveData)
 
       if (response.success) {
-        // TODO: 如果部门督查也需要保存整体存在不足，需要添加相应的API接口和逻辑
 
         Taro.showToast({
           title: '保存成功',

@@ -90,7 +90,6 @@ export default class Login extends Component<{}, LoginState> {
 
   // 处理logo加载错误
   handleLogoError = (e) => {
-    console.log('Logo加载失败，切换到占位符')
     // 如果图片加载失败，清空logoUrl使用占位符
     this.setState({
       logoUrl: ''

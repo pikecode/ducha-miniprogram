@@ -80,10 +80,6 @@ export default class QualityControl extends Component<{}, QualityControlState> {
         this.setState({ loading: false })
       }
     } catch (error) {
-      console.error('=== API请求异常 ===')
-      console.error('错误类型:', typeof error)
-      console.error('错误信息:', error)
-      console.error('错误堆栈:', error?.stack)
       Taro.showToast({
         title: '网络错误，请重试',
         icon: 'none'
