@@ -3,6 +3,7 @@ import { View, Text, Image } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { authManager } from '../../utils/auth'
 import { apiClient, type HomeConfigResponseData, type QuickAction } from '../../utils/api'
+import { getMainPicUrl } from '../../utils/miniProgramConfig'
 import './index.scss'
 
 interface IndexState {
@@ -40,6 +41,9 @@ export default class Index extends Component<{}, IndexState> {
     // 加载用户信息
     await this.loadUserInfo()
 
+    // 加载小程序配置
+    await this.loadMiniProgramConfig()
+
     // 加载首页配置
     await this.loadHomeConfig()
   }
@@ -64,6 +68,19 @@ export default class Index extends Component<{}, IndexState> {
       }
     } catch (error) {
       console.error('加载用户信息失败:', error)
+    }
+  }
+
+  // 加载小程序配置
+  loadMiniProgramConfig = async () => {
+    try {
+      // 尝试重新加载配置（如果还没加载或需要更新）
+      const response = await apiClient.getMiniProgramConfig()
+      if (response.success && response.data) {
+        Taro.setStorageSync('miniProgramConfig', { data: response.data })
+      }
+    } catch (error) {
+      console.error('加载小程序配置失败:', error)
     }
   }
 
@@ -98,9 +115,13 @@ export default class Index extends Component<{}, IndexState> {
       }
     ]
 
+    // 获取配置中的主图地址
+    const mainPicUrl = getMainPicUrl()
+    const defaultBackgroundImage = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImJnR3JhZGllbnQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgo8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojNjY3ZWVhO3N0b3Atb3BhY2l0eToxIiAvPgo8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM3NjRiYTI7c3RvcC1vcGFjaXR5OjEiIC8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIzMDAiIGZpbGw9InVybCgjYmdHcmFkaWVudCkiLz4KPHN2ZyB4PSI1MCIgeT0iNTAiIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8dGV4dCB4PSIxNTAiIHk9IjEwMCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+CuedqeafpeaOp+WItuWwj+eoi+W6jwo8L3RleHQ+Cjx0ZXh0IHg9IjE1MCIgeT0iMTQwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC44KSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+CuivtuS9v+eUqOacjeWKoeWZqOmFjee9ruWbvueJhwo8L3RleHQ+Cjwvc3ZnPgo8L3N2Zz4=' // 默认背景图（SVG）
+
     this.setState({
       quickActions: defaultQuickActions,
-      backgroundImage: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImJnR3JhZGllbnQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgo8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojNjY3ZWVhO3N0b3Atb3BhY2l0eToxIiAvPgo8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM3NjRiYTI7c3RvcC1vcGFjaXR5OjEiIC8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIzMDAiIGZpbGw9InVybCgjYmdHcmFkaWVudCkiLz4KPHN2ZyB4PSI1MCIgeT0iNTAiIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8dGV4dCB4PSIxNTAiIHk9IjEwMCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+CuedqeafpeaOp+WItuWwj+eoi+W6jwo8L3RleHQ+Cjx0ZXh0IHg9IjE1MCIgeT0iMTQwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC44KSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+CuivtuS9v+eUqOacjeWKoeWZqOmFjee9ruWbvueJhwo8L3RleHQ+Cjwvc3ZnPgo8L3N2Zz4=', // 默认背景图（SVG）
+      backgroundImage: mainPicUrl || defaultBackgroundImage,
       loading: false
     })
   }
@@ -189,9 +210,6 @@ export default class Index extends Component<{}, IndexState> {
 
           {/* 用户信息内容 */}
           <View className='header-content'>
-            <View className='user-info'>
-              <Text className='greeting'>{this.getGreeting()}</Text>
-            </View>
           </View>
         </View>
 

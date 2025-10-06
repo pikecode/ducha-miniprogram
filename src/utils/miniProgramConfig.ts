@@ -67,6 +67,54 @@ export const getMainPicUrl = () => {
   return getConfigValue('main_pic_url', '')
 }
 
+/**
+ * 获取TabBar首页相关配置
+ */
+export const getTabBarMainConfig = () => {
+  return {
+    activePicUrl: getConfigValue('bar_main_active_pic_url', ''),
+    unactivePicUrl: getConfigValue('bar_main_unactive_pic_url', ''),
+    name: getConfigValue('bar_main_name', '首页'),
+    show: getConfigValue('bar_main_show', 'false') === 'true'
+  }
+}
+
+/**
+ * 获取TabBar数据上报相关配置
+ */
+export const getTabBarDataConfig = () => {
+  return {
+    activePicUrl: getConfigValue('bar_data_active_pic_url', ''),
+    unactivePicUrl: getConfigValue('bar_data_unactive_pic_url', ''),
+    name: getConfigValue('bar_data_name', '数据上报'),
+    show: getConfigValue('bar_data_show', 'false') === 'true'
+  }
+}
+
+/**
+ * 获取TabBar督查相关配置
+ */
+export const getTabBarInspectConfig = () => {
+  return {
+    activePicUrl: getConfigValue('bar_inspect_active_pic_url', ''),
+    unactivePicUrl: getConfigValue('bar_inspect_unactive_pic_url', ''),
+    name: getConfigValue('bar_inspect_name', '督查'),
+    show: getConfigValue('bar_inspect_show', 'false') === 'true'
+  }
+}
+
+/**
+ * 获取TabBar AI相关配置
+ */
+export const getTabBarAiConfig = () => {
+  return {
+    activePicUrl: getConfigValue('bar_ai_active_piic_url', ''), // 注意这里是piic，API中的拼写错误
+    unactivePicUrl: getConfigValue('bar_ai_unactive_pic_url', ''),
+    name: getConfigValue('bar_ai_name', 'AI'),
+    show: getConfigValue('bar_ai_show', 'false') === 'true'
+  }
+}
+
 export default {
   getMiniProgramConfig,
   getConfigArray,
@@ -74,5 +122,9 @@ export default {
   isConfigLoaded,
   getSystemName,
   getLogoUrl,
-  getMainPicUrl
+  getMainPicUrl,
+  getTabBarMainConfig,
+  getTabBarDataConfig,
+  getTabBarInspectConfig,
+  getTabBarAiConfig
 }

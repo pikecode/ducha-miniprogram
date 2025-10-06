@@ -3,6 +3,7 @@ import { View, Text, Image } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { apiClient, type TabBarItem } from '../utils/api'
 import { configTabManager, TabConfig } from '../utils/configTabManager'
+import { getTabBarMainConfig, getTabBarDataConfig, getTabBarInspectConfig, getTabBarAiConfig } from '../utils/miniProgramConfig'
 import './index.scss'
 
 interface CustomTabBarState {
@@ -25,12 +26,29 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
   }
 
   async componentDidMount() {
+    // 加载小程序配置
+    await this.loadMiniProgramConfig()
     await this.loadTabBarConfig()
     this.updateTabBar()
   }
 
+  // 加载小程序配置
+  loadMiniProgramConfig = async () => {
+    try {
+      const response = await apiClient.getMiniProgramConfig()
+      if (response.success && response.data) {
+        Taro.setStorageSync('miniProgramConfig', { data: response.data })
+      }
+    } catch (error) {
+      console.error('加载小程序配置失败:', error)
+    }
+  }
+
   componentDidShow() {
-    this.updateTabBar()
+    // 延迟更新，确保页面已经完全显示
+    setTimeout(() => {
+      this.updateTabBar()
+    }, 100)
   }
 
   // 加载TabBar配置
@@ -42,19 +60,73 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
   // 使用默认TabBar配置
   useDefaultTabConfig = () => {
     const enabledTabs = configTabManager.getEnabledTabs()
+    const mainConfig = getTabBarMainConfig()
+    const dataConfig = getTabBarDataConfig()
+    const inspectConfig = getTabBarInspectConfig()
+    const aiConfig = getTabBarAiConfig()
+
+
+    // 获取Tab配置的函数
+    const getTabConfig = (pagePath: string) => {
+      switch (pagePath) {
+        case 'pages/index/index':
+          return mainConfig
+        case 'pages/dataReportList/index':
+          return dataConfig
+        case 'pages/qualityControl/index':
+          return inspectConfig
+        case 'pages/oralAI/index':
+          return aiConfig
+        default:
+          return null
+      }
+    }
+
     // 转换为TabBarItem格式
-    const tabBarItems: TabBarItem[] = enabledTabs.map(tab => ({
-      id: tab.id,
-      pagePath: tab.pagePath,
-      text: tab.text,
-      icon: tab.icon,
-      activeIcon: tab.selectedIcon,
-      order: tab.order
-    }))
+    const tabBarItems: TabBarItem[] = enabledTabs.map(tab => {
+      const serverConfig = getTabConfig(tab.pagePath)
+
+      // 如果有服务器配置且配置显示，使用服务器配置
+      if (serverConfig && serverConfig.show) {
+        return {
+          id: tab.id,
+          pagePath: tab.pagePath,
+          text: serverConfig.name,
+          icon: serverConfig.unactivePicUrl || tab.icon,
+          activeIcon: serverConfig.activePicUrl || tab.selectedIcon,
+          order: tab.order
+        }
+      }
+
+      return {
+        id: tab.id,
+        pagePath: tab.pagePath,
+        text: tab.text,
+        icon: tab.icon,
+        activeIcon: tab.selectedIcon,
+        order: tab.order
+      }
+    }).filter(tab => {
+      const serverConfig = getTabConfig(tab.pagePath)
+      // 如果有服务器配置且配置不显示，则过滤掉
+      if (serverConfig && !serverConfig.show) {
+        return false
+      }
+      return true
+    })
+
+    // 检查是否有服务器配置的图标（需要是HTTP URL）
+    const hasServerIcon = tabBarItems.some(tab => {
+      const serverConfig = getTabConfig(tab.pagePath)
+      return serverConfig && (
+        (serverConfig.activePicUrl && serverConfig.activePicUrl.startsWith('http')) ||
+        (serverConfig.unactivePicUrl && serverConfig.unactivePicUrl.startsWith('http'))
+      )
+    })
 
     this.setState({
       tabs: tabBarItems,
-      useServerConfig: false,
+      useServerConfig: hasServerIcon,
       loading: false
     })
 
@@ -83,20 +155,27 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
       }
     })
 
-    this.setState({ selected })
+    // 强制更新状态
+    this.setState({ selected }, () => {
+      // 状态更新后强制重新渲染
+      this.forceUpdate()
+    })
   }
 
   switchTab = (tab: any, index: number) => {
     const url = `/${tab.pagePath}`
 
+    // 立即更新选中状态
+    this.setState({
+      selected: index
+    })
+
     Taro.switchTab({
       url
-    }).then(() => {
-      this.setState({
-        selected: index
-      })
     }).catch((error) => {
       console.error('切换Tab失败:', error)
+      // 如果切换失败，恢复之前的状态
+      this.updateTabBar()
     })
   }
 
@@ -122,7 +201,7 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
                 onClick={() => this.switchTab(tab, index)}
               >
                 <View className='tab-bar-item__icon-wrapper'>
-                  {useServerConfig && iconUrl ? (
+                  {iconUrl && iconUrl.startsWith('http') ? (
                     <Image
                       className={`tab-bar-item__icon-img ${isActive ? 'tab-bar-item__icon-img--active' : ''}`}
                       src={iconUrl}
