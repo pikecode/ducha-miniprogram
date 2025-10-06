@@ -3,7 +3,7 @@ import { View, Text, Image } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { apiClient, type TabBarItem } from '../utils/api'
 import { configTabManager, TabConfig } from '../utils/configTabManager'
-import { getTabBarMainConfig, getTabBarDataConfig, getTabBarInspectConfig, getTabBarAiConfig } from '../utils/miniProgramConfig'
+import { getTabBarMainConfig, getTabBarDataConfig, getTabBarInspectConfig, getTabBarAiConfig, ensureConfigLoaded } from '../utils/miniProgramConfig'
 import './index.scss'
 
 interface CustomTabBarState {
@@ -35,10 +35,8 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
   // 加载小程序配置
   loadMiniProgramConfig = async () => {
     try {
-      const response = await apiClient.getMiniProgramConfig()
-      if (response.success && response.data) {
-        Taro.setStorageSync('miniProgramConfig', { data: response.data })
-      }
+      // 确保配置已加载（避免重复请求）
+      await ensureConfigLoaded()
     } catch (error) {
       console.error('加载小程序配置失败:', error)
     }

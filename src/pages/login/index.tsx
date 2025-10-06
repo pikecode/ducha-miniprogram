@@ -4,7 +4,7 @@ import Taro from '@tarojs/taro'
 import { apiClient, getCaptchaSessionId } from '../../utils/api'
 import { authManager } from '../../utils/auth'
 import { base64Encode } from '../../utils/crypto'
-import { getSystemName, getLogoUrl } from '../../utils/miniProgramConfig'
+import { getSystemName, getLogoUrl, ensureConfigLoaded } from '../../utils/miniProgramConfig'
 import './index.scss'
 
 interface LoginState {
@@ -67,11 +67,8 @@ export default class Login extends Component<{}, LoginState> {
   // 加载配置
   loadConfig = async () => {
     try {
-      // 尝试重新加载配置（如果还没加载或需要更新）
-      const response = await apiClient.getMiniProgramConfig()
-      if (response.success && response.data) {
-        Taro.setStorageSync('miniProgramConfig', { data: response.data })
-      }
+      // 确保配置已加载（避免重复请求）
+      await ensureConfigLoaded()
     } catch (error) {
       console.error('加载配置失败:', error)
     }

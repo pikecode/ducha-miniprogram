@@ -3,7 +3,7 @@ import { View, Text, Image } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { authManager } from '../../utils/auth'
 import { apiClient, type HomeConfigResponseData, type QuickAction } from '../../utils/api'
-import { getMainPicUrl, getNavDataConfig, getNavInspectConfig } from '../../utils/miniProgramConfig'
+import { getMainPicUrl, getNavDataConfig, getNavInspectConfig, ensureConfigLoaded } from '../../utils/miniProgramConfig'
 import './index.scss'
 
 interface IndexState {
@@ -74,11 +74,8 @@ export default class Index extends Component<{}, IndexState> {
   // 加载小程序配置
   loadMiniProgramConfig = async () => {
     try {
-      // 尝试重新加载配置（如果还没加载或需要更新）
-      const response = await apiClient.getMiniProgramConfig()
-      if (response.success && response.data) {
-        Taro.setStorageSync('miniProgramConfig', { data: response.data })
-      }
+      // 确保配置已加载（避免重复请求）
+      await ensureConfigLoaded()
     } catch (error) {
       console.error('加载小程序配置失败:', error)
     }

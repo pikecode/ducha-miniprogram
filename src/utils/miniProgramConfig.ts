@@ -2,6 +2,7 @@
  * 小程序配置管理工具
  */
 import Taro from '@tarojs/taro'
+import { apiClient } from './api'
 
 /**
  * 配置项接口
@@ -44,6 +45,53 @@ export const getConfigValue = (key: string, defaultValue: string = ''): string =
 export const isConfigLoaded = () => {
   const configArray = getConfigArray()
   return configArray.length > 0
+}
+
+/**
+ * 全局配置加载状态管理
+ */
+let isLoadingConfig = false
+let configLoadPromise: Promise<void> | null = null
+
+/**
+ * 确保配置已加载（单例模式，避免重复请求）
+ */
+export const ensureConfigLoaded = async (): Promise<void> => {
+  // 如果配置已加载，直接返回
+  if (isConfigLoaded()) {
+    return Promise.resolve()
+  }
+
+  // 如果正在加载配置，返回现有的Promise
+  if (isLoadingConfig && configLoadPromise) {
+    return configLoadPromise
+  }
+
+  // 开始加载配置
+  isLoadingConfig = true
+  configLoadPromise = loadMiniProgramConfig()
+
+  try {
+    await configLoadPromise
+  } finally {
+    isLoadingConfig = false
+    configLoadPromise = null
+  }
+}
+
+/**
+ * 加载小程序配置（内部函数）
+ */
+const loadMiniProgramConfig = async (): Promise<void> => {
+  try {
+    const response = await apiClient.getMiniProgramConfig()
+    if (response.success && response.data) {
+      Taro.setStorageSync('miniProgramConfig', { data: response.data })
+    }
+  } catch (error) {
+    console.error('加载小程序配置失败:', error)
+    throw error
+  }
 }
 
 /**
@@ -152,6 +200,7 @@ export default {
   getConfigArray,
   getConfigValue,
   isConfigLoaded,
+  ensureConfigLoaded,
   getSystemName,
   getLogoUrl,
   getMainPicUrl,
