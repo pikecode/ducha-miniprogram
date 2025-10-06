@@ -42,7 +42,7 @@ export default class DataReportList extends Component<{}, DataReportListState> {
     this.setState({ loading: true })
 
     try {
-      console.log('开始获取数据上报列表...')
+
       const response = await apiClient.getDataReportList('zkzbtby')
 
       if (response.success && response.data) {
@@ -50,9 +50,9 @@ export default class DataReportList extends Component<{}, DataReportListState> {
           reports: response.data,
           loading: false
         })
-        console.log('数据上报列表获取成功:', response.data)
+
       } else {
-        console.warn('数据上报列表获取失败:', response.message)
+
         Taro.showToast({
           title: response.message || '获取列表失败',
           icon: 'none'
@@ -70,7 +70,7 @@ export default class DataReportList extends Component<{}, DataReportListState> {
   }
 
   handleReportClick = (report: DataReportItem) => {
-    console.log('点击报表:', report)
+
 
     // 跳转到详情页，传递相关参数
     Taro.navigateTo({

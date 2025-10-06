@@ -42,7 +42,7 @@ class AuthManager {
       // 保存到本地存储
       Taro.setStorageSync('token', cleanToken)
 
-      console.log('Token已保存:', cleanToken ? '***' : 'null')
+
     } catch (error) {
       console.error('保存token失败:', error)
       throw new Error('Token保存失败')
@@ -79,7 +79,7 @@ class AuthManager {
     try {
       this.token = null
       Taro.removeStorageSync('token')
-      console.log('Token已清除')
+
     } catch (error) {
       console.error('清除token失败:', error)
     }
@@ -93,7 +93,7 @@ class AuthManager {
       Taro.removeStorageSync('userInfo')
       Taro.removeStorageSync('phoneNumber')
       Taro.removeStorageSync('taskList')
-      console.log('用户已登出')
+
     } catch (error) {
       console.error('登出失败:', error)
     }

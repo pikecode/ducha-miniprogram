@@ -49,7 +49,7 @@ export default class DepartmentList extends Component<{}, DepartmentListState> {
   handleDepartmentClick = (departmentId: string, departmentName: string) => {
     const { taskId, taskTitle, planDetail } = this.state
 
-    console.log('点击部门:', { departmentId, departmentName, taskId, scoreDict: planDetail?.scoreDict })
+
 
     if (!taskId) {
       Taro.showToast({
@@ -67,13 +67,6 @@ export default class DepartmentList extends Component<{}, DepartmentListState> {
     const targetPage = '/pages/departmentDetail/index'
     const url = `${targetPage}?id=${departmentId}&name=${encodeURIComponent(departmentName)}&taskId=${taskId}&taskTitle=${encodeURIComponent(taskTitle)}&scoreDict=${encodeURIComponent(scoreDict)}`
 
-    console.log('跳转参数:', {
-      isEvaluationMode,
-      targetPage,
-      departmentName,
-      url
-    })
-
     Taro.navigateTo({
       url: url
     })
@@ -84,19 +77,19 @@ export default class DepartmentList extends Component<{}, DepartmentListState> {
     this.setState({ planLoading: true })
 
     try {
-      console.log('正在获取督查计划详情...', { planId })
+
       const response = await apiClient.getInspectPlanDetail(planId)
 
-      console.log('督查计划详情响应:', response)
+
 
       if (response.success && response.data) {
         this.setState({
           planDetail: response.data,
           planLoading: false
         })
-        console.log('督查计划详情获取成功:', response.data)
+
       } else {
-        console.warn('督查计划详情获取失败:', response.message)
+
         this.setState({ planLoading: false })
       }
     } catch (error) {

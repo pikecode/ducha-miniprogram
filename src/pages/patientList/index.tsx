@@ -41,14 +41,14 @@ export default class PatientList extends Component<{}, PatientListState> {
   componentDidMount() {
     // 获取路由参数
     const params = Taro.getCurrentInstance().router?.params
-    console.log('病例列表页面参数:', params)
+
 
     if (params) {
       const taskTitle = decodeURIComponent(params.title || '')
       const taskId = params.taskId || ''
       const scoreDict = decodeURIComponent(params.scoreDict || '')
 
-      console.log('设置taskId:', taskId, 'taskTitle:', taskTitle, 'scoreDict:', scoreDict)
+
 
       this.setState({
         taskTitle,
@@ -75,7 +75,7 @@ export default class PatientList extends Component<{}, PatientListState> {
 
   // 刷新病例列表
   handleRefreshPatientList = () => {
-    console.log('收到刷新病例列表事件')
+
     this.loadPatientList()
   }
 
@@ -83,19 +83,19 @@ export default class PatientList extends Component<{}, PatientListState> {
   loadBatchList = async () => {
     const { taskId } = this.state
     if (!taskId) {
-      console.warn('缺少任务ID，无法加载批次列表')
+
       return
     }
 
     this.setState({ batchLoading: true })
 
     try {
-      console.log('正在获取批次列表...', { planId: taskId })
+
       const response = await apiClient.getBatchList({
         planId: taskId
       })
 
-      console.log('批次列表响应:', response)
+
 
       if (response.success && response.data) {
         const batchList = response.data.map(batch => ({
@@ -116,9 +116,9 @@ export default class PatientList extends Component<{}, PatientListState> {
             this.loadPatientList()
           }
         })
-        console.log('批次列表获取成功:', batchList)
+
       } else {
-        console.warn('批次列表获取失败:', response.message)
+
         this.setState({ batchLoading: false })
       }
     } catch (error) {
@@ -131,7 +131,7 @@ export default class PatientList extends Component<{}, PatientListState> {
   loadPatientList = async () => {
     const { taskId, selectedBatch, keyword } = this.state
     if (!taskId || !selectedBatch) {
-      console.warn('缺少任务ID或批次ID，无法加载病例列表')
+
       return
     }
 
@@ -144,19 +144,19 @@ export default class PatientList extends Component<{}, PatientListState> {
         key: keyword || ''
       }
 
-      console.log('正在获取病例列表...', params)
+
       const response = await apiClient.getPatientList(params)
 
-      console.log('病例列表响应:', response)
+
 
       if (response.success && response.data) {
         this.setState({
           patientList: response.data,
           patientLoading: false
         })
-        console.log('病例列表获取成功:', response.data)
+
       } else {
-        console.warn('病例列表获取失败:', response.message)
+
         Taro.showToast({
           title: response.message || '获取病例列表失败',
           icon: 'none'
@@ -208,7 +208,7 @@ export default class PatientList extends Component<{}, PatientListState> {
   // 点击病例
   handlePatientClick = (patient: any) => {
     const { scoreDict, taskId, taskTitle } = this.state
-    console.log('点击病例:', patient, 'scoreDict:', scoreDict)
+
 
     // 跳转到统一的病历详情页面，根据scoreDict参数决定显示评级还是打分模式
     Taro.navigateTo({

@@ -116,7 +116,7 @@ export function base64Decode(str: string): string {
 
     // 如果不支持原生函数，可以在这里实现手动解码
     // 暂时返回原字符串
-    console.warn('Base64解码功能在当前环境不可用')
+
     return str
   } catch (error) {
     console.error('Base64解码失败:', error)

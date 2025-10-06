@@ -73,7 +73,7 @@ export default class PatientDetail extends Component<{}, PatientDetailState> {
   componentDidMount() {
     // 获取路由参数
     const params = Taro.getCurrentInstance().router?.params
-    console.log('病历详情页面参数:', params)
+
 
     if (params) {
       const patientId = params.id || ''
@@ -115,17 +115,17 @@ export default class PatientDetail extends Component<{}, PatientDetailState> {
   // 加载病例详情
   loadPatientDetail = async (emrId: string) => {
     if (!emrId) {
-      console.warn('缺少病例ID，无法加载病例详情')
+
       return
     }
 
     this.setState({ loading: true })
 
     try {
-      console.log('正在获取病例详情...', { emrId })
+
       const response = await apiClient.getPatientDetail(emrId)
 
-      console.log('病例详情响应:', response)
+
 
       if (response.success && response.data) {
         // 处理已保存的督查结果
@@ -144,11 +144,11 @@ export default class PatientDetail extends Component<{}, PatientDetailState> {
           loading: false,
           itemsLoading: false
         })
-        console.log('病例详情获取成功:', response.data)
-        console.log('督查项目获取成功:', response.data.inspectItems)
-        console.log('已保存的督查结果:', response.data.inspectEMRResults)
+
+
+
       } else {
-        console.warn('病例详情获取失败:', response.message)
+
         Taro.showToast({
           title: response.message || '获取病例详情失败',
           icon: 'none'
@@ -170,19 +170,19 @@ export default class PatientDetail extends Component<{}, PatientDetailState> {
     this.setState({ optionsLoading: true })
 
     try {
-      console.log('正在获取评级选项...')
+
       const response = await apiClient.getDictDetail('emrResult')
 
-      console.log('评级选项响应:', response)
+
 
       if (response.success && response.data) {
         this.setState({
           evaluationOptions: response.data || [],
           optionsLoading: false
         })
-        console.log('评级选项获取成功:', response.data)
+
       } else {
-        console.warn('评级选项获取失败:', response.message)
+
         this.setState({ optionsLoading: false })
       }
     } catch (error) {
@@ -304,14 +304,14 @@ export default class PatientDetail extends Component<{}, PatientDetailState> {
             const evidenceResult = await apiClient.createEvidence(evidenceParams)
 
             if (!evidenceResult.success) {
-              console.warn('创建证据失败:', evidenceResult.message)
+
               Taro.showToast({
                 title: `创建证据失败: ${evidenceResult.message}`,
                 icon: 'none'
               })
             }
           } else {
-            console.warn('文件上传失败:', uploadResult.message)
+
             Taro.showToast({
               title: `上传失败: ${uploadResult.message}`,
               icon: 'none'
@@ -364,7 +364,7 @@ export default class PatientDetail extends Component<{}, PatientDetailState> {
           evidenceLoading: false
         })
       } else {
-        console.warn('获取证据列表失败:', response.message)
+
         this.setState({
           currentEvidenceList: [],
           evidenceLoading: false
@@ -497,7 +497,7 @@ export default class PatientDetail extends Component<{}, PatientDetailState> {
       return hasSelection || hasScore || hasRemark
     })
 
-    console.log('保存数据筛选结果:', saveData)
+
 
     if (saveData.length === 0) {
       Taro.showToast({
@@ -508,7 +508,7 @@ export default class PatientDetail extends Component<{}, PatientDetailState> {
     }
 
     try {
-      console.log('保存督查结果:', saveData)
+
 
       // 保存督查项目结果
       const response = await apiClient.saveInspectResults(saveData)
@@ -517,24 +517,24 @@ export default class PatientDetail extends Component<{}, PatientDetailState> {
         // 如果有整体存在不足内容，保存整体存在不足
         if (overallInsufficient && overallInsufficient.trim() !== '' && patient?.batchId) {
           try {
-            console.log('=== updateEmrInsufficient API 参数调试 ===')
-            console.log('1. overallInsufficient:', overallInsufficient)
-            console.log('2. overallInsufficient.trim():', overallInsufficient.trim())
-            console.log('3. patient?.batchId:', patient?.batchId)
-            console.log('4. patientId:', patientId)
-            console.log('5. patient 完整对象:', JSON.stringify(patient, null, 2))
+
+
+
+
+
+
 
             const updateParams = {
               batchId: patient.batchId,
               insufficient: overallInsufficient.trim(),
               id: patientId
             }
-            console.log('6. 最终发送的API参数:', JSON.stringify(updateParams, null, 2))
+
 
             const insufficientResponse = await apiClient.updateEmrInsufficient(updateParams)
 
             if (!insufficientResponse.success) {
-              console.warn('保存整体存在不足失败:', insufficientResponse.message)
+
             }
           } catch (insufficientError) {
             console.error('保存整体存在不足失败:', insufficientError)

@@ -121,7 +121,7 @@ export default class ImageViewer extends Component<ImageViewerProps, ImageViewer
                     mode='aspectFit'
                     onClick={this.handleFullscreenPreview}
                     onError={() => {
-                      console.warn('图片加载失败:', currentEvidence.fileUrl)
+
                     }}
                   />
                   <View className='main-image-overlay' onClick={this.handleFullscreenPreview}>
@@ -161,7 +161,7 @@ export default class ImageViewer extends Component<ImageViewerProps, ImageViewer
                             src={evidence.fileUrl}
                             mode='aspectFill'
                             onError={() => {
-                              console.warn('缩略图加载失败:', evidence.fileUrl)
+
                             }}
                           />
                           {index === currentIndex && (

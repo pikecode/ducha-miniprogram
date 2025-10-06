@@ -68,7 +68,7 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
   componentDidMount() {
     // 获取路由参数
     const params = Taro.getCurrentInstance().router?.params
-    console.log('部门督查页面参数:', params)
+
 
     if (params) {
       const departmentId = params.id || ''
@@ -158,23 +158,23 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
       scores
     })
 
-    console.log('初始化表单状态:', { questions, scores })
+
   }
 
   // 加载督查项目列表
   loadInspectItems = async (planId: string, departmentId: string) => {
     if (!planId || !departmentId) {
-      console.warn('缺少计划ID或部门ID，无法加载督查项目', { planId, departmentId })
+
       return
     }
 
     this.setState({ itemsLoading: true })
 
     try {
-      console.log('正在获取部门督查项目列表...', { planId, departmentId })
+
       const response = await apiClient.getDepartmentInspectItemList(planId, departmentId)
 
-      console.log('部门督查项目响应:', response)
+
 
       if (response.success && response.data) {
         const inspectItems = response.data || []
@@ -186,10 +186,10 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
           inspectItems: inspectItems,
           itemsLoading: false
         })
-        console.log('部门督查项目获取成功:', response.data)
-        console.log('督查项目详细信息:', JSON.stringify(response.data, null, 2))
+
+
       } else {
-        console.warn('部门督查项目获取失败:', response.message)
+
         this.setState({ itemsLoading: false })
       }
     } catch (error) {
@@ -203,19 +203,19 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
     this.setState({ optionsLoading: true })
 
     try {
-      console.log('正在获取评级选项...')
+
       const response = await apiClient.getDictDetail('emrResult')
 
-      console.log('评级选项响应:', response)
+
 
       if (response.success && response.data) {
         this.setState({
           evaluationOptions: response.data || [],
           optionsLoading: false
         })
-        console.log('评级选项获取成功:', response.data)
+
       } else {
-        console.warn('评级选项获取失败:', response.message)
+
         this.setState({ optionsLoading: false })
       }
     } catch (error) {
@@ -307,7 +307,7 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
         // 上传文件
         const uploadResponse = await apiClient.uploadFile(file.tempFilePath)
 
-        console.log('文件上传响应:', uploadResponse)
+
 
         if (uploadResponse.success && uploadResponse.data) {
           // 检查fileId字段，可能在data中或直接在响应中
@@ -374,7 +374,7 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
       // 获取图片列表，使用正确的itemId
       const response = await apiClient.getDepartmentEvidenceList(actualItemId)
 
-      console.log('部门图片列表响应:', response)
+
 
       if (response.success && response.data) {
         // 直接使用 response.data，不是 response.data.data
@@ -391,7 +391,7 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
           evidenceLoading: false
         })
       } else {
-        console.warn('获取图片列表失败:', response.message)
+
         this.setState({
           currentEvidenceList: [],
           evidenceLoading: false
@@ -552,8 +552,8 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
       return hasSelection || hasScore || hasRemark
     })
 
-    console.log('保存数据筛选结果:', saveData)
-    console.log('保存数据JSON格式:', JSON.stringify(saveData, null, 2))
+
+
 
     if (saveData.length === 0) {
       Taro.showToast({
@@ -564,7 +564,7 @@ export default class DepartmentDetail extends Component<{}, DepartmentDetailStat
     }
 
     try {
-      console.log('保存督查结果:', saveData)
+
 
       // 保存部门督查项目结果
       const response = await apiClient.saveDepartmentInspectResults(saveData)

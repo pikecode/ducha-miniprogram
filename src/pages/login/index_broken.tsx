@@ -87,7 +87,7 @@ export default class Login extends Component<{}, LoginState> {
 
   // 获取手机号
   getPhoneNumber = (e) => {
-    console.log('获取手机号回调', e)
+
 
     if (e.detail.code) {
       // 保存手机号加密数据
@@ -141,11 +141,11 @@ export default class Login extends Component<{}, LoginState> {
         channel: API_CONFIG.CHANNEL
       }
 
-      console.log('登录参数:', loginParams)
+
 
       const response = await apiClient.oauthLogin(loginParams)
 
-      console.log('登录响应:', response)
+
 
       if (response.success) {
         // 登录成功
@@ -240,14 +240,14 @@ export default class Login extends Component<{}, LoginState> {
   handleWechatLogin = () => {
     Taro.login({
       success: (loginRes) => {
-        console.log('微信登录成功', loginRes)
+
         if (loginRes.code) {
           // 保存微信登录code
           this.setState({
             wxLoginCode: loginRes.code
           })
 
-          console.log('获取到登录凭证：', loginRes.code)
+
 
           Taro.showToast({
             title: '获取登录凭证成功',
@@ -261,7 +261,7 @@ export default class Login extends Component<{}, LoginState> {
         }
       },
       fail: (err) => {
-        console.log('微信登录失败', err)
+
         Taro.showToast({
           title: '登录失败',
           icon: 'none'
@@ -276,7 +276,7 @@ export default class Login extends Component<{}, LoginState> {
       Taro.getUserProfile({
         desc: '用于完善会员资料',
         success: (profileRes) => {
-          console.log('获取用户信息成功', profileRes)
+
           this.setState({
             userInfo: profileRes.userInfo,
             hasUserInfo: true
@@ -296,7 +296,7 @@ export default class Login extends Component<{}, LoginState> {
           })
         },
         fail: (profileErr) => {
-          console.log('获取用户信息失败', profileErr)
+
           Taro.showToast({
             title: '授权失败',
             icon: 'none'
@@ -307,7 +307,7 @@ export default class Login extends Component<{}, LoginState> {
       // 兼容旧版本
       Taro.getUserInfo({
         success: (profileRes) => {
-          console.log('获取用户信息成功', profileRes)
+
           this.setState({
             userInfo: profileRes.userInfo,
             hasUserInfo: true,
@@ -403,11 +403,11 @@ export default class Login extends Component<{}, LoginState> {
         captcha: captchaCode
       }
 
-      console.log('密码登录参数:', loginParams)
+
 
       const response = await apiClient.login(loginParams)
 
-      console.log('密码登录响应:', response)
+
 
       if (response.success) {
         // 登录成功

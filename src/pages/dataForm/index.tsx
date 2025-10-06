@@ -128,7 +128,7 @@ export default class DataForm extends Component<{}, DataFormState> {
       // 根据表单类型加载字典数据，然后加载表单详情
       this.loadDictionariesAndFormData(params.taskType || '', params.dataId || '', isViewMode, isEdit || isEditMode)
 
-      console.log('表单页接收参数:', {
+      this.setState({
         taskType: params.taskType,
         taskId: params.taskId,
         dataId: params.dataId,
@@ -177,8 +177,8 @@ export default class DataForm extends Component<{}, DataFormState> {
               ? this.state.dataDateOptions
               : [{ label: '暂无数据', value: '' }]
           }
-          console.log('创建dataDateField:', dataDateField)
-          console.log('当前dataDateOptions:', this.state.dataDateOptions)
+
+
           this.setState({ dataDateField }, () => {
             // 字段创建完成后加载表单数据
             if (isEdit && dataId) {
@@ -195,8 +195,8 @@ export default class DataForm extends Component<{}, DataFormState> {
               ? this.state.dataYearOptions
               : [{ label: '暂无数据', value: '' }]
           }
-          console.log('创建dataYearField:', dataYearField)
-          console.log('当前dataYearOptions:', this.state.dataYearOptions)
+
+
           this.setState({ dataYearField }, () => {
             // 字段创建完成后加载表单数据
             if (isEdit && dataId) {
@@ -220,12 +220,12 @@ export default class DataForm extends Component<{}, DataFormState> {
     this.setState({ loading: true })
 
     try {
-      console.log('开始加载表单详情:', { taskType, dataId })
+
       const response = await apiClient.getFormDetail(taskType, dataId)
 
       if (response.success && response.data) {
         const formData = response.data
-        console.log('表单详情数据:', formData)
+
 
         // 填充分组字段数据
         const { formGroups } = this.state
@@ -303,12 +303,12 @@ export default class DataForm extends Component<{}, DataFormState> {
         let updatedDataYearField = this.state.dataYearField
 
         if (updatedDataDateField && formData.dataDateId) {
-          console.log('填充dataDateField，原值:', updatedDataDateField.value, '新值:', formData.dataDateId)
+
           updatedDataDateField = { ...updatedDataDateField, value: formData.dataDateId }
         }
 
         if (updatedDataYearField && formData.dataDateId) {
-          console.log('填充dataYearField，原值:', updatedDataYearField.value, '新值:', formData.dataDateId)
+
           updatedDataYearField = { ...updatedDataYearField, value: formData.dataDateId }
         }
 
@@ -325,15 +325,16 @@ export default class DataForm extends Component<{}, DataFormState> {
           }
         })
 
-        console.log('表单数据加载成功')
-        console.log('当前数据状态 dataStatus:', formData.dataStatus)
-        console.log('是否可以操作:', this.canPerformOperations())
-        console.log('当前独立字段状态:', {
+
+
+
+
+        this.setState({
           dataDateField: updatedDataDateField,
           dataYearField: updatedDataYearField
         })
       } else {
-        console.warn('表单详情获取失败:', response.message)
+
         this.setState({ loading: false })
         Taro.showToast({
           title: '加载失败',
@@ -355,10 +356,10 @@ export default class DataForm extends Component<{}, DataFormState> {
     this.setState({ dataDateLoading: true })
 
     try {
-      console.log('开始获取数据归属周期字典')
+
       const response = await apiClient.getDataDateDict()
 
-      console.log('数据归属周期API完整响应:', response)
+
 
       if (response.success && response.data) {
         const options = response.data.map(item => ({
@@ -366,7 +367,7 @@ export default class DataForm extends Component<{}, DataFormState> {
           value: item.id  // 使用id作为value，而不是valueCode
         }))
 
-        console.log('处理后的选项数据:', options)
+
 
         this.setState({
           dataDateOptions: options,
@@ -378,9 +379,9 @@ export default class DataForm extends Component<{}, DataFormState> {
           }
         })
 
-        console.log('数据归属周期字典获取成功，选项数量:', options.length)
+
       } else {
-        console.warn('数据归属周期字典获取失败:', response.message)
+
         this.setState({ dataDateLoading: false })
         throw new Error(response.message || '获取字典失败')
       }
@@ -396,10 +397,10 @@ export default class DataForm extends Component<{}, DataFormState> {
     this.setState({ dataYearLoading: true })
 
     try {
-      console.log('开始获取数据年度字典')
+
       const response = await apiClient.getDataYearDict()
 
-      console.log('数据年度API完整响应:', response)
+
 
       if (response.success && response.data) {
         const options = response.data.map(item => ({
@@ -407,7 +408,7 @@ export default class DataForm extends Component<{}, DataFormState> {
           value: item.id  // 使用id作为value，而不是valueCode
         }))
 
-        console.log('处理后的年度选项数据:', options)
+
 
         this.setState({
           dataYearOptions: options,
@@ -419,9 +420,9 @@ export default class DataForm extends Component<{}, DataFormState> {
           }
         })
 
-        console.log('数据年度字典获取成功，选项数量:', options.length)
+
       } else {
-        console.warn('数据年度字典获取失败:', response.message)
+
         this.setState({ dataYearLoading: false })
         throw new Error(response.message || '获取字典失败')
       }
@@ -457,7 +458,7 @@ export default class DataForm extends Component<{}, DataFormState> {
     })
 
     try {
-      console.log('获取指标详情，code:', code)
+
       const response = await apiClient.getIndicatorDetail(code)
 
       if (response.success && response.data) {
@@ -470,7 +471,7 @@ export default class DataForm extends Component<{}, DataFormState> {
           },
           helpLoading: false
         })
-        console.log('指标详情获取成功:', response.data)
+
       } else {
         // 即使没有数据也显示默认内容
         this.setState({
@@ -482,7 +483,7 @@ export default class DataForm extends Component<{}, DataFormState> {
           },
           helpLoading: false
         })
-        console.warn('指标详情获取失败:', response.message)
+
       }
     } catch (error) {
       console.error('获取指标详情失败:', error)
@@ -1357,7 +1358,7 @@ export default class DataForm extends Component<{}, DataFormState> {
     this.setState({ checkingDataFill: true })
 
     try {
-      console.log('开始检查数据填写状态，taskType:', this.state.taskType, 'dataDateId:', dataDateId)
+
       const response = await apiClient.checkDataFill(this.state.taskType, dataDateId)
 
       if (response.success) {
@@ -1376,15 +1377,15 @@ export default class DataForm extends Component<{}, DataFormState> {
             success: (result) => {
               if (result.confirm) {
                 // 用户点击"知道了"，保持禁用状态
-                console.log('用户确认已知晓数据重复填写，保持禁用状态')
+
               }
             }
           })
         }
 
-        console.log('数据填写状态检查完成，已填写:', alreadyFilled)
+
       } else {
-        console.warn('检查数据填写状态失败:', response.message)
+
         this.setState({ checkingDataFill: false })
       }
     } catch (error) {
@@ -1677,8 +1678,8 @@ export default class DataForm extends Component<{}, DataFormState> {
       formData.id = dataId
     }
 
-    console.log('提交表单数据:', formData)
-    console.log('提交模式:', isEdit ? '编辑' : '新建')
+
+
 
     this.setState({ loading: true })
 
@@ -1804,7 +1805,7 @@ export default class DataForm extends Component<{}, DataFormState> {
     formData.departmentName = userInfo.departmentName
     formData.id = dataId
 
-    console.log('保存表单数据:', formData)
+
 
     this.setState({ loading: true })
 
@@ -2266,7 +2267,7 @@ export default class DataForm extends Component<{}, DataFormState> {
     }))
 
     this.setState({ formGroups: updatedGroups })
-    console.log('所有比率字段计算完成')
+
   }
 
   // 渲染独立字段
@@ -2475,13 +2476,13 @@ export default class DataForm extends Component<{}, DataFormState> {
               <View className='group-content'>
                 {dataDateField && (
                   <View>
-                    {console.log('渲染dataDateField:', dataDateField)}
+
                     {this.renderIndependentField(dataDateField)}
                   </View>
                 )}
                 {dataYearField && (
                   <View>
-                    {console.log('渲染dataYearField:', dataYearField)}
+
                     {this.renderIndependentField(dataYearField)}
                   </View>
                 )}

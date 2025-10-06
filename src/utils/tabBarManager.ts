@@ -12,7 +12,7 @@ class TabBarManager {
    */
   setSelectedIndex(index: number) {
     this.currentSelectedIndex = index
-    console.log('TabBarManager: 设置选中索引为', index)
+
   }
 
   /**
@@ -57,7 +57,7 @@ class TabBarManager {
           if (tabBar) {
             // 直接设置TabBar的selected状态
             tabBar.setState({ selected: this.currentSelectedIndex })
-            console.log('TabBarManager: 强制更新TabBar状态为', this.currentSelectedIndex)
+
           }
         }
       })

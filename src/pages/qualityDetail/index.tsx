@@ -149,7 +149,7 @@ export default class QualityDetail extends Component<{}, QualityDetailState> {
 
   // 点击部门，跳转到部门列表页面
   handleDepartmentClick = (department: any) => {
-    console.log('点击部门:', department)
+
     Taro.navigateTo({
       url: `/pages/departmentList/index?title=${encodeURIComponent(this.state.title)}&taskId=${this.state.taskId}`
     })

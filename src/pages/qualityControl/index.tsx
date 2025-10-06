@@ -21,13 +21,13 @@ export default class QualityControl extends Component<{}, QualityControlState> {
   }
 
   componentDidMount () {
-    console.log('督查页面 componentDidMount 执行')
+
     Taro.setNavigationBarTitle({
       title: '督查'
     })
-    console.log('准备调用 loadTaskList')
+
     this.loadTaskList()
-    console.log('loadTaskList 调用完成')
+
   }
 
   componentDidShow() {
@@ -43,36 +43,36 @@ export default class QualityControl extends Component<{}, QualityControlState> {
 
   // 加载督查列表
   loadTaskList = async () => {
-    console.log('=== loadTaskList 开始执行 ===')
+
     this.setState({ loading: true })
 
     try {
-      console.log('1. 获取 orgId...')
+
       const orgId = apiConfigManager.getTaskListOrgId()
-      console.log('2. orgId 获取成功:', { orgId })
-      console.log('3. 开始请求API:', new Date().toLocaleTimeString())
+
+
 
       // 输出配置调试信息
-      console.log('4. 输出配置调试信息...')
+
       apiConfigManager.debugInfo()
 
-      console.log('5. 检查 apiClient:', apiClient)
-      console.log('6. 检查 getTaskLiveList 方法:', typeof apiClient.getTaskLiveList)
-      console.log('7. 调用 apiClient.getTaskLiveList...')
+
+
+
       const response = await apiClient.getTaskLiveList({
         orgId
       })
 
-      console.log('8. 督查列表响应:', response)
+
 
       if (response.success && response.data) {
         this.setState({
           taskList: response.data,
           loading: false
         })
-        console.log('督查列表获取成功:', response.data)
+
       } else {
-        console.warn('督查列表获取失败:', response.message)
+
         Taro.showToast({
           title: response.message || '获取督查列表失败',
           icon: 'none'
@@ -93,24 +93,24 @@ export default class QualityControl extends Component<{}, QualityControlState> {
   }
 
   handleTaskClick = (task: TaskLiveListItem) => {
-    console.log('点击督查任务:', task)
-    console.log('planType:', task.planType, '类型:', typeof task.planType)
+
+
 
     // 根据planType字段判断跳转类型
     if (task.planType === '0') {
-      console.log('跳转到病历列表页面')
+
       // planType="1"：现场督查（病历督查），跳转到病历列表页面
       Taro.navigateTo({
         url: `/pages/patientList/index?taskId=${task.id}&title=${encodeURIComponent(task.planName)}&scoreDict=${encodeURIComponent(task.scoreDict || '')}`
       })
     } else if (task.planType === '1') {
-      console.log('跳转到部门列表页面')
+
       // planType="0"：线上督查（部门督查），跳转到部门列表页面
       Taro.navigateTo({
         url: `/pages/departmentList/index?taskId=${task.id}&title=${encodeURIComponent(task.planName)}`
       })
     } else {
-      console.log('跳转到督查详情页面，planType未识别:', task.planType)
+
       // 其他情况，跳转到督查详情页面
       Taro.navigateTo({
         url: `/pages/qualityDetail/index?id=${task.id}&title=${encodeURIComponent(task.planName)}&description=${encodeURIComponent(task.remarks || '')}&timeRange=${encodeURIComponent(`时间：${task.startTime.split(' ')[0]}~${task.endTime.split(' ')[0]}`)}`

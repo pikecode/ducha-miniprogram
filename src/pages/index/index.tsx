@@ -69,7 +69,7 @@ export default class Index extends Component<{}, IndexState> {
 
   // 加载首页配置
   loadHomeConfig = async () => {
-    console.log('直接使用默认首页配置，不调用服务器接口')
+
     this.useDefaultConfig()
   }
 
@@ -107,7 +107,7 @@ export default class Index extends Component<{}, IndexState> {
 
   // 处理快捷操作
   handleQuickAction = (action: QuickAction) => {
-    console.log('快捷操作:', action)
+
     Taro.switchTab({
       url: action.path
     })

@@ -32,7 +32,7 @@ export default class PatientEvaluation extends Component<{}, PatientEvaluationSt
   componentDidMount() {
     // 获取路由参数
     const params = Taro.getCurrentInstance().router?.params
-    console.log('病例评级页面参数:', params)
+
 
     if (params) {
       const patientId = params.id || ''
@@ -77,7 +77,7 @@ export default class PatientEvaluation extends Component<{}, PatientEvaluationSt
 
   // 保存并返回
   handleSave = () => {
-    console.log('保存评级:', {
+
       patientId: this.state.patientId,
       evaluations: this.state.evaluations,
       remarks: this.state.remarks

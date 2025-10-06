@@ -124,7 +124,7 @@ class ConfigTabManager {
    */
   devToggleTab(tabId: string): boolean {
     if (process.env.NODE_ENV !== 'development') {
-      console.warn('Tab动态修改仅在开发环境可用')
+
       return false
     }
 
@@ -136,7 +136,7 @@ class ConfigTabManager {
 
     // 注意：这只是临时修改，不会持久化
     tab.enabled = !tab.enabled
-    console.log(`Tab ${tabId} 已${tab.enabled ? '启用' : '禁用'}`)
+
     return true
   }
 

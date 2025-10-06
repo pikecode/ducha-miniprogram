@@ -35,7 +35,7 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
 
   // 加载TabBar配置
   loadTabBarConfig = async () => {
-    console.log('直接使用默认TabBar配置，不调用服务器接口')
+
     this.useDefaultTabConfig()
   }
 
@@ -57,7 +57,7 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
       useServerConfig: false,
       loading: false
     })
-    console.log('使用默认TabBar配置:', tabBarItems)
+
   }
 
   updateTabBar = () => {
@@ -69,23 +69,19 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
     const currentPage = currentPages[currentPages.length - 1]
     const currentRoute = currentPage?.route || ''
 
-    console.log('=== TabBar更新调试 ===')
-    console.log('当前页面路由:', currentRoute)
-    console.log('TabBar配置:', this.state.tabs.map(tab => ({ pagePath: tab.pagePath, text: tab.text })))
-    console.log('使用服务器配置:', this.state.useServerConfig)
+    // 非TabBar页面不需要更新
+    const isTabPage = this.state.tabs.some(tab => tab.pagePath === currentRoute)
+    if (!isTabPage) {
+      return
+    }
 
     // 找到当前页面对应的Tab索引
     let selected = 0
     this.state.tabs.forEach((tab, index) => {
-      console.log(`检查Tab ${index}: ${tab.pagePath} === ${currentRoute} ?`, tab.pagePath === currentRoute)
       if (currentRoute === tab.pagePath) {
         selected = index
-        console.log(`匹配成功，选中索引: ${index}`)
       }
     })
-
-    console.log('最终选中索引:', selected)
-    console.log('=== TabBar更新完成 ===')
 
     this.setState({ selected })
   }

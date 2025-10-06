@@ -64,11 +64,9 @@ export default class Login extends Component<{}, LoginState> {
   // 获取验证码
   loadCaptcha = async () => {
     try {
-      console.log('开始获取验证码')
 
       // 直接通过API调用获取验证码，这会保存session
       const response = await apiClient.getCaptcha()
-      console.log('验证码API响应:', response)
 
       if (response.success && response.data) {
         this.setState({
@@ -78,13 +76,6 @@ export default class Login extends Component<{}, LoginState> {
 
         // 检查session是否已保存
         const sessionId = getCaptchaSessionId()
-        console.log('验证码获取成功，Session ID:', sessionId)
-
-        console.log('验证码设置成功:', {
-          url: response.data.image,
-          key: response.data.key,
-          sessionId: sessionId
-        })
       } else {
         throw new Error('验证码获取失败')
       }
@@ -108,7 +99,6 @@ export default class Login extends Component<{}, LoginState> {
 
   // 手动刷新验证码
   refreshCaptcha = () => {
-    console.log('手动刷新验证码')
     this.loadCaptcha()
   }
 
@@ -129,7 +119,6 @@ export default class Login extends Component<{}, LoginState> {
   // 验证码输入处理
   handleCaptchaInput = (e) => {
     const captchaValue = e.detail.value
-    console.log('验证码输入变化:', captchaValue)
     this.setState({
       captchaCode: captchaValue
     })
@@ -139,14 +128,6 @@ export default class Login extends Component<{}, LoginState> {
   performPasswordLogin = async () => {
     const { username, password, captchaCode, captchaKey } = this.state
 
-    console.log('=== 密码登录调试信息 ===')
-    console.log('用户名:', username)
-    console.log('密码原文:', password)
-    console.log('验证码:', captchaCode)
-    console.log('验证码长度:', captchaCode ? captchaCode.length : 0)
-    console.log('验证码Key:', captchaKey)
-    console.log('验证码图片URL:', this.state.captchaImage)
-    console.log('当前验证码Session ID:', getCaptchaSessionId())
 
     if (!username || !password || !captchaCode) {
       Taro.showToast({
@@ -174,8 +155,6 @@ export default class Login extends Component<{}, LoginState> {
 
       // 使用base64加密密码
       const encryptedPassword = base64Encode(password)
-      console.log('密码加密前:', password)
-      console.log('密码加密后:', encryptedPassword)
 
       const loginParams = {
         username,
@@ -183,13 +162,9 @@ export default class Login extends Component<{}, LoginState> {
         captcha: captchaCode.trim() // 去除验证码前后空格
       }
 
-      console.log('密码登录参数:', loginParams)
-      console.log('完整登录参数JSON:', JSON.stringify(loginParams, null, 2))
 
       const response = await apiClient.login(loginParams)
 
-      console.log('密码登录响应:', response)
-      console.log('完整登录响应JSON:', JSON.stringify(response, null, 2))
 
       if (response.success && response.data) {
         // 处理新的API返回格式
@@ -245,10 +220,8 @@ export default class Login extends Component<{}, LoginState> {
 
       // 只有在验证码相关错误时才重新加载验证码
       if (errorMessage.includes('验证码') || errorMessage.includes('captcha')) {
-        console.log('检测到验证码错误，重新加载验证码')
         this.loadCaptcha()
       } else {
-        console.log('非验证码错误，不重新加载验证码:', errorMessage)
       }
     } finally {
       this.setState({ isLogging: false })

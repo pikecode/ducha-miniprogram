@@ -51,7 +51,7 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
         title: title
       })
 
-      console.log('详情页接收参数:', {
+      this.setState({
         id: params.id,
         appkey: params.appkey,
         title: decodeURIComponent(params.title || ''),
@@ -79,7 +79,7 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
 
   // 处理数据列表刷新
   handleDataListRefresh = () => {
-    console.log('收到数据更新事件，刷新数据列表')
+
     // 如果当前在数据列表tab且已经加载过数据，则重新加载
     if (this.state.activeTab === 'data' && this.state.appkey) {
       this.loadDataList(this.state.appkey)
@@ -91,7 +91,7 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
     this.setState({ loading: true })
 
     try {
-      console.log('开始获取填报任务列表，taskType:', taskType)
+
       const response = await apiClient.getTaskInfoList(taskType)
 
       if (response.success && response.data) {
@@ -99,9 +99,9 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
           taskList: response.data,
           loading: false
         })
-        console.log('填报任务列表获取成功:', response.data)
+
       } else {
-        console.warn('填报任务列表获取失败:', response.message)
+
         Taro.showToast({
           title: response.message || '获取任务列表失败',
           icon: 'none'
@@ -123,7 +123,7 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
     this.setState({ dataLoading: true })
 
     try {
-      console.log('开始获取数据列表，appkey:', appkey)
+
       const response = await apiClient.getDataList(appkey)
 
       if (response.success && response.data) {
@@ -131,9 +131,9 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
           dataList: response.data || [],
           dataLoading: false
         })
-        console.log('数据列表获取成功:', response.data)
+
       } else {
-        console.warn('数据列表获取失败:', response.message)
+
         Taro.showToast({
           title: response.message || '获取数据列表失败',
           icon: 'none'
@@ -161,7 +161,7 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
 
   handleGoToReport = () => {
     const { appkey, title } = this.state
-    console.log('点击去填报，appkey:', appkey, 'title:', title)
+
 
     // 可以根据appkey来决定跳转到不同的填报页面
     Taro.showToast({
@@ -171,7 +171,7 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
   }
 
   handleTaskItemClick = (task: TaskInfoItem) => {
-    console.log('点击任务:', task)
+
 
     // 跳转到表单页面
     Taro.navigateTo({
@@ -180,7 +180,7 @@ export default class DataReportDetail extends Component<{}, DataReportDetailStat
   }
 
   handleDataItemClick = (dataItem: DataListItem) => {
-    console.log('点击数据项:', dataItem)
+
 
     // 跳转到表单页面（编辑模式）
     Taro.navigateTo({

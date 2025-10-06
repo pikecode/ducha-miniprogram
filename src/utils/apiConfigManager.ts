@@ -68,7 +68,7 @@ class ApiConfigManager {
    * 调试信息输出
    */
   debugInfo() {
-    console.log('API配置信息:', this.getConfigStats())
+
   }
 }
 

@@ -55,7 +55,7 @@ export default class PatientAdd extends Component<{}, PatientAddState> {
   componentDidMount() {
     // 获取路由参数
     const params = Taro.getCurrentInstance().router?.params
-    console.log('添加病例页面参数:', params)
+
 
     if (params) {
       const taskTitle = decodeURIComponent(params.title || '')
@@ -83,19 +83,19 @@ export default class PatientAdd extends Component<{}, PatientAddState> {
     this.setState({ genderLoading: true })
 
     try {
-      console.log('正在获取性别字典...')
+
       const response = await apiClient.getDictDetail('emrSex')
 
-      console.log('性别字典响应:', response)
+
 
       if (response.success && response.data) {
         this.setState({
           genderList: response.data,
           genderLoading: false
         })
-        console.log('性别字典获取成功:', response.data)
+
       } else {
-        console.warn('性别字典获取失败:', response.message)
+
         this.setState({ genderLoading: false })
       }
     } catch (error) {
@@ -109,19 +109,19 @@ export default class PatientAdd extends Component<{}, PatientAddState> {
     this.setState({ departmentLoading: true })
 
     try {
-      console.log('正在获取部门列表...')
+
       const response = await apiClient.getDepartmentList({ isfolder: true })
 
-      console.log('部门列表响应:', response)
+
 
       if (response.success && response.data) {
         this.setState({
           departmentList: response.data,
           departmentLoading: false
         })
-        console.log('部门列表获取成功:', response.data)
+
       } else {
-        console.warn('部门列表获取失败:', response.message)
+
         this.setState({ departmentLoading: false })
       }
     } catch (error) {
@@ -218,10 +218,10 @@ export default class PatientAdd extends Component<{}, PatientAddState> {
         status: '1'
       }
 
-      console.log('正在添加病例...', params)
+
       const response = await apiClient.addPatient(params)
 
-      console.log('添加病例响应:', response)
+
 
       if (response.success) {
         Taro.showToast({

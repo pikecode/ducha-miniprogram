@@ -310,22 +310,9 @@ class ApiClient {
     // 如果存在验证码session且没有手动设置Cookie，则自动添加
     if (captchaSessionId && !requestHeaders['Cookie']) {
       requestHeaders['Cookie'] = `JSESSIONID=${captchaSessionId}`
-      console.log('添加session到请求头:', captchaSessionId)
-    } else if (requestHeaders['Cookie']) {
-      console.log('请求已包含Cookie头:', requestHeaders['Cookie'])
-    } else if (!captchaSessionId) {
-      console.log('当前没有验证码session')
     }
 
     try {
-      console.log('发起请求:', {
-        url: fullUrl,
-        method,
-        data,
-        headers: requestHeaders,
-        token: token ? '***' : 'null',
-        captchaSession: captchaSessionId ? '***' : 'null'
-      })
 
       const response = await Taro.request({
         url: fullUrl,
@@ -335,7 +322,7 @@ class ApiClient {
         timeout: REQUEST_TIMEOUT
       })
 
-      console.log('接口响应:', response)
+
 
       // 检查响应头中是否有新的session，如果有则更新
       const setCookieHeader = response.header['set-cookie'] || response.header['Set-Cookie']
@@ -344,7 +331,7 @@ class ApiClient {
           for (const cookie of setCookieHeader) {
             const sessionId = extractSessionId(cookie)
             if (sessionId && sessionId !== captchaSessionId) {
-              console.log('从响应更新session ID:', sessionId, '(原:', captchaSessionId, ')')
+
               captchaSessionId = sessionId
               break
             }
@@ -352,7 +339,7 @@ class ApiClient {
         } else {
           const sessionId = extractSessionId(setCookieHeader)
           if (sessionId && sessionId !== captchaSessionId) {
-            console.log('从响应更新session ID:', sessionId, '(原:', captchaSessionId, ')')
+
             captchaSessionId = sessionId
           }
         }
@@ -360,13 +347,6 @@ class ApiClient {
 
       // 检查HTTP状态码
       if (response.statusCode !== 200) {
-        console.log('HTTP错误详情:', {
-          statusCode: response.statusCode,
-          data: response.data,
-          header: response.header,
-          url: fullUrl
-        })
-
         // 尝试解析错误信息
         let errorMessage = `HTTP错误: ${response.statusCode}`
         if (response.data && typeof response.data === 'object') {
@@ -381,7 +361,7 @@ class ApiClient {
 
         // 401未授权，清除token并跳转登录
         if (response.statusCode === 401) {
-          console.log('Token已失效，清除认证信息')
+
           authManager.logout()
           Taro.reLaunch({
             url: '/pages/login/index'
@@ -403,16 +383,9 @@ class ApiClient {
 
       // 检查业务状态码
       if (!result.success && result.code !== 200) {
-        console.log('业务逻辑错误详情:', {
-          success: result.success,
-          code: result.code,
-          message: result.message,
-          data: result.data
-        })
-
         // 如果是认证相关错误，也清除token
         if (result.code === 401 || result.code === 403) {
-          console.log('认证失败，清除认证信息')
+
           authManager.logout()
           Taro.reLaunch({
             url: '/pages/login/index'
@@ -454,11 +427,11 @@ class ApiClient {
 
   // 用户名密码登录接口
   async login(params: LoginParams): Promise<ApiResponse<LoginResponseData>> {
-    console.log('=== API登录方法调试 ===')
-    console.log('登录接口URL:', `${this.baseURL}${API_CONFIG.ENDPOINTS.LOGIN}`)
-    console.log('登录参数:', params)
-    console.log('登录参数JSON:', JSON.stringify(params, null, 2))
-    console.log('当前验证码Session ID:', captchaSessionId)
+
+
+
+
+
 
     // 通用request方法会自动处理验证码session
     const response = await this.request<LoginResponseData>(
@@ -467,9 +440,9 @@ class ApiClient {
       params
     )
 
-    console.log('=== API登录响应调试 ===')
-    console.log('响应数据:', response)
-    console.log('响应JSON:', JSON.stringify(response, null, 2))
+
+
+
 
     return response
   }
@@ -485,14 +458,14 @@ class ApiClient {
 
   // 获取验证码接口
   async getCaptcha(): Promise<ApiResponse<{ image: string, key: string }>> {
-    console.log('获取验证码API请求:', `${this.baseURL}${API_CONFIG.ENDPOINTS.CAPTCHA}`)
+
 
     // 生成时间戳作为key
     const timestamp = new Date().getTime().toString()
     const fullUrl = `${this.baseURL}${API_CONFIG.ENDPOINTS.CAPTCHA}?t=${timestamp}`
 
     try {
-      console.log('获取验证码图片和session:', fullUrl)
+
 
       // 获取当前token以确保session一致性
       const token = authManager.getToken()
@@ -508,15 +481,9 @@ class ApiClient {
         responseType: 'arraybuffer' // 获取图片数据
       })
 
-      console.log('验证码响应:', {
-        statusCode: response.statusCode,
-        dataLength: response.data ? response.data.byteLength : 0,
-        headers: response.header
-      })
-
       // 提取并保存JSESSIONID
       const setCookieHeader = response.header['set-cookie'] || response.header['Set-Cookie']
-      console.log('Set-Cookie头:', setCookieHeader)
+
 
       if (setCookieHeader) {
         if (Array.isArray(setCookieHeader)) {
@@ -525,7 +492,7 @@ class ApiClient {
             const sessionId = extractSessionId(cookie)
             if (sessionId) {
               captchaSessionId = sessionId
-              console.log('提取到验证码Session ID:', sessionId)
+
               break
             }
           }
@@ -534,12 +501,12 @@ class ApiClient {
           const sessionId = extractSessionId(setCookieHeader)
           if (sessionId) {
             captchaSessionId = sessionId
-            console.log('提取到验证码Session ID:', sessionId)
+
           }
         }
       }
 
-      console.log('当前保存的验证码Session ID:', captchaSessionId)
+
 
       // 检查HTTP状态码
       if (response.statusCode !== 200) {
@@ -548,7 +515,7 @@ class ApiClient {
 
       // 确保session ID被正确保存
       if (!captchaSessionId) {
-        console.warn('警告：未能获取验证码Session ID，验证码可能无法正常工作')
+
       }
 
       // 将图片数据转换为base64，避免Image组件再次请求
@@ -558,13 +525,13 @@ class ApiClient {
           // 在小程序中转换arraybuffer为base64
           const base64 = Taro.arrayBufferToBase64(response.data)
           imageBase64 = `data:image/png;base64,${base64}`
-          console.log('验证码图片转换为base64成功，长度:', base64.length)
+
         } catch (e) {
-          console.warn('base64转换失败，使用URL方式:', e)
+
           imageBase64 = fullUrl
         }
       } else {
-        console.warn('未获取到图片数据，使用URL方式')
+
         imageBase64 = fullUrl
       }
 
@@ -658,40 +625,40 @@ class ApiClient {
 
   // 获取数据归属周期字典
   async getDataDateDict(): Promise<ApiResponse<DictDetailResponseData>> {
-    console.log('获取数据归属周期字典API请求:', `${API_CONFIG.ENDPOINTS.DICT_DETAIL}?key=DataDate`)
+
 
     const response = await this.request<DictDetailResponseData>(
       `${API_CONFIG.ENDPOINTS.DICT_DETAIL}?key=DataDate`,
       'GET'
     )
 
-    console.log('数据归属周期字典API响应:', response)
+
     return response
   }
 
   // 获取数据年度字典
   async getDataYearDict(): Promise<ApiResponse<DictDetailResponseData>> {
-    console.log('获取数据年度字典API请求:', `${API_CONFIG.ENDPOINTS.DICT_DETAIL}?key=DataYear`)
+
 
     const response = await this.request<DictDetailResponseData>(
       `${API_CONFIG.ENDPOINTS.DICT_DETAIL}?key=DataYear`,
       'GET'
     )
 
-    console.log('数据年度字典API响应:', response)
+
     return response
   }
 
   // 获取指标详情
   async getIndicatorDetail(code: string): Promise<ApiResponse<IndicatorDetailResponseData>> {
-    console.log('获取指标详情API请求:', `/api/v1/indicator/detail/getbycode?code=${code}`)
+
 
     const response = await this.request<IndicatorDetailResponseData>(
       `/api/v1/indicator/detail/getbycode?code=${code}`,
       'GET'
     )
 
-    console.log('指标详情API响应:', response)
+
     return response
   }
 
@@ -746,8 +713,8 @@ class ApiClient {
 
   // 保存督查结果接口（病例）
   async saveInspectResults(params: InspectResultSaveParams): Promise<ApiResponse<InspectResultSaveResponseData>> {
-    console.log('保存病例督查结果API请求:', '/api/v1/inspect/emr/result/updateList')
-    console.log('请求参数:', JSON.stringify(params, null, 2))
+
+
 
     const response = await this.request<InspectResultSaveResponseData>(
       '/api/v1/inspect/emr/result/updateList',
@@ -755,14 +722,14 @@ class ApiClient {
       params
     )
 
-    console.log('保存病例督查结果API响应:', response)
+
     return response
   }
 
   // 保存部门督查结果接口
   async saveDepartmentInspectResults(params: DepartmentInspectResultItem[]): Promise<ApiResponse<InspectResultSaveResponseData>> {
-    console.log('保存部门督查结果API请求:', '/api/v1/inspect/item/score/updateMulti')
-    console.log('请求参数:', JSON.stringify(params, null, 2))
+
+
 
     const response = await this.request<InspectResultSaveResponseData>(
       '/api/v1/inspect/item/score/updateMulti',
@@ -770,20 +737,20 @@ class ApiClient {
       params
     )
 
-    console.log('保存部门督查结果API响应:', response)
+
     return response
   }
 
   // 更新病例整体存在不足接口
   async updateEmrInsufficient(params: { batchId: string, insufficient: string, id: string }): Promise<ApiResponse<any>> {
-    console.log('=== 更新病例存在不足API详细调试 ===')
-    console.log('API路径:', '/api/v1/inspect/emr/result/updateEmrInsufficient')
-    console.log('请求方法:', 'POST')
-    console.log('请求参数详情:')
-    console.log('  - batchId:', params.batchId, '(类型:', typeof params.batchId, ')')
-    console.log('  - insufficient:', params.insufficient, '(类型:', typeof params.insufficient, ', 长度:', params.insufficient?.length, ')')
-    console.log('  - id:', params.id, '(类型:', typeof params.id, ')')
-    console.log('完整请求参数JSON:', JSON.stringify(params, null, 2))
+
+
+
+
+
+
+
+
 
     const response = await this.request<any>(
       '/api/v1/inspect/emr/result/updateEmrInsufficient',
@@ -791,74 +758,74 @@ class ApiClient {
       params
     )
 
-    console.log('=== 更新病例存在不足API响应调试 ===')
-    console.log('响应状态:', response.success)
-    console.log('响应消息:', response.message)
-    console.log('响应数据:', response.data)
-    console.log('完整响应JSON:', JSON.stringify(response, null, 2))
-    console.log('=== API调试结束 ===')
+
+
+
+
+
+
     return response
   }
 
   // 获取数据上报列表
   async getDataReportList(pageType: string = 'zkzbtby'): Promise<ApiResponse<DataReportItem[]>> {
-    console.log('获取数据上报列表API请求:', '/api/v1/pageurl/settings/list')
-    console.log('请求参数:', { pageType })
+
+
 
     const response = await this.request<DataReportItem[]>(
       `/api/v1/pageurl/settings/list?pageType=${pageType}`,
       'GET'
     )
 
-    console.log('数据上报列表API响应:', response)
+
     return response
   }
 
   // 获取填报任务列表
   async getTaskInfoList(taskType: string): Promise<ApiResponse<TaskInfoItem[]>> {
-    console.log('获取填报任务列表API请求:', '/api/v1/taskInfo/listTaskInfosByuser')
-    console.log('请求参数:', { taskType })
+
+
 
     const response = await this.request<TaskInfoItem[]>(
       `/api/v1/taskInfo/listTaskInfosByuser?taskType=${taskType}`,
       'GET'
     )
 
-    console.log('填报任务列表API响应:', response)
+
     return response
   }
 
   // 获取数据列表
   async getDataList(appkey: string, pageNo: number = 1, pageSize: number = 10): Promise<ApiResponse<DataListItem[]>> {
-    console.log('获取数据列表API请求:', `/api/v1/data/${appkey}/list`)
-    console.log('请求参数:', { appkey, pageNo, pageSize })
+
+
 
     const response = await this.request<DataListItem[]>(
       `/api/v1/data/${appkey}/list?pageNo=${pageNo}&pageSize=${pageSize}`,
       'GET'
     )
 
-    console.log('数据列表API响应:', response)
+
     return response
   }
 
   // 获取表单详情
   async getFormDetail(taskType: string, id: string): Promise<ApiResponse<any>> {
-    console.log('获取表单详情API请求:', `/api/v1/data/${taskType}/detail?id=${id}`)
+
 
     const response = await this.request<any>(
       `/api/v1/data/${taskType}/detail?id=${id}`,
       'GET'
     )
 
-    console.log('获取表单详情API响应:', response)
+
     return response
   }
 
   // 保存表单数据
   async saveFormData(taskType: string, formData: any): Promise<ApiResponse<any>> {
-    console.log('保存表单数据API请求:', `/api/v1/data/${taskType}/add`)
-    console.log('请求参数:', JSON.stringify(formData, null, 2))
+
+
 
     const response = await this.request<any>(
       `/api/v1/data/${taskType}/add`,
@@ -866,14 +833,14 @@ class ApiClient {
       formData
     )
 
-    console.log('保存表单数据API响应:', response)
+
     return response
   }
 
   // 更新表单数据
   async updateFormData(taskType: string, formData: any): Promise<ApiResponse<any>> {
-    console.log('更新表单数据API请求:', `/api/v1/data/${taskType}/update`)
-    console.log('请求参数:', JSON.stringify(formData, null, 2))
+
+
 
     const response = await this.request<any>(
       `/api/v1/data/${taskType}/update`,
@@ -881,59 +848,59 @@ class ApiClient {
       formData
     )
 
-    console.log('更新表单数据API响应:', response)
+
     return response
   }
 
   // 检查数据是否已填写
   async checkDataFill(appkey: string, dataDateId: string): Promise<ApiResponse<boolean>> {
-    console.log('检查数据填写状态API请求:', `/api/v1/data/${appkey}/checkfill?dataDateId=${dataDateId}`)
+
 
     const response = await this.request<boolean>(
       `/api/v1/data/${appkey}/checkfill?dataDateId=${dataDateId}`,
       'GET'
     )
 
-    console.log('检查数据填写状态API响应:', response)
+
     return response
   }
 
   // 提审数据
   async submitDataForReview(taskType: string, id: string): Promise<ApiResponse<any>> {
-    console.log('提审数据API请求:', `/api/v1/data/${taskType}/submit/${id}`)
+
 
     const response = await this.request<any>(
       `/api/v1/data/${taskType}/submit/${id}`,
       'POST'
     )
 
-    console.log('提审数据API响应:', response)
+
     return response
   }
 
   // 获取审批记录列表
   async getFlowRecordList(dataId: string): Promise<ApiResponse<FlowRecordItem[]>> {
-    console.log('获取审批记录API请求:', `/api/v1/flow/record/list?dataId=${dataId}`)
+
 
     const response = await this.request<FlowRecordItem[]>(
       `/api/v1/flow/record/list?dataId=${dataId}`,
       'GET'
     )
 
-    console.log('获取审批记录API响应:', response)
+
     return response
   }
 
   // 获取首页配置
   async getHomeConfig(): Promise<ApiResponse<HomeConfigResponseData>> {
-    console.log('获取首页配置API请求:', '/api/v1/config/home')
+
 
     const response = await this.request<HomeConfigResponseData>(
       '/api/v1/config/home',
       'GET'
     )
 
-    console.log('获取首页配置API响应:', response)
+
     return response
   }
 
@@ -942,8 +909,8 @@ class ApiClient {
     const fullUrl = `${this.baseURL}/api/v1/upload/v2/upload`
 
     try {
-      console.log('文件上传API请求:', fullUrl)
-      console.log('上传文件路径:', filePath)
+
+
 
       const response = await Taro.uploadFile({
         url: fullUrl,
@@ -956,7 +923,7 @@ class ApiClient {
         timeout: 60000 // 60秒超时
       })
 
-      console.log('文件上传API响应:', response)
+
 
       if (response.statusCode !== 200) {
         throw new Error(`HTTP错误: ${response.statusCode}`)
@@ -972,8 +939,8 @@ class ApiClient {
 
   // 创建证据接口（病例）
   async createEvidence(params: CreateEvidenceParams): Promise<ApiResponse<CreateEvidenceResponseData>> {
-    console.log('创建病例证据API请求:', '/api/v1/inspect/item/evidence/create')
-    console.log('请求参数:', JSON.stringify(params, null, 2))
+
+
 
     const response = await this.request<CreateEvidenceResponseData>(
       '/api/v1/inspect/item/evidence/create',
@@ -981,14 +948,14 @@ class ApiClient {
       params
     )
 
-    console.log('创建病例证据API响应:', response)
+
     return response
   }
 
   // 创建证据接口（部门）
   async createDepartmentEvidence(params: CreateDepartmentEvidenceParams): Promise<ApiResponse<CreateEvidenceResponseData>> {
-    console.log('创建部门证据API请求:', '/api/v1/inspect/item/evidence/create')
-    console.log('请求参数:', JSON.stringify(params, null, 2))
+
+
 
     const response = await this.request<CreateEvidenceResponseData>(
       '/api/v1/inspect/item/evidence/create',
@@ -996,33 +963,33 @@ class ApiClient {
       params
     )
 
-    console.log('创建部门证据API响应:', response)
+
     return response
   }
 
   // 获取证据列表接口（病例）
   async getEvidenceList(itemId: string, emrId: string): Promise<ApiResponse<EvidenceListResponseData>> {
-    console.log('获取病例证据列表API请求:', `/api/v1/inspect/item/evidence/list/Emr/${itemId}/${emrId}`)
+
 
     const response = await this.request<EvidenceListResponseData>(
       `/api/v1/inspect/item/evidence/list/Emr/${itemId}/${emrId}`,
       'GET'
     )
 
-    console.log('获取病例证据列表API响应:', response)
+
     return response
   }
 
   // 获取证据列表接口（部门）
   async getDepartmentEvidenceList(itemId: string): Promise<ApiResponse<EvidenceListResponseData>> {
-    console.log('获取部门证据列表API请求:', `/api/v1/inspect/item/evidence/list/${itemId}`)
+
 
     const response = await this.request<EvidenceListResponseData>(
       `/api/v1/inspect/item/evidence/list/${itemId}`,
       'GET'
     )
 
-    console.log('获取部门证据列表API响应:', response)
+
     return response
   }
 
@@ -1030,7 +997,7 @@ class ApiClient {
   setAuthToken(authorization: string) {
     // 使用authManager管理token
     authManager.setToken(authorization)
-    console.log('设置认证token:', authorization ? '***' : 'null')
+
   }
 }
 
@@ -1040,11 +1007,11 @@ export const apiClient = new ApiClient()
 // 导出session管理函数
 export const getCaptchaSessionId = () => captchaSessionId
 export const clearCaptchaSession = () => {
-  console.log('清除验证码session:', captchaSessionId)
+
   captchaSessionId = null
 }
 export const setCaptchaSessionId = (sessionId: string) => {
-  console.log('手动设置验证码session:', sessionId)
+
   captchaSessionId = sessionId
 }
 

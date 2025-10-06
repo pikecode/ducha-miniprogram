@@ -24,7 +24,7 @@ class App extends Component<PropsWithChildren> {
 
     // 如果未登录且不在登录页面，跳转到登录页
     if ((!userInfo || !phoneNumber) && currentRoute !== 'pages/login/index') {
-      console.log('用户未登录，跳转到登录页')
+
       Taro.reLaunch({
         url: '/pages/login/index'
       })
