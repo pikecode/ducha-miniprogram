@@ -43,10 +43,7 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
   }
 
   componentDidShow() {
-    // 延迟更新，确保页面已经完全显示
-    setTimeout(() => {
-      this.updateTabBar()
-    }, 50)
+    this.updateTabBar()
   }
 
   // 加载TabBar配置
@@ -139,12 +136,6 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
     const currentPage = currentPages[currentPages.length - 1]
     const currentRoute = currentPage?.route || ''
 
-    // 非TabBar页面不需要更新
-    const isTabPage = this.state.tabs.some(tab => tab.pagePath === currentRoute)
-    if (!isTabPage) {
-      return
-    }
-
     // 找到当前页面对应的Tab索引
     let selected = 0
     this.state.tabs.forEach((tab, index) => {
@@ -153,13 +144,7 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
       }
     })
 
-    // 只有当选中状态发生变化时才更新
-    if (this.state.selected !== selected) {
-      this.setState({ selected }, () => {
-        // 状态更新后强制重新渲染
-        this.forceUpdate()
-      })
-    }
+    this.setState({ selected })
   }
 
   switchTab = (tab: any, index: number) => {
