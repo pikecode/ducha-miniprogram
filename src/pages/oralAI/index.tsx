@@ -180,8 +180,15 @@ export default class OralAI extends Component<{}, OralAIState> {
     }
   }
 
-  // 生成用户ID
+  // 获取用户ID
   generateUserId = () => {
+    // 优先使用登录用户的真实ID
+    const userInfo = Taro.getStorageSync('userInfo')
+    if (userInfo && userInfo.id) {
+      return userInfo.id.toString()
+    }
+
+    // 如果没有登录用户信息，使用缓存的AI用户ID
     let userId = Taro.getStorageSync('ai_user_id')
     if (!userId) {
       userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
