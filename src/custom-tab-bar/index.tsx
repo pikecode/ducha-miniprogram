@@ -167,8 +167,22 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
       return null
     }
 
+    // 临时调试信息
+    const currentPages = Taro.getCurrentPages()
+    const currentPage = currentPages[currentPages.length - 1]
+    const currentRoute = currentPage?.route || ''
+
     return (
       <View className='custom-tab-bar'>
+        <View style={{
+          fontSize: '12px',
+          color: 'red',
+          textAlign: 'center',
+          padding: '2px',
+          backgroundColor: 'yellow'
+        }}>
+          当前路径: {currentRoute} | 选中: {selected}
+        </View>
         <View className='tab-bar-border'></View>
         <View className='tab-bar-container'>
           {tabs.map((tab, index) => {
