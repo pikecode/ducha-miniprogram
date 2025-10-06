@@ -166,6 +166,9 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
     // 立即更新选中状态
     this.setState({
       selected: index
+    }, () => {
+      // 状态更新后强制重新渲染
+      this.forceUpdate()
     })
 
     Taro.switchTab({
