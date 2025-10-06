@@ -46,7 +46,7 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
     // 延迟更新，确保页面已经完全显示
     setTimeout(() => {
       this.updateTabBar()
-    }, 100)
+    }, 50)
   }
 
   // 加载TabBar配置
@@ -153,11 +153,13 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
       }
     })
 
-    // 强制更新状态
-    this.setState({ selected }, () => {
-      // 状态更新后强制重新渲染
-      this.forceUpdate()
-    })
+    // 只有当选中状态发生变化时才更新
+    if (this.state.selected !== selected) {
+      this.setState({ selected }, () => {
+        // 状态更新后强制重新渲染
+        this.forceUpdate()
+      })
+    }
   }
 
   switchTab = (tab: any, index: number) => {
