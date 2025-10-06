@@ -2,31 +2,43 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-color: #f7f8fa;
+  background: linear-gradient(180deg, #f8f9fc 0%, #ffffff 100%);
+  padding-bottom: calc(88px + env(safe-area-inset-bottom)); /* 为TabBar留出空间 */
+  box-sizing: border-box;
 }
 
 /* 消息列表 */
 .message-list {
   flex: 1;
-  padding: 20px 30px;
+  width: 100%;
+  padding: 24px 20px;
   padding-bottom: 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
 .message-item {
   margin-bottom: 32px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* 用户消息 */
 .user-message {
   display: flex;
   justify-content: flex-end;
+  width: 100%;
+  padding-left: 80px; /* 给左侧留出更多空间 */
+  box-sizing: border-box;
 }
 
 .user-bubble {
-  max-width: 70%;
+  max-width: calc(100% - 80px); /* 减去左侧padding */
   padding: 20px 24px;
-  background-color: #e8f3ff;
-  border-radius: 16px 16px 4px 16px;
+  background: #4F7EFF;
+  border-radius: 24px 24px 4px 24px;
+  box-shadow: 0 2px 16px rgba(79, 126, 255, 0.2);
+  box-sizing: border-box;
 }
 
 /* AI消息 */
@@ -34,73 +46,167 @@
   display: flex;
   align-items: flex-start;
   gap: 16px;
+  width: 100%;
+  padding-right: 80px; /* 给右侧留出更多空间 */
+  box-sizing: border-box;
 }
 
 .ai-avatar {
-  width: 64px;
-  height: 64px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #4F7EFF 0%, #6366F1 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  margin-top: 4px;
+  box-shadow: 0 4px 12px rgba(79, 126, 255, 0.2);
 }
 
 .avatar-icon {
-  font-size: 32px;
+  font-size: 28px;
 }
 
 .ai-bubble {
   flex: 1;
+  max-width: calc(100% - 72px - 16px); /* 减去头像宽度和gap */
   padding: 20px 24px;
-  background-color: #fff;
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  background-color: #ffffff;
+  border-radius: 4px 24px 24px 24px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
 }
 
 .message-text {
-  font-size: 28px;
-  color: #333;
-  line-height: 1.6;
+  font-size: 30px;
+  line-height: 1.7;
   word-wrap: break-word;
   white-space: pre-wrap;
+  font-weight: 400;
+}
+
+/* 用户消息文字颜色 */
+.user-bubble .message-text {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+/* AI消息文字颜色 */
+.ai-bubble .message-text {
+  color: #1f2937;
+  font-weight: 400;
 }
 
 /* 输入框 */
 .input-bar {
   position: relative;
-  padding: 20px 30px;
-  padding-bottom: calc(20px + env(safe-area-inset-bottom));
-  background-color: #fff;
-  border-top: 1px solid #e5e5e5;
+  padding: 20px 24px;
+  background-color: #ffffff;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
   display: flex;
   align-items: center;
   gap: 16px;
   flex-shrink: 0;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.04);
 }
 
 .message-input {
   flex: 1;
-  height: 72px;
-  padding: 0 20px;
-  background-color: #f7f8fa;
-  border-radius: 36px;
-  font-size: 28px;
+  height: 88px;
+  padding: 0 28px;
+  background-color: #f8f9fc;
+  border-radius: 44px;
+  font-size: 30px;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  color: #1f2937;
+}
+
+.message-input:focus {
+  border-color: #4F7EFF;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(79, 126, 255, 0.1);
+}
+
+.message-input::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
 }
 
 .send-btn {
-  width: 72px;
-  height: 72px;
+  width: 88px;
+  height: 88px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #4F7EFF 0%, #6366F1 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(79, 126, 255, 0.3);
+}
+
+.send-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 8px rgba(79, 126, 255, 0.4);
 }
 
 .send-icon {
-  font-size: 32px;
-  color: #fff;
+  font-size: 36px;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* 响应式设计 - 适配TabBar高度 */
+@media (max-width: 750px) {
+  .oral-ai {
+    padding-bottom: calc(82px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 600px) {
+  .oral-ai {
+    padding-bottom: calc(78px + env(safe-area-inset-bottom));
+  }
+
+  .message-list {
+    padding: 20px 16px;
+  }
+
+  .user-message {
+    padding-left: 60px;
+  }
+
+  .user-bubble {
+    max-width: calc(100% - 60px);
+  }
+
+  .ai-message {
+    padding-right: 60px;
+  }
+
+  .ai-bubble {
+    max-width: calc(100% - 60px - 16px);
+  }
+
+  .input-bar {
+    padding: 16px 20px;
+  }
+
+  .message-input {
+    height: 80px;
+    font-size: 28px;
+    padding: 0 24px;
+  }
+
+  .send-btn {
+    width: 80px;
+    height: 80px;
+  }
+
+  .send-icon {
+    font-size: 32px;
+  }
 }
