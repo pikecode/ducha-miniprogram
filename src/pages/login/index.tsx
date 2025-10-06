@@ -103,10 +103,12 @@ export default class Login extends Component<{}, LoginState> {
     const token = authManager.getToken()
 
     if (userInfo && token) {
-      // 已登录，直接跳转到首页
-      Taro.reLaunch({
-        url: '/pages/index/index'
-      })
+      // 已登录，延迟跳转到首页避免超时
+      setTimeout(() => {
+        Taro.reLaunch({
+          url: '/pages/index/index'
+        })
+      }, 500)
     }
   }
 

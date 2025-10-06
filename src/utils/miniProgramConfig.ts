@@ -115,6 +115,16 @@ export const getTabBarAiConfig = () => {
   }
 }
 
+/**
+ * 获取AI API配置
+ */
+export const getAiApiConfig = () => {
+  return {
+    apiUrl: getConfigValue('ai_api_url', 'https://try.hskj.cc/v1/chat-messages'),
+    appKey: getConfigValue('ai_appkey', 'app-wX0U1dahPIYHfrMNRmXLUg6n')
+  }
+}
+
 export default {
   getMiniProgramConfig,
   getConfigArray,
@@ -126,5 +136,6 @@ export default {
   getTabBarMainConfig,
   getTabBarDataConfig,
   getTabBarInspectConfig,
-  getTabBarAiConfig
+  getTabBarAiConfig,
+  getAiApiConfig
 }
