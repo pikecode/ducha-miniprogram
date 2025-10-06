@@ -136,6 +136,11 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
     const currentPage = currentPages[currentPages.length - 1]
     const currentRoute = currentPage?.route || ''
 
+    console.log('TabBar Update:', {
+      currentRoute,
+      tabs: this.state.tabs.map(tab => ({ path: tab.pagePath, text: tab.text }))
+    })
+
     // 找到当前页面对应的Tab索引
     let selected = 0
     this.state.tabs.forEach((tab, index) => {
@@ -144,6 +149,7 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
       }
     })
 
+    console.log('TabBar Selected:', selected)
     this.setState({ selected })
   }
 
