@@ -29,7 +29,7 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
     // 加载小程序配置
     await this.loadMiniProgramConfig()
     await this.loadTabBarConfig()
-    this.updateTabBar()
+    // updateTabBar在setState的callback中调用
   }
 
   // 加载小程序配置
@@ -48,13 +48,15 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
 
   // 加载TabBar配置
   loadTabBarConfig = async () => {
-
+    console.log('loadTabBarConfig called')
     this.useDefaultTabConfig()
   }
 
   // 使用默认TabBar配置
   useDefaultTabConfig = () => {
+    console.log('useDefaultTabConfig called')
     const enabledTabs = configTabManager.getEnabledTabs()
+    console.log('enabledTabs:', enabledTabs)
     const mainConfig = getTabBarMainConfig()
     const dataConfig = getTabBarDataConfig()
     const inspectConfig = getTabBarInspectConfig()
@@ -119,16 +121,31 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
       )
     })
 
+    console.log('Setting tabs:', tabBarItems)
+    console.log('Setting loading to false')
+
     this.setState({
       tabs: tabBarItems,
       useServerConfig: hasServerIcon,
       loading: false
+    }, () => {
+      // setState完成后再调用updateTabBar
+      console.log('setState completed, now calling updateTabBar')
+      this.updateTabBar()
     })
 
   }
 
   updateTabBar = () => {
+    console.log('=== updateTabBar called ===')
+    console.log('Current state:', {
+      loading: this.state.loading,
+      tabsLength: this.state.tabs.length,
+      tabs: this.state.tabs
+    })
+
     if (this.state.loading || this.state.tabs.length === 0) {
+      console.log('TabBar updateTabBar: EARLY RETURN - loading:', this.state.loading, 'tabs length:', this.state.tabs.length)
       return
     }
 
@@ -136,17 +153,23 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
     const currentPage = currentPages[currentPages.length - 1]
     const currentRoute = currentPage?.route || ''
 
+    console.log('TabBar updateTabBar - Current Route:', currentRoute)
+    console.log('TabBar updateTabBar - Available Tabs:', this.state.tabs.map(tab => tab.pagePath))
+
     // 找到当前页面对应的Tab索引
     let selected = 0
     this.state.tabs.forEach((tab, index) => {
+      console.log(`TabBar - Comparing route "${currentRoute}" with tab "${tab.pagePath}"`)
       // 支持多种路径格式的匹配
       if (currentRoute === tab.pagePath ||
           currentRoute === `/${tab.pagePath}` ||
           `/${currentRoute}` === `/${tab.pagePath}`) {
         selected = index
+        console.log(`TabBar - Match found! Selected index: ${index}`)
       }
     })
 
+    console.log('TabBar - Final selected:', selected, 'Previous:', this.state.selected)
     this.setState({ selected })
   }
 
@@ -167,22 +190,8 @@ export default class CustomTabBar extends Component<{}, CustomTabBarState> {
       return null
     }
 
-    // 临时调试信息
-    const currentPages = Taro.getCurrentPages()
-    const currentPage = currentPages[currentPages.length - 1]
-    const currentRoute = currentPage?.route || ''
-
     return (
       <View className='custom-tab-bar'>
-        <View style={{
-          fontSize: '12px',
-          color: 'red',
-          textAlign: 'center',
-          padding: '2px',
-          backgroundColor: 'yellow'
-        }}>
-          当前路径: {currentRoute} | 选中: {selected}
-        </View>
         <View className='tab-bar-border'></View>
         <View className='tab-bar-container'>
           {tabs.map((tab, index) => {
