@@ -2,7 +2,7 @@
  * 小程序配置管理工具
  */
 import Taro from '@tarojs/taro'
-import { apiClient } from './api'
+import { configApi } from '../api/config'
 
 /**
  * 配置项接口
@@ -84,7 +84,7 @@ export const ensureConfigLoaded = async (): Promise<void> => {
  */
 const loadMiniProgramConfig = async (): Promise<void> => {
   try {
-    const response = await apiClient.getMiniProgramConfig()
+    const response = await configApi.getMiniProgramConfig()
     if (response.success && response.data) {
       Taro.setStorageSync('miniProgramConfig', { data: response.data })
     }

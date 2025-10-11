@@ -4,6 +4,8 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  margin: 0;
+  padding: 0;
 }
 
 /* 加载状态 */
@@ -23,6 +25,8 @@
   position: relative;
   width: 100%;
   overflow: hidden;
+  margin-top: 0; /* 直接从顶部开始 */
+  padding-top: env(safe-area-inset-top); /* 只需要适配安全区域 */
 }
 
 .background-image {
@@ -62,6 +66,7 @@
   justify-content: center;
   align-items: center;
   padding: 40px;
+  padding-top: calc(40px + env(safe-area-inset-top)); /* 适配安全区域 */
   z-index: 2;
 }
 
@@ -110,21 +115,25 @@
 
 /* 退出按钮 */
 .logout-btn {
-  background: #ff4757;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
   border-radius: 20px;
   padding: 10px 24px;
   transition: all 0.3s ease;
   flex-shrink: 0;
   margin-left: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .logout-btn:active {
-  background: #ff3742;
+  background: #f9fafb;
   transform: scale(0.95);
 }
 
 .logout-text {
-  color: #ffffff;
+  color: #6b7280;
   font-size: 26px;
   font-weight: 500;
 }
@@ -205,30 +214,26 @@
 }
 
 .action-icon-wrapper {
-  width: 80px;
-  height: 80px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  width: 120px;
+  height: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
   transition: all 0.3s ease;
 }
 
 .action-item:active .action-icon-wrapper {
   transform: scale(0.9);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .action-icon-emoji {
-  font-size: 40px;
+  font-size: 120px;
   line-height: 1;
 }
 
 .action-icon-img {
-  width: 40px;
-  height: 40px;
+  width: 120px;
+  height: 120px;
 }
 
 .action-text {
@@ -265,6 +270,7 @@
 @media (max-width: 750px) {
   .header-content {
     padding: 30px 20px;
+    padding-top: calc(30px + env(safe-area-inset-top)); /* 适配安全区域 */
   }
 
   .username {
@@ -311,14 +317,17 @@
   }
 
   .action-icon-wrapper {
-    width: 60px;
-    height: 60px;
-    border-radius: 15px;
+    width: 100px;
+    height: 100px;
   }
 
-  .action-icon {
-    width: 30px;
-    height: 30px;
+  .action-icon-emoji {
+    font-size: 100px;
+  }
+
+  .action-icon-img {
+    width: 100px;
+    height: 100px;
   }
 
   .action-name {
@@ -352,9 +361,17 @@
   }
 
   .action-icon-wrapper {
-    width: 60px;
-    height: 60px;
-    border-radius: 15px;
+    width: 90px;
+    height: 90px;
+  }
+
+  .action-icon-emoji {
+    font-size: 90px;
+  }
+
+  .action-icon-img {
+    width: 90px;
+    height: 90px;
   }
 
   .action-name {

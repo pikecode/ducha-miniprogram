@@ -30,10 +30,6 @@ export default class Index extends Component<{}, IndexState> {
   }
 
   async componentDidMount() {
-    Taro.setNavigationBarTitle({
-      title: '督查'
-    })
-
     // 获取屏幕信息
     const systemInfo = await Taro.getSystemInfo()
     this.setState({ screenHeight: systemInfo.screenHeight })
@@ -189,7 +185,7 @@ export default class Index extends Component<{}, IndexState> {
     }
 
     // 计算各部分高度
-    const headerHeight = screenHeight * 0.5
+    const headerHeight = screenHeight * 0.5 // 恢复原来的比例
     const actionHeight = screenHeight * 0.25
 
     return (

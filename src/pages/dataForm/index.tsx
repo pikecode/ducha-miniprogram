@@ -97,6 +97,12 @@ export default class DataForm extends Component<{}, DataFormState> {
   }
 
   componentDidMount() {
+    // 获取用户信息并设置部门名称
+    const userInfo = getUserInfo()
+    if (userInfo && userInfo.departmentName) {
+      this.setState({ departmentName: userInfo.departmentName })
+    }
+
     const params = Taro.getCurrentInstance().router?.params
     if (params) {
       const isEdit = params.dataId ? true : false
@@ -2461,7 +2467,7 @@ export default class DataForm extends Component<{}, DataFormState> {
             {(taskType === 'njkqkzkzzbyd' || taskType === 'njkqkzkzzbnd') && (
               <View className='form-org-info'>
                 <Text className='form-org-label'>填报单位：</Text>
-                <Text className='form-org-name'>南京口腔医院</Text>
+                <Text className='form-org-name'>{departmentName || '未设置部门'}</Text>
                 {/* 显示数据加载状态 */}
                 {(dataDateLoading || dataYearLoading) && (
                   <Text className='form-loading-text'>（数据加载中...）</Text>

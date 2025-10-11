@@ -44,7 +44,7 @@ export class ConfigApi {
    * 获取小程序配置
    */
   async getMiniProgramConfig(): Promise<ApiResponse<ConfigItem[]>> {
-    return apiClient.get<ConfigItem[]>('/config/miniprogram')
+    return apiClient.get<ConfigItem[]>('/api/v1/sys/config/category/miniprogram')
   }
 
   /**
